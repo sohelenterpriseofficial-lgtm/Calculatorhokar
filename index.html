@@ -1,0 +1,1583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline Billing & Profit Management</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ==================================== */
+        /* DESIGN SYSTEM & CSS VARIABLES        */
+        /* ==================================== */
+        :root {
+            /* Color System */
+            --primary-gradient: linear-gradient(135deg, #5B7CFF 0%, #8FA8FF 100%);
+            --primary-color: #5B7CFF;
+            --primary-color-light: #8FA8FF;
+            --secondary-color: #ffc107;
+            --accent-green: #28a745;
+            --accent-red: #dc3545;
+            --accent-grey: #6c757d;
+
+            /* Light Mode Theme */
+            --bg-color-light: #F5F7FB;
+            --card-bg-light: #ffffff;
+            --header-bg-light: rgba(255, 255, 255, 0.85);
+            --text-primary-light: #1a1f36;
+            --text-secondary-light: #6c757d;
+            --border-color-light: #e9ecef;
+            --calc-btn-light: #e9ecef;
+            --calc-operator-light: #ced4da;
+
+            /* Dark Mode Theme */
+            --bg-color-dark: #0d1117;
+            --card-bg-dark: #161b22;
+            --header-bg-dark: rgba(22, 27, 34, 0.85);
+            --text-primary-dark: #c9d1d9;
+            --text-secondary-dark: #8b949e;
+            --border-color-dark: #30363d;
+            --calc-btn-dark: #21262d;
+            --calc-operator-dark: #30363d;
+
+
+            /* Sizing & Effects */
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --border-radius-lg: 20px;
+            --border-radius-md: 12px;
+            --shadow-sm: 0 4px 15px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.08);
+            --transition-speed: 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        /* Default to Light Mode */
+        body {
+            --bg-color: var(--bg-color-light);
+            --card-bg: var(--card-bg-light);
+            --header-bg: var(--header-bg-light);
+            --text-primary: var(--text-primary-light);
+            --text-secondary: var(--text-secondary-light);
+            --border-color: var(--border-color-light);
+            --calc-btn-bg: var(--calc-btn-light);
+            --calc-operator-bg: var(--calc-operator-light);
+        }
+
+        body.dark-mode {
+            --bg-color: var(--bg-color-dark);
+            --card-bg: var(--card-bg-dark);
+            --header-bg: var(--header-bg-dark);
+            --text-primary: var(--text-primary-dark);
+            --text-secondary: var(--text-secondary-dark);
+            --border-color: var(--border-color-dark);
+            --calc-btn-bg: var(--calc-btn-dark);
+            --calc-operator-bg: var(--calc-operator-dark);
+        }
+
+        /* ==================================== */
+        /* BASE & LAYOUT                        */
+        /* ==================================== */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            padding-top: 80px;
+            padding-bottom: 90px;
+            transition: background-color var(--transition-speed), color var(--transition-speed);
+        }
+
+        /* Hide main UI until app is loaded */
+        body:not(.app-loaded) .app-header,
+        body:not(.app-loaded) .bottom-nav {
+            display: none;
+        }
+
+        .app-container { max-width: 800px; margin: 0 auto; padding: 1rem; }
+
+        .app-header {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            background-color: var(--header-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+            transition: background-color var(--transition-speed), border-color var(--transition-speed);
+        }
+        .app-header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+        .theme-toggle {
+            background: none; border: none; cursor: pointer;
+            font-size: 1.5rem; color: var(--text-secondary);
+        }
+
+        .screen { display: none; animation: fadeIn 0.5s ease-out; }
+        .screen.active { display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ==================================== */
+        /* COMPONENTS                           */
+        /* ==================================== */
+        
+        .card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, background-color var(--transition-speed);
+        }
+        
+        .form-group { margin-bottom: 1.25rem; }
+        .form-group label {
+            display: block; margin-bottom: 0.5rem;
+            font-weight: 500; font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        .form-group .input-wrapper {
+            background-color: var(--bg-color);
+            border-radius: var(--border-radius-md);
+            border: 1px solid var(--border-color);
+            transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+        }
+        .form-group .input-wrapper:focus-within {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(91, 124, 255, 0.2);
+        }
+        .form-group input, .form-group select {
+            width: 100%; padding: 0.9rem; border: none; background: none;
+            color: var(--text-primary); font-size: 1rem; outline: none;
+        }
+
+        .btn {
+            display: inline-block; width: 100%; padding: 1rem 1.5rem;
+            border: none; border-radius: var(--border-radius-md);
+            background: var(--primary-gradient); color: white;
+            font-size: 1.1rem; font-weight: 600;
+            cursor: pointer; text-align: center;
+            transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+            user-select: none;
+        }
+        .btn:active {
+            transform: scale(0.98);
+            box-shadow: none;
+        }
+        .btn-danger { background: var(--accent-red); }
+        .btn-secondary { background: var(--accent-grey); }
+        .btn-sm { padding: 0.5rem 1rem; font-size: 0.9rem; }
+        
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            max-width: 800px; margin: 0 auto;
+            display: flex; justify-content: space-around;
+            background-color: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            border-top-left-radius: var(--border-radius-lg);
+            border-top-right-radius: var(--border-radius-lg);
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
+            z-index: 1000;
+        }
+        .nav-item {
+            flex-grow: 1; text-align: center; padding: 0.75rem 0;
+            color: var(--text-secondary); cursor: pointer;
+            transition: color 0.2s ease-out, background-color 0.2s ease-out;
+            border-top: 3px solid transparent;
+        }
+        .nav-item.active {
+            color: var(--primary-color);
+            border-top-color: var(--primary-color);
+        }
+        .nav-item .icon { font-size: 1.5rem; display: block; margin: 0 auto 0.25rem; }
+        .nav-item .label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
+        .nav-item.hidden { display: none; }
+
+        /* ==================================== */
+        /* SCREEN SPECIFIC STYLES               */
+        /* ==================================== */
+        
+        .product-card { position: relative; padding-top: 3rem; }
+        .product-actions { position: absolute; top: 0.75rem; right: 0.75rem; display: flex; gap: 0.5rem; }
+        .action-btn { background: var(--bg-color); border: 1px solid var(--border-color); font-size: 1rem; cursor: pointer; color: var(--text-secondary); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;}
+        
+        .product-card-main { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+        .product-info h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.25rem; }
+        .product-info .meta { font-size: 0.8rem; color: var(--text-secondary); }
+        .product-info .meta span { margin-right: 0.5rem; }
+        
+        .quantity-controls { display: flex; align-items: center; }
+        .quantity-btn {
+            width: 38px; height: 38px; border-radius: 50%;
+            border: 1px solid var(--border-color); background-color: transparent;
+            color: var(--primary-color); font-size: 1.8rem; font-weight: 400; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: background-color 0.2s;
+        }
+        .quantity-btn:hover { background-color: rgba(91, 124, 255, 0.1); }
+        .quantity-input {
+            width: 50px; text-align: center; font-size: 1.6rem; font-weight: 700;
+            border: none; background: transparent; margin: 0 0.5rem; color: var(--text-primary);
+        }
+        input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+
+        .product-calculation {
+            margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);
+            text-align: right;
+        }
+        .product-calculation .value { font-size: 1.2rem; font-weight: 700; color: var(--text-primary); }
+
+        .save-bar {
+            position: fixed;
+            bottom: 70px;
+            left: 1rem;
+            right: 1rem;
+            max-width: 768px; 
+            margin: 0 auto;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 0.75rem;
+            z-index: 999;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-md);
+            transform: translateY(200%);
+            opacity: 0;
+            transition: transform 0.4s ease-out, opacity 0.4s ease-out;
+            pointer-events: none;
+        }
+        .save-bar.visible {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .save-bar-info {
+            flex-grow: 1;
+        }
+        .save-bar .label { font-size: 1rem; font-weight: 600; color: var(--text-secondary); }
+        .save-bar .total-amount { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); }
+        .save-bar-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .save-bar .save-btn, .save-bar .ac-btn {
+            border: none;
+            border-radius: var(--border-radius-md);
+            padding: 0.75rem 1.25rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease-out;
+        }
+        .save-bar .save-btn {
+            background: var(--primary-gradient);
+            color: white;
+        }
+        .save-bar .ac-btn {
+            background: var(--accent-grey);
+            color: white;
+        }
+        .save-bar .save-btn:active, .save-bar .ac-btn:active { transform: scale(0.95); }
+
+
+        .summary-display { text-align: center; margin-bottom: 2rem; }
+        .summary-display .value { font-size: 2.5rem; font-weight: 700; color: var(--primary-color);}
+        .summary-display .label { color: var(--text-secondary); }
+
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            align-items: center;
+        }
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+            color: var(--text-secondary);
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .filter-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        .date-filter {
+            display: flex; gap: 0.5rem;
+            border: 1px solid var(--border-color);
+            padding: 0.5rem;
+            border-radius: var(--border-radius-md);
+        }
+        .date-filter input[type="date"] {
+            border: none;
+            background: var(--bg-color);
+            color: var(--text-primary);
+            border-radius: 6px;
+            padding: 0.25rem;
+        }
+
+        .list-card { position: relative; }
+        .list-card h3 { font-size: 1rem; color: var(--text-secondary); margin-bottom: 0.75rem; font-weight: 500;}
+        .summary-string {
+            font-family: 'SF Mono', 'Courier New', monospace;
+            background-color: var(--bg-color);
+            padding: 0.75rem; border-radius: 8px;
+            font-size: 1rem; color: var(--text-primary); margin-bottom: 1rem;
+        }
+        .card-total {
+            text-align: right; font-weight: 700; font-size: 1.2rem;
+            color: var(--primary-color);
+        }
+        .card-profit {
+            text-align: right; font-weight: 700; font-size: 1rem;
+            color: var(--accent-green); margin-top: 0.5rem;
+        }
+
+       /* Calculator Styles */
+        #calculator-screen {
+            height: calc(100vh - 80px - 75px);
+            padding: 0 !important;
+            margin: 0 -1rem;
+        }
+        .calculator-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .calculator-display-area {
+            flex-grow: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column-reverse;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            position: relative;
+        }
+       
+        .calculator-history-item {
+            text-align: right;
+            color: var(--text-secondary);
+            font-size: 1.4rem;
+            word-break: break-all;
+        }
+        #calculator-expression {
+            text-align: right;
+            font-size: 3rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            padding-top: 1rem;
+            word-break: break-all;
+        }
+        .calculator-keypad {
+            padding: 1rem;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            border-bottom-left-radius: var(--border-radius-lg);
+            border-bottom-right-radius: var(--border-radius-lg);
+        }
+        .calculator-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+        }
+        .calc-btn {
+            background-color: var(--calc-btn-bg);
+            border: none;
+            border-radius: 50%;
+            aspect-ratio: 1 / 1;
+            font-size: 1.8rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+        .calc-btn:active {
+            transform: scale(0.95);
+        }
+        .calc-btn.operator { background-color: var(--calc-operator-bg); }
+        .calc-btn.clear { background-color: var(--primary-color-light); color: var(--primary-color); }
+        .calc-btn.equals { background: var(--primary-gradient); color: white; }
+
+
+        .toast {
+            position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+            background-color: rgba(22, 27, 34, 0.9); backdrop-filter: blur(5px);
+            color: white; padding: 0.75rem 1.5rem; border-radius: 50px; z-index: 2000;
+            opacity: 0; visibility: hidden; transition: all 0.5s ease;
+            transform: translate(-50%, 20px);
+        }
+        .toast.show { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px);
+            z-index: 3000; display: none; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        .modal-overlay.show { display: flex; opacity: 1; }
+        .modal-content {
+            background: var(--card-bg); border-radius: var(--border-radius-lg);
+            padding: 2rem; width: 90%; max-width: 500px;
+            transform: scale(0.95); transition: transform 0.3s ease;
+        }
+        .modal-overlay.show .modal-content { transform: scale(1); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .modal-header h2 { margin: 0; color: var(--text-primary); }
+        .modal-close-btn { background: none; border: none; font-size: 1.8rem; cursor: pointer; color: var(--text-secondary); }
+
+        /* User Price Edit Screen */
+        .user-prices-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+         .user-prices-header h2 {
+            font-size: 1.5rem;
+            color: var(--text-primary);
+         }
+         .price-edit-card {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+         }
+         .price-edit-card .product-info {
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+         }
+         .price-input-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+         }
+         #back-to-history-btn.action-btn {
+            width: 40px;
+            height: 40px;
+            background-color: #1a1f36;
+            color: white;
+            font-size: 1.6rem;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="app-header">
+        <h1 id="header-title">Dashboard</h1>
+        <button id="theme-toggle" class="theme-toggle" title="Toggle Theme">🌙</button>
+    </header>
+
+    <main class="app-container">
+        <!-- =========== SCREEN 0: SETUP =========== -->
+        <section id="setup-screen" class="screen">
+            <div class="card" style="margin-top: 20vh; text-align: center;">
+                <h2 style="margin-bottom: 0.5rem;">Welcome!</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 2rem;">Let's get started by setting up your name.</p>
+                <form id="setup-form">
+                    <div class="form-group">
+                        <div class="input-wrapper">
+                            <input type="text" id="userName" placeholder="Enter Your Name" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn">Save & Continue</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- =========== SCREEN 0.5: MODE SELECTION =========== -->
+        <section id="mode-screen" class="screen">
+            <div class="card" style="margin-top: 20vh; text-align: center;">
+                <h2 style="margin-bottom: 0.5rem;">Choose Your Mode</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 2rem;">Select how you want to use the app today.</p>
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <button id="salesman-mode-btn" class="btn">Salesman Mode</button>
+                    <button id="manager-mode-btn" class="btn btn-secondary">Manager Mode</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========== SCREEN 1: ADD PRODUCT =========== -->
+        <section id="add-product-screen" class="screen">
+            <div class="card">
+                <form id="add-product-form">
+                    <div class="form-group">
+                        <label for="sourceCode">Product Code (Unique ID)</label>
+                        <div class="input-wrapper"><input type="text" id="sourceCode" placeholder="e.g., CM001" required></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="productName">Product Name</label>
+                        <div class="input-wrapper"><input type="text" id="productName" placeholder="e.g., Premium Coffee Mug" required></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="buyPrice">Buy Price (Optional)</label>
+                        <div class="input-wrapper"><input type="number" id="buyPrice" placeholder="e.g., 150.00" step="0.01"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="sellPrice">Sell Price (Optional)</label>
+                        <div class="input-wrapper"><input type="number" id="sellPrice" placeholder="e.g., 299.00" step="0.01"></div>
+                    </div>
+                    <button type="submit" class="btn">Save Product</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- =========== SCREEN 2: DASHBOARD =========== -->
+        <section id="dashboard-screen" class="screen">
+            <div id="salesperson-selector-container" class="card hidden">
+                <div class="form-group">
+                    <label for="salesperson-selector">Select User for Sale</label>
+                    <div class="input-wrapper">
+                         <select id="salesperson-selector">
+                             <!-- Options will be populated by JS -->
+                         </select>
+                    </div>
+                </div>
+            </div>
+            <div id="product-list"></div>
+        </section>
+        
+        <!-- =========== SCREEN 3: CALCULATOR =========== -->
+        <section id="calculator-screen" class="screen">
+             <div class="calculator-container">
+                <div class="calculator-display-area">
+                    <div id="calculator-expression">0</div>
+                </div>
+                <div class="calculator-keypad">
+                     <div style="text-align: right; margin-bottom: 1rem;">
+                        <button id="open-calc-history-btn" class="action-btn" title="Calculation History">📜</button>
+                     </div>
+                     <div id="calculator-grid" class="calculator-grid">
+                        <button class="calc-btn clear" data-action="clear">AC</button>
+                        <button class="calc-btn operator" data-value="(">(</button>
+                        <button class="calc-btn operator" data-value=")">)</button>
+                        <button class="calc-btn operator" data-value="/">÷</button>
+                        
+                        <button class="calc-btn" data-value="7">7</button>
+                        <button class="calc-btn" data-value="8">8</button>
+                        <button class="calc-btn" data-value="9">9</button>
+                        <button class="calc-btn operator" data-value="*">×</button>
+
+                        <button class="calc-btn" data-value="4">4</button>
+                        <button class="calc-btn" data-value="5">5</button>
+                        <button class="calc-btn" data-value="6">6</button>
+                        <button class="calc-btn operator" data-value="-">−</button>
+                        
+                        <button class="calc-btn" data-value="1">1</button>
+                        <button class="calc-btn" data-value="2">2</button>
+                        <button class="calc-btn" data-value="3">3</button>
+                        <button class="calc-btn operator" data-value="+">+</button>
+
+                        <button class="calc-btn" data-value="0">0</button>
+                        <button class="calc-btn" data-value=".">.</button>
+                        <button class="calc-btn" data-action="backspace">⌫</button>
+                        <button class="calc-btn equals" data-action="calculate">=</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========== SCREEN 4: HISTORY =========== -->
+        <section id="history-screen" class="screen">
+            <div class="summary-display">
+                <div id="today-summary-value" class="value">₹0.00</div>
+                <div class="label">Total Sales Today</div>
+            </div>
+            
+            <div class="card">
+                <div class="filters">
+                    <button class="filter-btn active" data-filter="today">Today</button>
+                    <button class="filter-btn" data-filter="7days">7 Days</button>
+                    <button class="filter-btn" data-filter="15days">15 Days</button>
+                    <button class="filter-btn" data-filter="lifetime">Lifetime</button>
+                    <div class="date-filter">
+                        <input type="date" id="start-date">
+                        <input type="date" id="end-date">
+                    </div>
+                </div>
+                 <button id="view-profit-btn" class="btn btn-secondary">View Profits</button>
+            </div>
+
+            <div id="history-list"></div>
+            <button id="clear-history-btn" class="btn btn-danger" style="margin-top: 1rem;">Clear All History</button>
+        </section>
+
+        <!-- =========== SCREEN 5: MANAGER PANEL =========== -->
+        <section id="manager-screen" class="screen">
+            <div class="card">
+                <h2>Add New User</h2>
+                <form id="add-salesperson-form">
+                    <div class="form-group">
+                        <label for="salespersonName">User Name</label>
+                        <div class="input-wrapper"><input type="text" id="salespersonName" placeholder="e.g., John Doe" required></div>
+                    </div>
+                    <button type="submit" class="btn">Add User</button>
+                </form>
+            </div>
+            <div class="card">
+                <h2>Managed Users</h2>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">Click on a user to edit their product prices.</p>
+                <div id="salesperson-list">
+                    <p style="color: var(--text-secondary); text-align: center;">No users added yet.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========== SCREEN 6: PROFIT =========== -->
+        <section id="profit-screen" class="screen">
+            <div class="user-prices-header" style="justify-content: flex-start; margin-bottom: 0;">
+                <button id="back-to-history-btn" class="action-btn">←</button>
+            </div>
+            <div class="summary-display">
+                <div id="profit-summary-value" class="value">₹0.00</div>
+                <div class="label">Total Profit</div>
+            </div>
+
+            <div class="card">
+                <div class="filters" id="profit-filters">
+                    <button class="filter-btn" data-filter="lifetime">Lifetime</button>
+                    <button class="filter-btn active" data-filter="today">Today</button>
+                    <button class="filter-btn" data-filter="7days">7 Days</button>
+                    <button class="filter-btn" data-filter="15days">15 Days</button>
+                    <div class="date-filter">
+                        <input type="date" id="profit-start-date">
+                        <input type="date" id="profit-end-date">
+                    </div>
+                </div>
+            </div>
+
+            <div id="profit-list"></div>
+        </section>
+
+        <!-- =========== SCREEN 7: USER PRICE EDIT =========== -->
+        <section id="user-product-prices-screen" class="screen">
+            <div class="user-prices-header">
+                <h2 id="user-prices-title">Edit Prices</h2>
+                <button id="back-to-manager-btn" class="btn btn-secondary btn-sm">← Back</button>
+            </div>
+            <div id="user-prices-product-list">
+                <!-- User-specific product prices will be rendered here -->
+            </div>
+        </section>
+
+    </main>
+    
+    <!-- MODAL FOR EDITING -->
+    <div id="edit-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Product</h2>
+                <button class="modal-close-btn">&times;</button>
+            </div>
+            <form id="edit-product-form">
+                <input type="hidden" id="editProductId">
+                <div class="form-group">
+                    <label for="editSourceCode">Product Code (Cannot be changed)</label>
+                    <div class="input-wrapper"><input type="text" id="editSourceCode" readonly></div>
+                </div>
+                <div class="form-group">
+                    <label for="editProductName">Product Name</label>
+                    <div class="input-wrapper"><input type="text" id="editProductName" required></div>
+                </div>
+                <div class="form-group">
+                    <label for="editBuyPrice">Buy Price</label>
+                    <div class="input-wrapper"><input type="number" id="editBuyPrice" step="0.01"></div>
+                </div>
+                <div class="form-group">
+                    <label for="editSellPrice">Sell Price</label>
+                    <div class="input-wrapper"><input type="number" id="editSellPrice" step="0.01"></div>
+                </div>
+                <button type="submit" class="btn">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL FOR CLEAR HISTORY CONFIRMATION -->
+    <div id="custom-confirm-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Are you sure?</h2>
+                <button class="modal-close-btn">&times;</button>
+            </div>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">This will delete ALL sales history permanently.</p>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                <button class="btn btn-secondary modal-close-btn">Cancel</button>
+                <button id="confirm-delete-all-btn" class="btn btn-danger">OK, Delete</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MODAL FOR CALCULATOR HISTORY -->
+    <div id="calculator-history-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Calculation History</h2>
+                <button class="modal-close-btn">&times;</button>
+            </div>
+            <div id="calc-history-list" style="max-height: 60vh; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem;">
+                <!-- History will be rendered here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- FLOATING SAVE BAR -->
+    <div id="save-bar" class="save-bar">
+        <div class="save-bar-info">
+             <span class="label">Grand Total</span>
+             <span id="grand-total-amount" class="total-amount">₹0.00</span>
+        </div>
+        <div class="save-bar-actions">
+            <button id="reset-quantities-btn" class="ac-btn" title="Reset Quantities">AC</button>
+            <button id="save-sale-btn" class="save-btn" title="Save Sale">✓</button>
+        </div>
+    </div>
+    
+    <div id="toast" class="toast"></div>
+
+    <nav class="bottom-nav">
+        <div class="nav-item" data-screen="add-product">
+            <span class="icon">➕</span><span class="label">Add</span>
+        </div>
+        <div class="nav-item active" data-screen="dashboard">
+            <span class="icon">🧮</span><span class="label">Dashboard</span>
+        </div>
+        <div id="manager-nav-item" class="nav-item hidden" data-screen="manager">
+            <span class="icon">💼</span><span class="label">Manager</span>
+        </div>
+        <div class="nav-item" data-screen="calculator">
+            <span class="icon">🔢</span><span class="label">Calculator</span>
+        </div>
+        <div class="nav-item" data-screen="history">
+            <span class="icon">📜</span><span class="label">History</span>
+        </div>
+    </nav>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        // IMPORTANT: Replace with your actual Firebase project configuration
+        const firebaseConfig = {
+  apiKey: "AIzaSyDt5Sld2XEDs7dy_96G1Z9EKiSvvzLxTXY",
+  authDomain: "calculator-hokar.firebaseapp.com",
+  databaseURL: "https://calculator-hokar-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "calculator-hokar",
+  storageBucket: "calculator-hokar.firebasestorage.app",
+  messagingSenderId: "1051815017978",
+  appId: "1:1051815017978:web:354698a304636fe54bb843"
+};
+
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, setDoc, updateDoc, deleteDoc, Timestamp, query, orderBy, where } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // ===================================
+        // APP STATE & GLOBAL VARIABLES
+        // ===================================
+        let userId = '';
+        let products = [];
+        let salesHistory = []; // Local cache for history
+        let salespersons = [];
+        let editingHistoryId = null; // To track if we are editing a history entry
+        let calculatorHistory = [];
+        let tempQuantities = {};
+        let selectedSalespersonForPricing = null; 
+        let currentUserPrices = {}; 
+
+        // ===================================
+        // UTILITY FUNCTIONS
+        // ===================================
+        const generateUniqueId = () => Date.now().toString(36) + Math.random().toString(36).substr(2);
+        const showToast = (message, duration = 3000) => {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), duration);
+        };
+        const formatCurrency = (num) => {
+            if (isNaN(num) || num === null) return `₹0.00`;
+            return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(num);
+        };
+        const getTodayDateString = () => new Date().toISOString().split('T')[0];
+
+        // ===================================
+        // USER SESSION & THEME MANAGEMENT
+        // ===================================
+        const initUserSession = () => {
+            userId = localStorage.getItem('userId');
+            if (!userId) {
+                userId = generateUniqueId();
+                localStorage.setItem('userId', userId);
+            }
+        };
+
+        const themeToggle = document.getElementById('theme-toggle');
+        const applyTheme = (theme) => {
+            document.body.classList.toggle('dark-mode', theme === 'dark');
+            themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+        };
+        const toggleTheme = () => {
+            const currentTheme = document.body.classList.contains('dark-mode') ? 'light' : 'dark';
+            localStorage.setItem('theme', currentTheme);
+            applyTheme(currentTheme);
+        };
+        themeToggle.addEventListener('click', toggleTheme);
+
+        // ===================================
+        // UI & NAVIGATION
+        // ===================================
+        const screens = document.querySelectorAll('.screen');
+        const navItems = document.querySelectorAll('.nav-item');
+        const headerTitle = document.getElementById('header-title');
+        const saveBar = document.getElementById('save-bar');
+
+        const switchScreen = (screenId) => {
+            const screenTitles = { 'add-product': 'Add Product', 'dashboard': 'Dashboard', 'calculator': 'Calculator', 'history': 'History', 'manager': 'Manager Panel', 'profit': 'Profit History', 'user-product-prices': 'User Prices' };
+            headerTitle.textContent = screenTitles[screenId] || 'Dashboard';
+
+            if (screenId !== 'dashboard') {
+                saveBar.classList.remove('visible');
+            } else {
+                updateGrandTotal();
+            }
+
+            screens.forEach(s => s.classList.toggle('active', s.id === `${screenId}-screen`));
+            navItems.forEach(item => item.classList.toggle('active', item.dataset.screen === screenId));
+            
+            if (screenId === 'history') fetchAndRenderHistory();
+            if (screenId === 'profit') fetchAndRenderProfits();
+            if (screenId === 'manager') fetchAndRenderSalespersons();
+            if(screenId !== 'dashboard') editingHistoryId = null;
+            if(screenId === 'dashboard') renderDashboard();
+        };
+        navItems.forEach(item => item.addEventListener('click', () => switchScreen(item.dataset.screen)));
+
+        // ===================================
+        // FIREBASE PRODUCT MANAGEMENT
+        // ===================================
+        const fetchProducts = async () => {
+            if (!userId) return;
+            try {
+                const querySnapshot = await getDocs(query(collection(db, `products/${userId}/items`), orderBy("createdAt", "desc")));
+                products = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderDashboard();
+            } catch (error) { console.error("Error fetching products:", error); showToast("Error loading products."); }
+        };
+        
+        const handleAddProduct = async (e) => {
+            e.preventDefault();
+            const sourceCode = document.getElementById('sourceCode').value.trim().toUpperCase();
+            const productName = document.getElementById('productName').value.trim();
+            const buyPrice = parseFloat(document.getElementById('buyPrice').value) || 0;
+            const sellPrice = parseFloat(document.getElementById('sellPrice').value) || 0;
+
+            if (!productName || !sourceCode) return showToast("Product Code and Name are required.");
+            if (buyPrice === 0 && sellPrice === 0) return showToast("Please provide either a Buy Price or a Sell Price.");
+            if (products.some(p => p.sourceCode === sourceCode)) return showToast("This Product Code already exists.");
+
+            try {
+                const newProduct = { sourceCode, productName, buyPrice, sellPrice, createdAt: Timestamp.now() };
+                const docRef = await addDoc(collection(db, `products/${userId}/items`), newProduct);
+                products.unshift({ id: docRef.id, ...newProduct });
+                showToast("Product saved successfully!");
+                e.target.reset();
+                switchScreen('dashboard');
+            } catch (error) { console.error("Error saving product:", error); showToast("Failed to save product."); }
+        };
+        
+        const handleUpdateProduct = async (e) => {
+            e.preventDefault();
+            const productId = document.getElementById('editProductId').value;
+            const productName = document.getElementById('editProductName').value.trim();
+            const buyPrice = parseFloat(document.getElementById('editBuyPrice').value) || 0;
+            const sellPrice = parseFloat(document.getElementById('editSellPrice').value) || 0;
+            
+            if (!productName) return showToast("Product name is required.");
+            if (buyPrice === 0 && sellPrice === 0) return showToast("Please provide either a Buy Price or a Sell Price.");
+            
+            try {
+                await updateDoc(doc(db, `products/${userId}/items`, productId), { productName, buyPrice, sellPrice });
+                const productIndex = products.findIndex(p => p.id === productId);
+                if (productIndex > -1) {
+                    products[productIndex] = { ...products[productIndex], productName, buyPrice, sellPrice };
+                }
+                
+                renderDashboard();
+                closeEditModal();
+                showToast("Product updated successfully!");
+            } catch (error) { console.error("Error updating product:", error); showToast("Failed to update product."); }
+        };
+
+        const handleDeleteProduct = async (productId) => {
+            if (!confirm("Delete this product permanently?")) return;
+            try {
+                await deleteDoc(doc(db, `products/${userId}/items`, productId));
+                products = products.filter(p => p.id !== productId);
+                renderDashboard();
+                showToast("Product deleted.");
+            } catch (error) { console.error("Error deleting product:", error); showToast("Failed to delete product.");}
+        };
+
+        // ===================================
+        // DASHBOARD LOGIC
+        // ===================================
+        const renderDashboard = () => {
+            const listDiv = document.getElementById('product-list');
+            listDiv.innerHTML = products.length === 0 
+                ? `<div class="card" style="text-align:center; color:var(--text-secondary);">No products yet. Tap 'Add' below to start.</div>` 
+                : products.map(p => {
+                    const savedQty = tempQuantities[p.id] || 0;
+                    const customPriceInfo = currentUserPrices[p.id];
+                    const displaySellPrice = customPriceInfo?.sellPrice !== undefined ? customPriceInfo.sellPrice : p.sellPrice;
+
+                    return `
+                    <div class="card product-card" data-product-id="${p.id}" data-product-code="${p.sourceCode}">
+                        <div class="product-actions">
+                            <button class="action-btn edit-btn" title="Edit">✏️</button>
+                            <button class="action-btn delete-btn" title="Delete">🗑️</button>
+                        </div>
+                        <div class="product-card-main">
+                            <div class="product-info">
+                                <h3>${p.productName}</h3>
+                                <div class="meta">
+                                    <span>Code: ${p.sourceCode}</span>
+                                    <span>Sell: ${formatCurrency(displaySellPrice)}</span>
+                                </div>
+                            </div>
+                            <div class="quantity-controls">
+                                <button class="quantity-btn minus-btn">-</button>
+                                <input type="number" class="quantity-input" value="${savedQty}" min="0" data-price="${displaySellPrice || 0}">
+                                <button class="quantity-btn plus-btn">+</button>
+                            </div>
+                        </div>
+                        <div class="product-calculation">
+                            <div class="value total-price">${formatCurrency(savedQty * (displaySellPrice || 0))}</div>
+                        </div>
+                    </div>`;
+                }).join('');
+            
+            attachDashboardListeners();
+            updateGrandTotal();
+        };
+        
+        const attachDashboardListeners = () => {
+            document.querySelectorAll('.product-card').forEach(card => {
+                const input = card.querySelector('.quantity-input');
+                card.querySelector('.plus-btn').addEventListener('click', () => { input.value++; updateCardCalculations(card); });
+                card.querySelector('.minus-btn').addEventListener('click', () => { if(input.value > 0) { input.value--; updateCardCalculations(card); }});
+                input.addEventListener('input', () => updateCardCalculations(card));
+                card.querySelector('.delete-btn').addEventListener('click', () => handleDeleteProduct(card.dataset.productId));
+                card.querySelector('.edit-btn').addEventListener('click', () => openEditModal(card.dataset.productId));
+            });
+        };
+        
+        const updateCardCalculations = (card) => {
+            const input = card.querySelector('.quantity-input');
+            let qty = parseInt(input.value) || 0;
+            if (qty < 0) {
+                qty = 0;
+                input.value = 0;
+            }
+            const price = parseFloat(input.dataset.price);
+            const productId = card.dataset.productId;
+            
+            tempQuantities[productId] = qty;
+            
+            card.querySelector('.total-price').textContent = formatCurrency(price * qty);
+            updateGrandTotal();
+        };
+        
+        const updateGrandTotal = () => {
+            let total = 0;
+            Object.keys(tempQuantities).forEach(productId => {
+                const product = products.find(p => p.id === productId);
+                if (product) {
+                    const customPriceInfo = currentUserPrices[product.id];
+                    const sellPrice = customPriceInfo?.sellPrice !== undefined ? customPriceInfo.sellPrice : (product.sellPrice || 0);
+                    total += (tempQuantities[productId] || 0) * sellPrice;
+                }
+            });
+
+            document.getElementById('grand-total-amount').textContent = formatCurrency(total);
+            saveBar.classList.toggle('visible', total > 0);
+        };
+        
+        const handleResetQuantities = () => {
+            Object.keys(tempQuantities).forEach(productId => {
+                if (tempQuantities[productId] > 0) {
+                    const card = document.querySelector(`.product-card[data-product-id="${productId}"]`);
+                    if (card) {
+                        const input = card.querySelector('.quantity-input');
+                        input.value = 0;
+                        updateCardCalculations(card);
+                    }
+                }
+            });
+            tempQuantities = {};
+            updateGrandTotal();
+        };
+
+        // ===================================
+        // MANAGER MODE & USER PRICE EDIT LOGIC
+        // ===================================
+        const fetchAndRenderSalespersons = async () => {
+            if (!userId) return;
+            try {
+                const querySnapshot = await getDocs(collection(db, `salespersons/${userId}/profiles`));
+                salespersons = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                const listDiv = document.getElementById('salesperson-list');
+                const selector = document.getElementById('salesperson-selector');
+                
+                if(salespersons.length > 0) {
+                    listDiv.innerHTML = salespersons.map(s => `<div class="card" data-salesperson-id="${s.id}" data-salesperson-name="${s.name}" style="cursor: pointer; transition: transform 0.2s ease;">${s.name}</div>`).join('');
+                    selector.innerHTML = salespersons.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+                    
+                    selector.dispatchEvent(new Event('change'));
+                } else {
+                     listDiv.innerHTML = `<p style="color: var(--text-secondary); text-align: center;">No users added yet.</p>`;
+                     selector.innerHTML = `<option value="">No users available</option>`;
+                     currentUserPrices = {}; 
+                     renderDashboard();
+                }
+            } catch (error) { console.error("Error fetching salespersons:", error); showToast("Error loading users."); }
+        };
+
+        const handleAddSalesperson = async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('salespersonName').value.trim();
+            if(!name) return;
+
+            try {
+                await addDoc(collection(db, `salespersons/${userId}/profiles`), { name, createdAt: Timestamp.now() });
+                showToast("User added successfully!");
+                e.target.reset();
+                fetchAndRenderSalespersons();
+            } catch (error) { console.error("Error adding salesperson:", error); showToast("Failed to add user."); }
+        };
+
+        const fetchPricesForUser = async (salespersonId) => {
+            if (!salespersonId) return {};
+            const prices = {};
+            try {
+                const pricesRef = collection(db, `salespersons/${userId}/profiles/${salespersonId}/prices`);
+                const querySnapshot = await getDocs(pricesRef);
+                querySnapshot.forEach(doc => {
+                    prices[doc.id] = doc.data();
+                });
+                return prices;
+            } catch (error) {
+                console.error("Error fetching user prices:", error);
+                showToast("Could not load user-specific prices.");
+                return {};
+            }
+        };
+
+        const renderUserProductPrices = async () => {
+            if (!selectedSalespersonForPricing) return;
+            
+            document.getElementById('user-prices-title').textContent = `Prices for ${selectedSalespersonForPricing.name}`;
+            const listDiv = document.getElementById('user-prices-product-list');
+            listDiv.innerHTML = `<div class="card" style="text-align:center;">Loading prices...</div>`;
+            
+            const userPrices = await fetchPricesForUser(selectedSalespersonForPricing.id);
+
+            listDiv.innerHTML = products.length > 0 ? products.map(p => {
+                const customPrice = userPrices[p.id] || {};
+                const currentBuy = customPrice.buyPrice !== undefined ? customPrice.buyPrice : p.buyPrice;
+                const currentSell = customPrice.sellPrice !== undefined ? customPrice.sellPrice : p.sellPrice;
+                
+                return `
+                <div class="card price-edit-card" data-product-id="${p.id}">
+                    <div class="product-info">
+                        <h3>${p.productName}</h3>
+                        <div class="meta">
+                            <span>Default Buy: ${formatCurrency(p.buyPrice)}</span>
+                            <span>Default Sell: ${formatCurrency(p.sellPrice)}</span>
+                        </div>
+                    </div>
+                    <div class="price-input-group">
+                        <div class="form-group">
+                            <label for="user-buy-${p.id}">Custom Buy Price</label>
+                            <div class="input-wrapper"><input type="number" id="user-buy-${p.id}" value="${currentBuy}" placeholder="Default" step="0.01"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="user-sell-${p.id}">Custom Sell Price</label>
+                            <div class="input-wrapper"><input type="number" id="user-sell-${p.id}" value="${currentSell}" placeholder="Default" step="0.01"></div>
+                        </div>
+                    </div>
+                    <button class="btn btn-sm save-user-price-btn" data-product-id="${p.id}">Save for this User</button>
+                </div>
+                `;
+            }).join('') : `<div class="card">No products found.</div>`;
+        };
+        
+        const handleSaveUserPrice = async (buttonElement) => {
+            const productId = buttonElement.dataset.productId;
+            if (!productId || !selectedSalespersonForPricing) return;
+
+            const card = buttonElement.closest('.price-edit-card');
+            const buyPrice = parseFloat(card.querySelector(`#user-buy-${productId}`).value);
+            const sellPrice = parseFloat(card.querySelector(`#user-sell-${productId}`).value);
+
+            if (isNaN(buyPrice) || isNaN(sellPrice)) {
+                return showToast("Please enter valid numbers for prices.");
+            }
+
+            try {
+                const priceRef = doc(db, `salespersons/${userId}/profiles/${selectedSalespersonForPricing.id}/prices`, productId);
+                await setDoc(priceRef, { buyPrice, sellPrice });
+                showToast("User-specific price saved!");
+            } catch (error) {
+                console.error("Error saving user price:", error);
+                showToast("Failed to save price.");
+            }
+        };
+
+        // ===================================
+        // EDIT MODAL LOGIC
+        // ===================================
+        const editModal = document.getElementById('edit-modal');
+        const openEditModal = (productId) => {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            document.getElementById('editProductId').value = product.id;
+            document.getElementById('editSourceCode').value = product.sourceCode;
+            document.getElementById('editProductName').value = product.productName;
+            document.getElementById('editBuyPrice').value = product.buyPrice || '';
+            document.getElementById('editSellPrice').value = product.sellPrice || '';
+            editModal.classList.add('show');
+        };
+        const closeEditModal = () => editModal.classList.remove('show');
+        editModal.querySelector('.modal-close-btn').addEventListener('click', closeEditModal);
+
+        // ===================================
+        // SALES & PROFIT HISTORY LOGIC
+        // ===================================
+        const handleSaveSale = async () => {
+            let quantities = {};
+            let summaryItems = [];
+            let grandTotal = 0;
+            let totalProfit = 0;
+
+            const mode = localStorage.getItem('appMode');
+            const salespersonId = (mode === 'manager') ? document.getElementById('salesperson-selector').value : null;
+
+            if (mode === 'manager' && !salespersonId) {
+                return showToast("Please select a user for this sale.");
+            }
+
+            for (const productId of Object.keys(tempQuantities)) {
+                const quantity = tempQuantities[productId];
+                if (quantity > 0) {
+                    const product = products.find(p => p.id === productId);
+                    if (!product) continue;
+
+                    const customPriceInfo = currentUserPrices[product.id];
+                    const sellPrice = customPriceInfo?.sellPrice !== undefined ? customPriceInfo.sellPrice : (product.sellPrice || 0);
+                    const buyPrice = customPriceInfo?.buyPrice !== undefined ? customPriceInfo.buyPrice : (product.buyPrice || 0);
+
+                    grandTotal += sellPrice * quantity;
+                    totalProfit += (sellPrice - buyPrice) * quantity;
+                    summaryItems.push(`${product.sourceCode}x${quantity}`);
+                    quantities[product.sourceCode] = quantity;
+                }
+            }
+
+            if (summaryItems.length === 0) return showToast("No items to save.");
+
+            try {
+                const saleData = { 
+                    summaryString: summaryItems.join(' + '), 
+                    totalAmount: grandTotal,
+                    totalProfit: totalProfit,
+                    quantities: quantities,
+                    timestamp: Timestamp.now(),
+                    ...(salespersonId && { salespersonId }) 
+                };
+
+                if (editingHistoryId) {
+                    await updateDoc(doc(db, `history/${userId}/sales`, editingHistoryId), saleData);
+                    showToast(`Sale updated successfully!`);
+                } else {
+                    await addDoc(collection(db, `history/${userId}/sales`), saleData);
+                    showToast("Sale saved successfully!");
+                }
+                
+                editingHistoryId = null;
+                handleResetQuantities();
+            } catch (error) { console.error("Error saving sale:", error); showToast("Failed to save sale."); }
+        };
+
+        const fetchAndRenderHistory = async () => {
+            if (!userId) return;
+            try {
+                const historyRef = collection(db, `history/${userId}/sales`);
+                const q = query(historyRef, orderBy("timestamp", "desc"));
+                const querySnapshot = await getDocs(q);
+                salesHistory = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                applyHistoryFilter();
+            } catch(e) { console.error("Could not fetch history", e); showToast("Failed to load history."); }
+        };
+
+        const renderHistory = (filteredHistory = salesHistory) => {
+            const listDiv = document.getElementById('history-list');
+            const summaryValueEl = document.getElementById('today-summary-value');
+            const summaryLabelEl = document.querySelector('#history-screen .summary-display .label');
+
+            const summaryTotal = filteredHistory.reduce((total, sale) => total + sale.totalAmount, 0);
+            summaryValueEl.textContent = formatCurrency(summaryTotal);
+
+            const activeFilter = document.querySelector('#history-screen .filter-btn.active')?.dataset.filter;
+            const filterLabels = {
+                today: "Total Sales Today", '7days': "Total Sales (Last 7 Days)",
+                '15days': "Total Sales (Last 15 Days)", lifetime: "Total Lifetime Sales"
+            };
+            summaryLabelEl.textContent = filterLabels[activeFilter] || 'Total Sales (Custom Range)';
+
+            listDiv.innerHTML = filteredHistory.length === 0 ? `<div class="card" style="text-align:center; color:var(--text-secondary);">No sales history found for this period.</div>`
+            : filteredHistory.map(sale => {
+                const saleDate = sale.timestamp.toDate();
+                const formattedDate = saleDate.toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+                return `
+                    <div class="card list-card">
+                        <div class="product-actions">
+                           <button class="action-btn history-edit-btn" data-id="${sale.id}" title="Edit">✏️</button>
+                           <button class="action-btn history-delete-btn" data-id="${sale.id}" title="Delete">🗑️</button>
+                        </div>
+                        <h3>${formattedDate}</h3>
+                        <div class="summary-string">${sale.summaryString}</div>
+                        <div class="card-total">Total: ${formatCurrency(sale.totalAmount)}</div>
+                    </div>`;
+            }).join('');
+            attachHistoryEventListeners();
+        };
+
+        const attachHistoryEventListeners = () => {
+            document.querySelectorAll('.history-edit-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => handleEditHistory(e.currentTarget.dataset.id));
+            });
+            document.querySelectorAll('.history-delete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => handleDeleteHistory(e.currentTarget.dataset.id));
+            });
+        };
+
+        const handleEditHistory = (historyId) => {
+            const saleToEdit = salesHistory.find(sale => sale.id === historyId);
+            if (!saleToEdit) return;
+            
+            editingHistoryId = historyId;
+            tempQuantities = {};
+            Object.keys(saleToEdit.quantities).forEach(code => {
+                const product = products.find(p => p.sourceCode === code);
+                if (product) {
+                    tempQuantities[product.id] = saleToEdit.quantities[code];
+                }
+            });
+            switchScreen('dashboard');
+        };
+
+        const handleDeleteHistory = async (historyId) => {
+            if (!confirm(`Delete this sale record?`)) return;
+            try {
+                await deleteDoc(doc(db, `history/${userId}/sales`, historyId));
+                showToast('Sale record deleted.');
+                fetchAndRenderHistory();
+            } catch(e) { console.error("Error deleting history:", e); showToast("Failed to delete record."); }
+        };
+        
+        const handleClearHistory = async () => {
+            try {
+                for (const sale of salesHistory) {
+                    await deleteDoc(doc(db, `history/${userId}/sales`, sale.id));
+                }
+                showToast("All history cleared.");
+                fetchAndRenderHistory();
+            } catch(e) { console.error("Error clearing history:", e); showToast("Failed to clear history."); }
+        };
+
+        const applyHistoryFilter = () => {
+            const activeFilterBtn = document.querySelector('#history-screen .filter-btn.active');
+            const startDateVal = document.getElementById('start-date').value;
+
+            if (!activeFilterBtn && !startDateVal) {
+                 const todayFilter = document.querySelector('#history-screen .filter-btn[data-filter="today"]');
+                 if(todayFilter) todayFilter.classList.add('active');
+            }
+            
+            const activeFilter = document.querySelector('#history-screen .filter-btn.active')?.dataset.filter || 'custom';
+            const filtered = filterSalesData(salesHistory, activeFilter, 'start-date', 'end-date');
+            renderHistory(filtered);
+        };
+
+        const fetchAndRenderProfits = async () => {
+            if (salesHistory.length === 0) {
+                 await fetchAndRenderHistory();
+            }
+            applyProfitFilter();
+        };
+
+        const renderProfits = (filteredHistory) => {
+            const profitValueEl = document.getElementById('profit-summary-value');
+            const profitLabelEl = document.querySelector('#profit-screen .summary-display .label');
+            const profitListDiv = document.getElementById('profit-list');
+
+            const totalProfit = filteredHistory.reduce((sum, sale) => sum + (sale.totalProfit || 0), 0);
+            profitValueEl.textContent = formatCurrency(totalProfit);
+
+            const activeFilter = document.querySelector('#profit-filters .filter-btn.active')?.dataset.filter;
+            const filterLabels = {
+                today: "Total Profit Today", '7days': "Profit (Last 7 Days)",
+                '15days': "Profit (Last 15 Days)", lifetime: "Total Lifetime Profit"
+            };
+            profitLabelEl.textContent = filterLabels[activeFilter] || 'Total Profit (Custom Range)';
+
+            const profitsByDate = filteredHistory.reduce((acc, sale) => {
+                const date = sale.timestamp.toDate().toISOString().split('T')[0];
+                if (!acc[date]) {
+                    acc[date] = { totalProfit: 0, users: {} };
+                }
+                acc[date].totalProfit += (sale.totalProfit || 0);
+
+                const salespersonId = sale.salespersonId || 'direct_sale';
+                let userName = 'Direct Sale';
+                if (sale.salespersonId) {
+                    const salesperson = salespersons.find(s => s.id === sale.salespersonId);
+                    if (salesperson) {
+                        userName = salesperson.name;
+                    }
+                }
+
+                if (!acc[date].users[salespersonId]) {
+                    acc[date].users[salespersonId] = { name: userName, profit: 0 };
+                }
+                acc[date].users[salespersonId].profit += (sale.totalProfit || 0);
+
+                return acc;
+            }, {});
+
+            const sortedDates = Object.keys(profitsByDate).sort((a, b) => new Date(b) - new Date(a));
+
+            profitListDiv.innerHTML = sortedDates.length === 0
+                ? `<div class="card" style="text-align:center; color:var(--text-secondary);">No profit data found for this period.</div>`
+                : sortedDates.map(dateStr => {
+                    const date = new Date(dateStr);
+                    const formattedDate = date.toLocaleDateString('en-IN', { timeZone: 'UTC', year: 'numeric', month: 'long', day: 'numeric' });
+                    const dateData = profitsByDate[dateStr];
+                    
+                    const userProfitsHtml = Object.values(dateData.users).map(user => `
+                        <div style="display: flex; justify-content: space-between; font-size: 1rem; margin-bottom: 0.5rem; color: var(--text-secondary);">
+                            <span>${user.name}</span>
+                            <span style="font-weight: 500; color: var(--accent-green);">${formatCurrency(user.profit)}</span>
+                        </div>
+                    `).join('');
+
+                    return `
+                    <div class="card list-card">
+                         <h3>${formattedDate}</h3>
+                         <div style="padding-top: 0.75rem;">
+                            ${userProfitsHtml}
+                         </div>
+                         <hr style="border: none; border-top: 1px solid var(--border-color); margin: 1rem 0;">
+                         <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 1.2rem;">
+                            <span>Total</span>
+                            <span style="color: var(--primary-color);">${formatCurrency(dateData.totalProfit)}</span>
+                         </div>
+                    </div>
+                    `;
+                }).join('');
+        };
+
+        const applyProfitFilter = () => {
+             const activeFilter = document.querySelector('#profit-filters .filter-btn.active')?.dataset.filter || 'today';
+             const filtered = filterSalesData(salesHistory, activeFilter, 'profit-start-date', 'profit-end-date');
+             renderProfits(filtered);
+        };
+        
+        const filterSalesData = (data, filterType, startDateId, endDateId) => {
+            const now = new Date();
+            let startDate = new Date();
+            startDate.setHours(0, 0, 0, 0);
+
+            if (filterType === 'today') {} 
+            else if (filterType === '7days') { startDate.setDate(now.getDate() - 7); } 
+            else if (filterType === '15days') { startDate.setDate(now.getDate() - 15); } 
+            else if (filterType === 'lifetime') { return data; } 
+            else if (filterType === 'custom') {
+                const startVal = document.getElementById(startDateId).value;
+                const endVal = document.getElementById(endDateId).value;
+                if(startVal && endVal) {
+                    const customStart = new Date(startVal); customStart.setHours(0, 0, 0, 0);
+                    const customEnd = new Date(endVal); customEnd.setHours(23, 59, 59, 999);
+                    return data.filter(sale => { const saleDate = sale.timestamp.toDate(); return saleDate >= customStart && saleDate <= customEnd; });
+                } else { return []; }
+            }
+            return data.filter(sale => sale.timestamp.toDate() >= startDate);
+        };
+
+        const calculatorExpressionEl = document.getElementById('calculator-expression');
+        let currentExpression = '';
+        const updateCalculatorDisplay = () => {
+            calculatorExpressionEl.textContent = currentExpression.replace(/\*/g, '×').replace(/\//g, '÷') || '0';
+        };
+
+        // ===================================
+        // APP INITIALIZATION & SETUP
+        // ===================================
+        const handleUserSetup = async (e) => {
+            e.preventDefault();
+            const userName = document.getElementById('userName').value.trim();
+            if (!userName) return showToast("Please enter your name.");
+
+            try {
+                await setDoc(doc(db, "users", userId), { name: userName, createdAt: Timestamp.now() });
+                localStorage.setItem('userName', userName);
+                document.getElementById('setup-screen').classList.remove('active');
+                document.getElementById('mode-screen').classList.add('active');
+            } catch (error) { console.error("Error saving user profile:", error); showToast("Could not save profile."); }
+        };
+
+        const handleModeSelection = (mode) => {
+            localStorage.setItem('appMode', mode);
+            document.getElementById('mode-screen').classList.remove('active');
+            loadMainApp();
+        };
+
+        const loadMainApp = async () => {
+            document.body.classList.add('app-loaded');
+            
+            const mode = localStorage.getItem('appMode');
+            if (mode === 'manager') {
+                document.getElementById('manager-nav-item').classList.remove('hidden');
+                document.getElementById('salesperson-selector-container').classList.remove('hidden');
+                await fetchAndRenderSalespersons();
+            } else {
+                document.getElementById('manager-nav-item').classList.add('hidden');
+                document.getElementById('salesperson-selector-container').classList.add('hidden');
+                currentUserPrices = {};
+            }
+            
+            await fetchProducts();
+            switchScreen('dashboard');
+        };
+
+        const initApp = () => {
+            initUserSession();
+            applyTheme(localStorage.getItem('theme') || 'light');
+            
+            document.getElementById('setup-form').addEventListener('submit', handleUserSetup);
+            document.getElementById('salesman-mode-btn').addEventListener('click', () => handleModeSelection('salesman'));
+            document.getElementById('manager-mode-btn').addEventListener('click', () => handleModeSelection('manager'));
+            
+            document.getElementById('edit-product-form').addEventListener('submit', handleUpdateProduct);
+            document.getElementById('save-sale-btn').addEventListener('click', handleSaveSale);
+            document.getElementById('clear-history-btn').addEventListener('click', () => document.getElementById('custom-confirm-modal').classList.add('show'));
+            document.getElementById('reset-quantities-btn').addEventListener('click', handleResetQuantities);
+            document.getElementById('view-profit-btn').addEventListener('click', () => switchScreen('profit'));
+            document.getElementById('add-salesperson-form').addEventListener('submit', handleAddSalesperson);
+            document.getElementById('add-product-form').addEventListener('submit', handleAddProduct);
+
+            
+            document.getElementById('salesperson-list').addEventListener('click', (e) => {
+                const card = e.target.closest('.card[data-salesperson-id]');
+                if (!card) return;
+                selectedSalespersonForPricing = { id: card.dataset.salespersonId, name: card.dataset.salespersonName };
+                renderUserProductPrices();
+                switchScreen('user-product-prices');
+            });
+
+            document.getElementById('user-prices-product-list').addEventListener('click', (e) => {
+                if (e.target.classList.contains('save-user-price-btn')) {
+                    handleSaveUserPrice(e.target);
+                }
+            });
+
+            document.getElementById('back-to-manager-btn').addEventListener('click', () => switchScreen('manager'));
+            document.getElementById('back-to-history-btn').addEventListener('click', () => switchScreen('history'));
+
+            document.getElementById('salesperson-selector').addEventListener('change', async (e) => {
+                 const selectedId = e.target.value;
+                 currentUserPrices = await fetchPricesForUser(selectedId);
+                 renderDashboard(); 
+            });
+
+            document.querySelectorAll('#history-screen .filter-btn').forEach(btn => btn.addEventListener('click', (e) => {
+                document.querySelectorAll('#history-screen .filter-btn').forEach(b => b.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+                document.getElementById('start-date').value = ''; document.getElementById('end-date').value = '';
+                applyHistoryFilter();
+            }));
+
+            // PROFIT FILTER HANDLERS
+            document.querySelectorAll('#profit-filters .filter-btn').forEach(btn => btn.addEventListener('click', (e) => {
+                document.querySelectorAll('#profit-filters .filter-btn').forEach(b => b.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+                document.getElementById('profit-start-date').value = ''; 
+                document.getElementById('profit-end-date').value = '';
+                applyProfitFilter();
+            }));
+
+            const confirmModal = document.getElementById('custom-confirm-modal');
+            document.getElementById('confirm-delete-all-btn').addEventListener('click', () => { handleClearHistory(); confirmModal.classList.remove('show'); });
+            confirmModal.querySelectorAll('.modal-close-btn').forEach(btn => btn.addEventListener('click', () => confirmModal.classList.remove('show')));
+
+            const calcHistoryModal = document.getElementById('calculator-history-modal');
+            document.getElementById('open-calc-history-btn').addEventListener('click', () => calcHistoryModal.classList.add('show'));
+            calcHistoryModal.querySelector('.modal-close-btn').addEventListener('click', () => calcHistoryModal.classList.remove('show'));
+            
+            
+            document.getElementById('calculator-grid').addEventListener('click', (e) => {
+                const target = e.target.closest('.calc-btn'); if (!target) return;
+                const { value, action } = target.dataset;
+                if (value) currentExpression += value;
+                else if (action === 'clear') currentExpression = '';
+                else if (action === 'backspace') currentExpression = currentExpression.slice(0, -1);
+                else if (action === 'calculate' && currentExpression) {
+                    try { currentExpression = String(new Function('return ' + currentExpression.replace(/[^-()\d/*+.]/g, ''))()); } 
+                    catch { currentExpression = 'Error'; }
+                }
+                updateCalculatorDisplay();
+            });
+
+
+            const userName = localStorage.getItem('userName');
+            const appMode = localStorage.getItem('appMode');
+
+            if (!userName) {
+                document.getElementById('setup-screen').classList.add('active');
+            } else if (!appMode) {
+                document.getElementById('mode-screen').classList.add('active');
+            } else {
+                loadMainApp();
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', initApp);
+
+    </script>
+</body>
+</html>
