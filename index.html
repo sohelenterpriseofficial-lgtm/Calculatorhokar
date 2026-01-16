@@ -489,7 +489,11 @@
 
     <header class="app-header">
         <h1 id="header-title">Dashboard</h1>
-        <button id="theme-toggle" class="theme-toggle" title="Toggle Theme">🌙</button>
+        <!-- MODIFIED: Wrapped header buttons for layout and added Calculator History button. -->
+        <div style="display: flex; align-items: center; gap: 1rem;">
+             <button id="open-calc-history-btn" class="theme-toggle" title="Calculation History">📜</button>
+             <button id="theme-toggle" class="theme-toggle" title="Toggle Theme">🌙</button>
+        </div>
     </header>
 
     <main class="app-container">
@@ -572,9 +576,7 @@
                     <div id="calculator-expression">0</div>
                 </div>
                 <div class="calculator-keypad">
-                     <div style="text-align: right; margin-bottom: 1rem;">
-                        <button id="open-calc-history-btn" class="action-btn" title="Calculation History">📜</button>
-                     </div>
+                     <!-- REMOVED: Calculator history button from keypad. It is now in the main header. -->
                      <div id="calculator-grid" class="calculator-grid">
                         <button class="calc-btn clear" data-action="clear">AC</button>
                         <button class="calc-btn operator" data-value="(">(</button>
@@ -748,6 +750,22 @@
         </div>
     </div>
 
+    <!-- ADDED: Modal for user delete confirmation to replace browser confirm() for WebView compatibility -->
+    <div id="delete-user-confirm-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Remove User</h2>
+                <button class="modal-close-btn">&times;</button>
+            </div>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Are you sure you want to remove <strong id="user-to-delete-name">this user</strong>? This action cannot be undone.</p>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                <button class="btn btn-secondary modal-close-btn">Cancel</button>
+                <button id="confirm-delete-user-btn" class="btn btn-danger">Yes, Remove</button>
+            </div>
+        </div>
+    </div>
+
+
     <!-- FLOATING SAVE BAR -->
     <div id="save-bar" class="save-bar">
         <div class="save-bar-info">
@@ -810,6 +828,8 @@
         let tempQuantities = {};
         let selectedSalespersonForPricing = null; 
         let currentUserPrices = {}; 
+        // ADDED: State to hold user info for modal-based deletion
+        let userToDelete = { id: null, name: null };
 
         // ===================================
         // UTILITY FUNCTIONS
@@ -1057,13 +1077,13 @@
                 const selector = document.getElementById('salesperson-selector');
                 
                 if(salespersons.length > 0) {
-                    // CHANGED: Added delete button and separated clickable area for editing
+                    // CHANGED: Added data-salesperson-name to the delete button for easier access in the event handler.
                     listDiv.innerHTML = salespersons.map(s => `
                         <div class="card" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem;">
                             <div class="salesperson-info" data-salesperson-id="${s.id}" data-salesperson-name="${s.name}" style="flex-grow: 1; cursor: pointer;">
                                 ${s.name}
                             </div>
-                            <button class="action-btn delete-salesperson-btn" data-salesperson-id="${s.id}" title="Delete User">🗑️</button>
+                            <button class="action-btn delete-salesperson-btn" data-salesperson-id="${s.id}" data-salesperson-name="${s.name}" title="Delete User">🗑️</button>
                         </div>
                     `).join('');
                     selector.innerHTML = salespersons.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
@@ -1091,18 +1111,34 @@
             } catch (error) { console.error("Error adding salesperson:", error); showToast("Failed to add user."); }
         };
 
-        // ADDED: New function to handle user deletion
-        const handleDeleteSalesperson = async (salespersonId) => {
-            if (!confirm("Are you sure you want to remove this user? This action cannot be undone.")) return;
+        // REMOVED: Old handleDeleteSalesperson function that used the incompatible confirm() dialog.
+        // const handleDeleteSalesperson = async (salespersonId) => { ... };
+
+        // ADDED: Function to open the custom delete confirmation modal.
+        const openDeleteUserModal = (id, name) => {
+            userToDelete = { id, name };
+            const modal = document.getElementById('delete-user-confirm-modal');
+            modal.querySelector('#user-to-delete-name').textContent = name;
+            modal.classList.add('show');
+        };
+
+        // ADDED: Function to perform the deletion after modal confirmation.
+        const performDeleteSalesperson = async () => {
+            if (!userToDelete.id) return;
             try {
-                await deleteDoc(doc(db, `salespersons/${userId}/profiles`, salespersonId));
+                await deleteDoc(doc(db, `salespersons/${userId}/profiles`, userToDelete.id));
                 showToast("User removed successfully.");
-                fetchAndRenderSalespersons(); // Re-fetch and re-render the list to reflect the change
+                fetchAndRenderSalespersons(); 
             } catch (error) {
                 console.error("Error removing user:", error);
                 showToast("Failed to remove user.");
+            } finally {
+                const modal = document.getElementById('delete-user-confirm-modal');
+                modal.classList.remove('show');
+                userToDelete = { id: null, name: null };
             }
         };
+
 
         const fetchPricesForUser = async (salespersonId) => {
             if (!salespersonId) return {};
@@ -1344,6 +1380,7 @@
             attachHistoryEventListeners();
         };
 
+
         const attachHistoryEventListeners = () => {
             document.querySelectorAll('.history-edit-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => handleEditHistory(e.currentTarget.dataset.id));
@@ -1551,11 +1588,35 @@
             await fetchProducts();
             switchScreen('dashboard');
         };
+        
+        // ADDED: Renders the calculator history into its modal
+        const renderCalculatorHistory = () => {
+            const listDiv = document.getElementById('calc-history-list');
+            if (!calculatorHistory || calculatorHistory.length === 0) {
+                listDiv.innerHTML = `<p style="color: var(--text-secondary); text-align: center;">No calculations yet.</p>`;
+                return;
+            }
+            listDiv.innerHTML = calculatorHistory.map(entry =>
+                `<div style="text-align: right; padding: 0.75rem; border-bottom: 1px solid var(--border-color); font-size: 1.2rem; color: var(--text-secondary); word-break: break-all;">
+                    ${entry.replace(/\*/g, '×').replace(/\//g, '÷')}
+                 </div>`
+            ).join('');
+        };
 
         const initApp = () => {
             initUserSession();
             applyTheme(localStorage.getItem('theme') || 'light');
             
+            // ADDED: Load calculator history from localStorage on app start
+            const savedCalcHistory = localStorage.getItem('calculatorHistory');
+            if (savedCalcHistory) {
+                try {
+                    calculatorHistory = JSON.parse(savedCalcHistory);
+                } catch(e) {
+                    calculatorHistory = [];
+                }
+            }
+
             document.getElementById('setup-form').addEventListener('submit', handleUserSetup);
             document.getElementById('salesman-mode-btn').addEventListener('click', () => handleModeSelection('salesman'));
             document.getElementById('manager-mode-btn').addEventListener('click', () => handleModeSelection('manager'));
@@ -1577,14 +1638,15 @@
                 showToast("Switched to Manager Mode");
             });
             
-            // CHANGED: Updated event listener for manager list to handle both edit and delete actions
+            // CHANGED: Event listener logic for the user list to handle delete button clicks via a custom modal.
             document.getElementById('salesperson-list').addEventListener('click', (e) => {
                 const deleteBtn = e.target.closest('.delete-salesperson-btn');
                 if (deleteBtn) {
-                    e.stopPropagation(); // Prevent card click from firing when delete is clicked
+                    e.stopPropagation(); 
                     const salespersonId = deleteBtn.dataset.salespersonId;
-                    if (salespersonId) {
-                        handleDeleteSalesperson(salespersonId);
+                    const salespersonName = deleteBtn.dataset.salespersonName;
+                    if (salespersonId && salespersonName) {
+                        openDeleteUserModal(salespersonId, salespersonName);
                     }
                     return;
                 }
@@ -1619,7 +1681,6 @@
                 applyHistoryFilter();
             }));
 
-            // PROFIT FILTER HANDLERS
             document.querySelectorAll('#profit-filters .filter-btn').forEach(btn => btn.addEventListener('click', (e) => {
                 document.querySelectorAll('#profit-filters .filter-btn').forEach(b => b.classList.remove('active'));
                 e.currentTarget.classList.add('active');
@@ -1633,9 +1694,21 @@
             confirmModal.querySelectorAll('.modal-close-btn').forEach(btn => btn.addEventListener('click', () => confirmModal.classList.remove('show')));
 
             const calcHistoryModal = document.getElementById('calculator-history-modal');
-            document.getElementById('open-calc-history-btn').addEventListener('click', () => calcHistoryModal.classList.add('show'));
+            // MODIFIED: This listener now opens the calculator's local history modal.
+            document.getElementById('open-calc-history-btn').addEventListener('click', () => {
+                renderCalculatorHistory();
+                calcHistoryModal.classList.add('show');
+            });
             calcHistoryModal.querySelector('.modal-close-btn').addEventListener('click', () => calcHistoryModal.classList.remove('show'));
             
+            // ADDED: Event listeners for the new user deletion modal.
+            const deleteUserModal = document.getElementById('delete-user-confirm-modal');
+            document.getElementById('confirm-delete-user-btn').addEventListener('click', performDeleteSalesperson);
+            deleteUserModal.querySelectorAll('.modal-close-btn').forEach(btn => btn.addEventListener('click', () => {
+                deleteUserModal.classList.remove('show');
+                userToDelete = { id: null, name: null }; 
+            }));
+
             
             document.getElementById('calculator-grid').addEventListener('click', (e) => {
                 const target = e.target.closest('.calc-btn'); if (!target) return;
@@ -1644,7 +1717,21 @@
                 else if (action === 'clear') currentExpression = '';
                 else if (action === 'backspace') currentExpression = currentExpression.slice(0, -1);
                 else if (action === 'calculate' && currentExpression) {
-                    try { currentExpression = String(new Function('return ' + currentExpression.replace(/[^-()\d/*+.]/g, ''))()); } 
+                    try { 
+                        // MODIFIED: Logic to save calculation to local history
+                        const originalExpression = currentExpression;
+                        const result = String(new Function('return ' + currentExpression.replace(/[^-()\d/*+.]/g, ''))());
+                        
+                        if (originalExpression !== result) {
+                            currentExpression = result;
+                            const historyEntry = `${originalExpression.replace(/\*/g, '×').replace(/\//g, '÷')} = ${result}`;
+                            calculatorHistory.unshift(historyEntry);
+                            if (calculatorHistory.length > 50) { // Limit history size
+                                calculatorHistory.pop();
+                            }
+                            localStorage.setItem('calculatorHistory', JSON.stringify(calculatorHistory));
+                        }
+                    } 
                     catch { currentExpression = 'Error'; }
                 }
                 updateCalculatorDisplay();
