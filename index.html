@@ -1057,7 +1057,15 @@
                 const selector = document.getElementById('salesperson-selector');
                 
                 if(salespersons.length > 0) {
-                    listDiv.innerHTML = salespersons.map(s => `<div class="card" data-salesperson-id="${s.id}" data-salesperson-name="${s.name}" style="cursor: pointer; transition: transform 0.2s ease;">${s.name}</div>`).join('');
+                    // CHANGED: Added delete button and separated clickable area for editing
+                    listDiv.innerHTML = salespersons.map(s => `
+                        <div class="card" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem;">
+                            <div class="salesperson-info" data-salesperson-id="${s.id}" data-salesperson-name="${s.name}" style="flex-grow: 1; cursor: pointer;">
+                                ${s.name}
+                            </div>
+                            <button class="action-btn delete-salesperson-btn" data-salesperson-id="${s.id}" title="Delete User">🗑️</button>
+                        </div>
+                    `).join('');
                     selector.innerHTML = salespersons.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
                     
                     selector.dispatchEvent(new Event('change'));
@@ -1081,6 +1089,19 @@
                 e.target.reset();
                 fetchAndRenderSalespersons();
             } catch (error) { console.error("Error adding salesperson:", error); showToast("Failed to add user."); }
+        };
+
+        // ADDED: New function to handle user deletion
+        const handleDeleteSalesperson = async (salespersonId) => {
+            if (!confirm("Are you sure you want to remove this user? This action cannot be undone.")) return;
+            try {
+                await deleteDoc(doc(db, `salespersons/${userId}/profiles`, salespersonId));
+                showToast("User removed successfully.");
+                fetchAndRenderSalespersons(); // Re-fetch and re-render the list to reflect the change
+            } catch (error) {
+                console.error("Error removing user:", error);
+                showToast("Failed to remove user.");
+            }
         };
 
         const fetchPricesForUser = async (salespersonId) => {
@@ -1247,6 +1268,7 @@
             } catch(e) { console.error("Could not fetch history", e); showToast("Failed to load history."); }
         };
 
+        // EDIT: Modified function to group history by date and change display format.
         const renderHistory = (filteredHistory = salesHistory) => {
             const listDiv = document.getElementById('history-list');
             const summaryValueEl = document.getElementById('today-summary-value');
@@ -1261,22 +1283,64 @@
                 '15days': "Total Sales (Last 15 Days)", lifetime: "Total Lifetime Sales"
             };
             summaryLabelEl.textContent = filterLabels[activeFilter] || 'Total Sales (Custom Range)';
+            
+            // Group sales by date for the new display format
+            const salesByDate = filteredHistory.reduce((acc, sale) => {
+                const dateKey = sale.timestamp.toDate().toISOString().split('T')[0];
+                if (!acc[dateKey]) {
+                    acc[dateKey] = [];
+                }
+                acc[dateKey].push(sale);
+                return acc;
+            }, {});
 
-            listDiv.innerHTML = filteredHistory.length === 0 ? `<div class="card" style="text-align:center; color:var(--text-secondary);">No sales history found for this period.</div>`
-            : filteredHistory.map(sale => {
-                const saleDate = sale.timestamp.toDate();
-                const formattedDate = saleDate.toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
-                return `
-                    <div class="card list-card">
-                        <div class="product-actions">
-                           <button class="action-btn history-edit-btn" data-id="${sale.id}" title="Edit">✏️</button>
-                           <button class="action-btn history-delete-btn" data-id="${sale.id}" title="Delete">🗑️</button>
+            const sortedDates = Object.keys(salesByDate).sort((a, b) => new Date(b) - new Date(a));
+
+            if (sortedDates.length === 0) {
+                listDiv.innerHTML = `<div class="card" style="text-align:center; color:var(--text-secondary);">No sales history found for this period.</div>`;
+            } else {
+                listDiv.innerHTML = sortedDates.map(dateStr => {
+                    const date = new Date(dateStr);
+                    const formattedDate = date.toLocaleDateString('en-IN', { timeZone: 'UTC', year: 'numeric', month: 'long', day: 'numeric' });
+                    const salesOnThisDate = salesByDate[dateStr];
+
+                    const salesHtml = salesOnThisDate.map((sale, index) => {
+                        let userName = 'Direct Sale';
+                        if (sale.salespersonId) {
+                            const salesperson = salespersons.find(s => s.id === sale.salespersonId);
+                            // Gracefully handle case where salesperson might not be in the loaded list
+                            userName = salesperson ? salesperson.name : 'Unassigned'; 
+                        }
+
+                        const isLastItem = index === salesOnThisDate.length - 1;
+                        const itemStyle = `display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; ${!isLastItem ? 'border-bottom: 1px solid var(--border-color);' : ''}`;
+                        
+                        // Layout for: User Name | Calculation | Total | Actions
+                        return `
+                            <div style="${itemStyle}">
+                                <div style="flex-grow: 1; display: flex; align-items: center; gap: 1rem; overflow: hidden; white-space: nowrap;">
+                                    <span style="font-weight: 500; color: var(--text-primary); min-width: 80px; text-overflow: ellipsis; overflow: hidden;">${userName}</span>
+                                    <span style="font-family: 'SF Mono', 'Courier New', monospace; font-size: 0.9rem; color: var(--text-secondary); background-color: var(--bg-color); padding: 0.25rem 0.5rem; border-radius: 6px;">${sale.summaryString}</span>
+                                    <span style="font-weight: 700; color: var(--primary-color); margin-left: auto; padding-left: 1rem;">${formatCurrency(sale.totalAmount)}</span>
+                                </div>
+                                <div class="product-actions" style="position: static; padding-left: 1rem; gap: 0.5rem;">
+                                   <button class="action-btn history-edit-btn" data-id="${sale.id}" title="Edit">✏️</button>
+                                   <button class="action-btn history-delete-btn" data-id="${sale.id}" title="Delete">🗑️</button>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                    return `
+                        <div class="card list-card" style="padding: 1.5rem 1.5rem 0.75rem 1.5rem;">
+                            <h3>${formattedDate}</h3>
+                            <div style="margin-top: 0.5rem;">
+                                ${salesHtml}
+                            </div>
                         </div>
-                        <h3>${formattedDate}</h3>
-                        <div class="summary-string">${sale.summaryString}</div>
-                        <div class="card-total">Total: ${formatCurrency(sale.totalAmount)}</div>
-                    </div>`;
-            }).join('');
+                    `;
+                }).join('');
+            }
             attachHistoryEventListeners();
         };
 
@@ -1513,12 +1577,24 @@
                 showToast("Switched to Manager Mode");
             });
             
+            // CHANGED: Updated event listener for manager list to handle both edit and delete actions
             document.getElementById('salesperson-list').addEventListener('click', (e) => {
-                const card = e.target.closest('.card[data-salesperson-id]');
-                if (!card) return;
-                selectedSalespersonForPricing = { id: card.dataset.salespersonId, name: card.dataset.salespersonName };
-                renderUserProductPrices();
-                switchScreen('user-product-prices');
+                const deleteBtn = e.target.closest('.delete-salesperson-btn');
+                if (deleteBtn) {
+                    e.stopPropagation(); // Prevent card click from firing when delete is clicked
+                    const salespersonId = deleteBtn.dataset.salespersonId;
+                    if (salespersonId) {
+                        handleDeleteSalesperson(salespersonId);
+                    }
+                    return;
+                }
+
+                const infoArea = e.target.closest('.salesperson-info');
+                if (infoArea) {
+                    selectedSalespersonForPricing = { id: infoArea.dataset.salespersonId, name: infoArea.dataset.salespersonName };
+                    renderUserProductPrices();
+                    switchScreen('user-product-prices');
+                }
             });
 
             document.getElementById('user-prices-product-list').addEventListener('click', (e) => {
