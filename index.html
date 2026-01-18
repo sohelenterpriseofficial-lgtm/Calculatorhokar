@@ -122,7 +122,6 @@
     .product-calculation .value { font-size: 1.2rem; font-weight: 700; }
     .product-actions { display: flex; gap: 0.5rem; }
     .action-btn { background: var(--bg-color); border: 1px solid var(--border-color); font-size: 1.2rem; cursor: pointer; color: var(--text-secondary); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;}
-    /* MODIFICATION: Style for favorite button */
     .action-btn.is-favorite { color: var(--accent-red); }
     .save-bar {
         position: fixed; bottom: calc(70px + var(--safe-area-inset-bottom)); left: 1rem; right: 1rem;
@@ -162,9 +161,8 @@
     .profit-user-name { font-weight: 500; }
     .profit-user-amount { font-weight: 700; color: var(--accent-green); }
     .profit-date-total { text-align: right; margin-top: 0.5rem; font-weight: 700; font-size: 1.1rem; }
-    .history-list-container { max-height: 60vh; overflow-y: auto; padding-right: 0.5rem; } /* MODIFICATION: Scrollable history */
+    .history-list-container { max-height: 60vh; overflow-y: auto; padding-right: 0.5rem; }
 
-    /* Calculator Styles */
     #calculator-screen { padding: 0; background-color: var(--bg-color-light); }
     .calculator-container {
         display: flex;
@@ -419,7 +417,6 @@
 </form>
 </div>
 </div>
-<!-- MODIFICATION: New modal for editing a sale -->
 <div id="edit-sale-modal" class="modal-overlay">
     <div class="modal-content">
         <div class="modal-header"><h2>Edit Sale</h2><button class="modal-close-btn">&times;</button></div>
@@ -667,7 +664,6 @@ return product.sellPrice;
 const renderDashboard = () => {
 const listDiv = document.getElementById('product-list');
 const selectedUserId = document.getElementById('salesperson-selector').value;
-// MODIFICATION: Sort products to show favorites on top
 const sortedProducts = [...products].sort((a, b) => (b.isFavorite ? 1 : 0) - (a.isFavorite ? 1 : 0) || b.createdAt - a.createdAt);
 
 listDiv.innerHTML = sortedProducts.length === 0
@@ -690,7 +686,6 @@ return `
 <div class="product-calculation">
 <div class="product-actions">
 <button class="action-btn edit-btn" title="Edit">✏️</button>
-<!-- MODIFICATION: Favorite button added in correct order -->
 <button class="action-btn favorite-btn ${p.isFavorite ? 'is-favorite' : ''}" title="Favorite">${p.isFavorite ? '♥️' : '⭐'}</button>
 <button class="action-btn delete-btn" title="Delete">🗑️</button>
 </div>
@@ -720,7 +715,6 @@ card.querySelector('.minus-btn').onclick = () => { if (input.value > 0) input.va
 input.oninput = update;
 card.querySelector('.edit-btn').onclick = () => openEditModal(id);
 card.querySelector('.delete-btn').onclick = () => handleDeleteProduct(id);
-// MODIFICATION: Attach listener for the new favorite button
 card.querySelector('.favorite-btn').onclick = () => handleToggleFavorite(id);
 });
 };
@@ -737,7 +731,6 @@ saveBar.classList.toggle('visible', total > 0);
 };
 
 // Data Handlers
-// MODIFICATION: New function to handle favorite toggling
 const handleToggleFavorite = async (id) => {
     const product = products.find(p => p.id === id);
     if (product) {
@@ -759,7 +752,7 @@ id: generateUniqueId(), sourceCode, productName,
 buyPrice: parseFloat(document.getElementById('buyPrice').value) || 0,
 sellPrice: parseFloat(document.getElementById('sellPrice').value) || 0,
 createdAt: Date.now(),
-isFavorite: false // MODIFICATION: Add isFavorite property
+isFavorite: false
 };
 await storage.saveItem('products', newProduct);
 products.unshift(newProduct);
@@ -792,10 +785,9 @@ showModal('edit-modal');
 const handleEditProduct = async (e) => {
 e.preventDefault();
 const id = document.getElementById('editProductId').value;
-// MODIFICATION: Ensure isFavorite status is preserved when editing
 const existingProduct = products.find(p => p.id === id);
 const updatedData = {
-    ...existingProduct, // This keeps all properties like isFavorite
+    ...existingProduct,
     productName: document.getElementById('editProductName').value.trim(),
     buyPrice: parseFloat(document.getElementById('editBuyPrice').value) || 0,
     sellPrice: parseFloat(document.getElementById('editSellPrice').value) || 0,
@@ -862,7 +854,6 @@ return `<div class="card">
 <div style="font-size: 0.8rem; color: var(--text-secondary);">${new Date(sale.timestamp).toLocaleString()}</div>
 <div style="font-weight:bold; margin: 0.5rem 0; font-size: 1.2rem;">${formatCurrency(sale.totalAmount)} <span style="font-size: 0.9rem; font-weight: 500;">(${userName})</span></div>
 <div style="font-size:0.9rem; color:var(--text-secondary); background: var(--bg-color); padding: 0.5rem; border-radius: 8px;">${saleItems}</div>
-<!-- MODIFICATION: Add Edit and Delete buttons to sales history cards -->
 <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
     <button class="btn btn-secondary" style="flex:1; padding: 0.5rem; font-size: 0.9rem;" onclick="openEditSaleModal('${sale.id}')">Edit</button>
     <button class="btn btn-danger" style="flex:1; padding: 0.5rem; font-size: 0.9rem;" onclick="handleDeleteSale('${sale.id}')">Delete</button>
@@ -873,7 +864,6 @@ return `<div class="card">
 
 const renderProfitHistory = () => {
 const listDiv = document.getElementById('profit-list');
-// MODIFICATION: Use the new independent profit filter function
 const filtered = filterProfitData(salesHistory);
 document.getElementById('profit-summary-value').textContent = formatCurrency(filtered.reduce((sum, s) => sum + s.totalProfit, 0));
 
@@ -910,7 +900,6 @@ ${Object.entries(profitData[date].users).map(([name, profit]) => `
 `).join('');
 };
 
-// MODIFICATION: New functions for handling sale editing and deletion
 const handleDeleteSale = (saleId) => {
     const sale = salesHistory.find(s => s.id === saleId);
     if (!sale) return;
@@ -930,7 +919,7 @@ const openEditSaleModal = (saleId) => {
     const listDiv = document.getElementById('edit-sale-product-list');
     listDiv.innerHTML = Object.keys(sale.quantities).map(productId => {
         const product = products.find(p => p.id === productId);
-        if (!product) return ''; // Skip if product was deleted since the sale
+        if (!product) return '';
         return `
         <div class="form-group" style="border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1rem;">
             <label>${product.productName} (Code: ${product.sourceCode})</label>
@@ -1005,7 +994,6 @@ return data.filter(s => s.timestamp >= startTime && s.timestamp <= endTime);
 return data;
 };
 
-// MODIFICATION: New independent filter function for profit screen
 const filterProfitData = (data) => {
     const activeFilter = document.querySelector('#profit-filters .filter-btn.active')?.dataset.filter;
     if (!activeFilter) return data;
@@ -1143,7 +1131,7 @@ if (isFinite(result)) {
 calcResEl.textContent = result;
 }
 } catch (err) {
-// Silently ignore, keeping the last valid result visible
+// Silently ignore
 }
 };
 
@@ -1314,7 +1302,6 @@ document.getElementById('salesman-mode-btn').onclick = () => { localStorage.setI
 document.getElementById('manager-mode-btn').onclick = () => { localStorage.setItem('appMode', 'manager'); initializeAppUI(); };
 document.getElementById('add-product-form').onsubmit = handleAddProduct;
 document.getElementById('edit-product-form').onsubmit = handleEditProduct;
-// MODIFICATION: Add listener for the new edit sale form
 document.getElementById('edit-sale-form').onsubmit = handleEditSale;
 document.getElementById('save-sale-btn').onclick = handleSaveSale;
 document.getElementById('reset-quantities-btn').onclick = () => { tempQuantities = {}; renderDashboard(); updateGrandTotal(); };
@@ -1337,7 +1324,6 @@ renderHistory();
 };
 document.getElementById('start-date').onchange = dateChangeHandler;
 document.getElementById('end-date').onchange = dateChangeHandler;
-// MODIFICATION: Add listeners for the new profit filter buttons
 document.querySelectorAll('#profit-filters .filter-btn').forEach(btn => btn.onclick = (e) => {
     document.querySelector('#profit-filters .filter-btn.active')?.classList.remove('active');
     e.currentTarget.classList.add('active');
