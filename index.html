@@ -222,9 +222,9 @@ body:not(.app-loaded) .bottom-nav {
 /* SCREEN SPECIFIC STYLES               */
 /* ==================================== */
 
-.product-card { position: relative; padding-top: 3rem; }
-.product-actions { position: absolute; top: 0.75rem; right: 0.75rem; display: flex; gap: 0.5rem; }
-.action-btn { background: var(--bg-color); border: 1px solid var(--border-color); font-size: 1rem; cursor: pointer; color: var(--text-secondary); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;}
+.product-card { position: relative; }
+.product-actions { display: flex; gap: 0.5rem; }
+.action-btn { background: var(--bg-color); border: 1px solid var(--border-color); font-size: 1.2rem; cursor: pointer; color: var(--text-secondary); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;}
 
 .product-card-main { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
 .product-info h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.25rem; }
@@ -250,7 +250,9 @@ input[type=number] { -moz-appearance: textfield; }
 
 .product-calculation {
     margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);
-    text-align: right;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 .product-calculation .value { font-size: 1.2rem; font-weight: 700; color: var(--text-primary); }
 
@@ -1240,27 +1242,27 @@ const displaySellPrice = p.sellPrice;
 
 return `
 <div class="card product-card" data-product-id="${p.localId}" data-product-code="${p.sourceCode}">
-<div class="product-actions">
-<button class="action-btn edit-btn" title="Edit">✏️</button>
-<button class="action-btn delete-btn" title="Delete">🗑️</button>
-</div>
-<div class="product-card-main">
-<div class="product-info">
-<h3>${p.productName}</h3>
-<div class="meta">
-<span>Code: ${p.sourceCode}</span>
-<span>Sell: ${formatCurrency(displaySellPrice)}</span>
-</div>
-</div>
-<div class="quantity-controls">
-<button class="quantity-btn minus-btn">-</button>
-<input type="number" class="quantity-input" value="${savedQty}" min="0" data-price="${displaySellPrice || 0}">
-<button class="quantity-btn plus-btn">+</button>
-</div>
-</div>
-<div class="product-calculation">
-<div class="value total-price">${formatCurrency(savedQty * (displaySellPrice || 0))}</div>
-</div>
+    <div class="product-card-main">
+        <div class="product-info">
+            <h3>${p.productName}</h3>
+            <div class="meta">
+                <span>Code: ${p.sourceCode}</span>
+                <span>Sell: ${formatCurrency(displaySellPrice)}</span>
+            </div>
+        </div>
+        <div class="quantity-controls">
+            <button class="quantity-btn minus-btn">-</button>
+            <input type="number" class="quantity-input" value="${savedQty}" min="0" data-price="${displaySellPrice || 0}">
+            <button class="quantity-btn plus-btn">+</button>
+        </div>
+    </div>
+    <div class="product-calculation">
+        <div class="product-actions">
+            <button class="action-btn edit-btn" title="Edit">✏️</button>
+            <button class="action-btn delete-btn" title="Delete">🗑️</button>
+        </div>
+        <div class="value total-price">${formatCurrency(savedQty * (displaySellPrice || 0))}</div>
+    </div>
 </div>`;
 }).join('');
 
