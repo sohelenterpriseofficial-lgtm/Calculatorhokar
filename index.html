@@ -1,1153 +1,1238 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-    <title>Offline Billing & Profit</title>
-    <meta name="theme-color" content="#5B7CFF"/>
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Billing App">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Offline Billing & Profit</title>
+<meta name="theme-color" content="#5B7CFF"/>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Billing App">
+<!-- Embedded CSS -->
+<style>
+    :root {
+        --safe-area-inset-top: env(safe-area-inset-top, 0px);
+        --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+        --primary-gradient: linear-gradient(135deg, #5B7CFF 0%, #8FA8FF 100%);
+        --primary-color: #5B7CFF;
+        --accent-green: #28a745;
+        --accent-red: #dc3545;
+        --accent-grey: #6c757d;
+        --bg-color-light: #F5F7FB;
+        --card-bg-light: #ffffff;
+        --header-bg-light: rgba(255, 255, 255, 0.85);
+        --text-primary-light: #1a1f36;
+        --text-secondary-light: #6c757d;
+        --border-color-light: #e9ecef;
+        --bg-color-dark: #0d1117;
+        --card-bg-dark: #161b22;
+        --header-bg-dark: rgba(22, 27, 34, 0.85);
+        --text-primary-dark: #c9d1d9;
+        --text-secondary-dark: #8b949e;
+        --border-color-dark: #30363d;
+        --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        --border-radius-lg: 20px;
+        --border-radius-md: 12px;
+        --shadow-sm: 0 4px 15px rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.08);
+        --transition-speed: 0.3s;
+    }
+    body {
+        --bg-color: var(--bg-color-light);
+        --card-bg: var(--card-bg-light);
+        --header-bg: var(--header-bg-light);
+        --text-primary: var(--text-primary-light);
+        --text-secondary: var(--text-secondary-light);
+        --border-color: var(--border-color-light);
+    }
+    body.dark-mode {
+        --bg-color: var(--bg-color-dark);
+        --card-bg: var(--card-bg-dark);
+        --header-bg: var(--header-bg-dark);
+        --text-primary: var(--text-primary-dark);
+        --text-secondary: var(--text-secondary-dark);
+        --border-color: var(--border-color-dark);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+        font-family: var(--font-family);
+        background-color: var(--bg-color);
+        color: var(--text-primary);
+        padding-top: calc(65px + var(--safe-area-inset-top));
+        padding-bottom: calc(80px + var(--safe-area-inset-bottom));
+        transition: background-color var(--transition-speed), color var(--transition-speed);
+        -webkit-tap-highlight-color: transparent;
+    }
+    body.calculator-active {
+         padding-top: var(--safe-area-inset-top);
+    }
+    body:not(.app-loaded) .app-header, body:not(.app-loaded) .bottom-nav { display: none; }
+    .app-container { max-width: 800px; margin: 0 auto; padding: 1rem; }
+    .app-header {
+        position: fixed; top: 0; left: 0; right: 0; display: flex; justify-content: space-between;
+        align-items: center; padding: 1rem 1.5rem; padding-top: calc(1rem + var(--safe-area-inset-top));
+        background-color: var(--header-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--border-color); z-index: 1000;
+        transition: background-color var(--transition-speed), border-color var(--transition-speed), opacity 0.3s;
+        height: calc(65px + var(--safe-area-inset-top));
+    }
+    body.calculator-active .app-header {
+        opacity: 0;
+        pointer-events: none;
+    }
+    .app-header h1 { font-size: 1.5rem; font-weight: 600; margin: 0; }
+    .theme-toggle { background: none; border: none; cursor: pointer; font-size: 1.5rem; color: var(--text-secondary); }
+    .screen { display: none; animation: fadeIn 0.4s ease-out; }
+    .screen.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .card {
+        background-color: var(--card-bg); border-radius: var(--border-radius-lg); padding: 1.5rem;
+        margin-bottom: 1rem; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color);
+    }
+    .form-group { margin-bottom: 1.25rem; }
+    .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: var(--text-secondary); }
+    .form-group .input-wrapper { background-color: var(--bg-color); border-radius: var(--border-radius-md); border: 1px solid var(--border-color); transition: border-color var(--transition-speed), box-shadow var(--transition-speed); }
+    .form-group .input-wrapper:focus-within { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(91, 124, 255, 0.2); }
+    .form-group input, .form-group select { width: 100%; padding: 0.9rem; border: none; background: none; color: var(--text-primary); font-size: 1rem; outline: none; }
+    .btn { display: inline-block; width: 100%; padding: 1rem 1.5rem; border: none; border-radius: var(--border-radius-md); background: var(--primary-gradient); color: white; font-size: 1.1rem; font-weight: 600; cursor: pointer; text-align: center; user-select: none; transition: transform 0.2s ease-out; }
+    .btn:active { transform: scale(0.98); }
+    .btn-danger { background: var(--accent-red); }
+    .btn-secondary { background: var(--accent-grey); }
+    .bottom-nav {
+        position: fixed; bottom: 0; left: 0; right: 0; max-width: 800px; margin: 0 auto;
+        display: flex; justify-content: space-around; background-color: var(--card-bg);
+        border-top: 1px solid var(--border-color); border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+        box-shadow: 0 -5px 20px rgba(0,0,0,0.05); z-index: 1000; padding-bottom: var(--safe-area-inset-bottom);
+    }
+    .nav-item { flex-grow: 1; text-align: center; padding: 0.75rem 0; color: var(--text-secondary); cursor: pointer; border-top: 3px solid transparent; transition: color 0.2s; }
+    .nav-item.active { color: var(--primary-color); border-top-color: var(--primary-color); }
+    .nav-item .icon { font-size: 1.5rem; display: block; margin: 0 auto 0.25rem; }
+    .nav-item .label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
+    .nav-item.hidden { display: none; }
+    .product-card-main { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+    .product-info h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.25rem; word-break: break-word; }
+    .product-info .meta { font-size: 0.8rem; color: var(--text-secondary); }
+    .quantity-controls { display: flex; align-items: center; flex-shrink: 0; }
+    .quantity-btn { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--border-color); background-color: transparent; color: var(--primary-color); font-size: 1.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .quantity-input { width: 50px; text-align: center; font-size: 1.6rem; font-weight: 700; border: none; background: transparent; margin: 0 0.5rem; color: var(--text-primary); }
+    input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type=number] { -moz-appearance: textfield; }
+    .product-calculation { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+    .product-calculation .value { font-size: 1.2rem; font-weight: 700; }
+    .product-actions { display: flex; gap: 0.5rem; }
+    .action-btn { background: var(--bg-color); border: 1px solid var(--border-color); font-size: 1.2rem; cursor: pointer; color: var(--text-secondary); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;}
+    .save-bar {
+        position: fixed; bottom: calc(70px + var(--safe-area-inset-bottom)); left: 1rem; right: 1rem;
+        max-width: 768px; margin: 0 auto; background: var(--card-bg); border: 1px solid var(--border-color);
+        padding: 0.75rem; z-index: 999; display: flex; justify-content: space-between; align-items: center;
+        border-radius: var(--border-radius-lg); box-shadow: var(--shadow-md); transform: translateY(200%);
+        opacity: 0; transition: transform 0.4s ease-out, opacity 0.4s ease-out; pointer-events: none;
+    }
+    .save-bar.visible { transform: translateY(0); opacity: 1; pointer-events: auto; }
+    .save-bar .label { font-size: 1rem; font-weight: 600; color: var(--text-secondary); }
+    .save-bar .total-amount { font-size: 1.5rem; font-weight: 700; }
+    .save-bar-actions { display: flex; gap: 0.5rem; }
+    .save-bar-actions button { border: none; border-radius: var(--border-radius-md); padding: 0.75rem 1.25rem; font-size: 1.2rem; font-weight: 600; cursor: pointer; }
+    .save-bar .save-btn { background: var(--primary-gradient); color: white; }
+    .save-bar .ac-btn { background: var(--accent-grey); color: white; }
+    .summary-display { text-align: center; margin-bottom: 2rem; }
+    .summary-display .value { font-size: 2.5rem; font-weight: 700; color: var(--primary-color);}
+    .summary-display .label { color: var(--text-secondary); }
+    .filters { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; align-items: center; }
+    .filter-btn { padding: 0.5rem 1rem; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-secondary); border-radius: 50px; cursor: pointer; font-size: 0.9rem; }
+    .filter-btn.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+    .date-filter { display: flex; gap: 0.5rem; border: 1px solid var(--border-color); padding: 0.5rem; border-radius: var(--border-radius-md); }
+    .date-filter input { border: none; background: var(--bg-color); color: var(--text-primary); border-radius: 6px; padding: 0.25rem; }
+    .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background-color: rgba(22, 27, 34, 0.9); backdrop-filter: blur(5px); color: white; padding: 0.75rem 1.5rem; border-radius: 50px; z-index: 2000; opacity: 0; visibility: hidden; transition: all 0.5s ease; transform: translate(-50%, 20px); }
+    .toast.show { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); z-index: 3000; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; }
+    .modal-overlay.show { display: flex; opacity: 1; }
+    .modal-content { background: var(--card-bg); border-radius: var(--border-radius-lg); padding: 2rem; width: 90%; max-width: 500px; transform: scale(0.95); transition: transform 0.3s ease; }
+    .modal-overlay.show .modal-content { transform: scale(1); }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .modal-close-btn { background: none; border: none; font-size: 1.8rem; cursor: pointer; color: var(--text-secondary); }
+    
+    .profit-date-group { margin-bottom: 1.5rem; }
+    .profit-date-header { font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; padding-left: 0.5rem; }
+    .profit-user-item { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--border-color); }
+    .profit-user-item:last-child { border-bottom: none; }
+    .profit-user-name { font-weight: 500; }
+    .profit-user-amount { font-weight: 700; color: var(--accent-green); }
+    .profit-date-total { text-align: right; margin-top: 0.5rem; font-weight: 700; font-size: 1.1rem; }
 
-    <!-- Embedded CSS -->
-    <style>
-        :root {
-            --safe-area-inset-top: env(safe-area-inset-top, 0px);
-            --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
-            --primary-gradient: linear-gradient(135deg, #5B7CFF 0%, #8FA8FF 100%);
-            --primary-color: #5B7CFF;
-            --accent-green: #28a745;
-            --accent-red: #dc3545;
-            --accent-grey: #6c757d;
-            --bg-color-light: #F5F7FB;
-            --card-bg-light: #ffffff;
-            --header-bg-light: rgba(255, 255, 255, 0.85);
-            --text-primary-light: #1a1f36;
-            --text-secondary-light: #6c757d;
-            --border-color-light: #e9ecef;
-            --bg-color-dark: #0d1117;
-            --card-bg-dark: #161b22;
-            --header-bg-dark: rgba(22, 27, 34, 0.85);
-            --text-primary-dark: #c9d1d9;
-            --text-secondary-dark: #8b949e;
-            --border-color-dark: #30363d;
-            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            --border-radius-lg: 20px;
-            --border-radius-md: 12px;
-            --shadow-sm: 0 4px 15px rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.08);
-            --transition-speed: 0.3s;
-        }
-        body {
-            --bg-color: var(--bg-color-light);
-            --card-bg: var(--card-bg-light);
-            --header-bg: var(--header-bg-light);
-            --text-primary: var(--text-primary-light);
-            --text-secondary: var(--text-secondary-light);
-            --border-color: var(--border-color-light);
-        }
-        body.dark-mode {
-            --bg-color: var(--bg-color-dark);
-            --card-bg: var(--card-bg-dark);
-            --header-bg: var(--header-bg-dark);
-            --text-primary: var(--text-primary-dark);
-            --text-secondary: var(--text-secondary-dark);
-            --border-color: var(--border-color-dark);
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        html { scroll-behavior: smooth; }
-        body {
-            font-family: var(--font-family);
-            background-color: var(--bg-color);
-            color: var(--text-primary);
-            padding-top: calc(65px + var(--safe-area-inset-top));
-            padding-bottom: calc(80px + var(--safe-area-inset-bottom));
-            transition: background-color var(--transition-speed), color var(--transition-speed);
-            -webkit-tap-highlight-color: transparent;
-        }
-        body.calculator-active {
-             padding-top: var(--safe-area-inset-top);
-        }
-        body:not(.app-loaded) .app-header, body:not(.app-loaded) .bottom-nav { display: none; }
-        .app-container { max-width: 800px; margin: 0 auto; padding: 1rem; }
-        .app-header {
-            position: fixed; top: 0; left: 0; right: 0; display: flex; justify-content: space-between;
-            align-items: center; padding: 1rem 1.5rem; padding-top: calc(1rem + var(--safe-area-inset-top));
-            background-color: var(--header-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border-color); z-index: 1000;
-            transition: background-color var(--transition-speed), border-color var(--transition-speed), opacity 0.3s;
-            height: calc(65px + var(--safe-area-inset-top));
-        }
-        body.calculator-active .app-header {
-            opacity: 0;
-            pointer-events: none;
-        }
-        .app-header h1 { font-size: 1.5rem; font-weight: 600; margin: 0; }
-        .theme-toggle { background: none; border: none; cursor: pointer; font-size: 1.5rem; color: var(--text-secondary); }
-        .screen { display: none; animation: fadeIn 0.4s ease-out; }
-        .screen.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .card {
-            background-color: var(--card-bg); border-radius: var(--border-radius-lg); padding: 1.5rem;
-            margin-bottom: 1rem; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color);
-        }
-        .form-group { margin-bottom: 1.25rem; }
-        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: var(--text-secondary); }
-        .form-group .input-wrapper { background-color: var(--bg-color); border-radius: var(--border-radius-md); border: 1px solid var(--border-color); transition: border-color var(--transition-speed), box-shadow var(--transition-speed); }
-        .form-group .input-wrapper:focus-within { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(91, 124, 255, 0.2); }
-        .form-group input, .form-group select { width: 100%; padding: 0.9rem; border: none; background: none; color: var(--text-primary); font-size: 1rem; outline: none; }
-        .btn { display: inline-block; width: 100%; padding: 1rem 1.5rem; border: none; border-radius: var(--border-radius-md); background: var(--primary-gradient); color: white; font-size: 1.1rem; font-weight: 600; cursor: pointer; text-align: center; user-select: none; transition: transform 0.2s ease-out; }
-        .btn:active { transform: scale(0.98); }
-        .btn-danger { background: var(--accent-red); }
-        .btn-secondary { background: var(--accent-grey); }
-        .bottom-nav {
-            position: fixed; bottom: 0; left: 0; right: 0; max-width: 800px; margin: 0 auto;
-            display: flex; justify-content: space-around; background-color: var(--card-bg);
-            border-top: 1px solid var(--border-color); border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.05); z-index: 1000; padding-bottom: var(--safe-area-inset-bottom);
-        }
-        .nav-item { flex-grow: 1; text-align: center; padding: 0.75rem 0; color: var(--text-secondary); cursor: pointer; border-top: 3px solid transparent; transition: color 0.2s; }
-        .nav-item.active { color: var(--primary-color); border-top-color: var(--primary-color); }
-        .nav-item .icon { font-size: 1.5rem; display: block; margin: 0 auto 0.25rem; }
-        .nav-item .label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
-        .nav-item.hidden { display: none; }
-        .product-card-main { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
-        .product-info h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.25rem; word-break: break-word; }
-        .product-info .meta { font-size: 0.8rem; color: var(--text-secondary); }
-        .quantity-controls { display: flex; align-items: center; flex-shrink: 0; }
-        .quantity-btn { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--border-color); background-color: transparent; color: var(--primary-color); font-size: 1.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .quantity-input { width: 50px; text-align: center; font-size: 1.6rem; font-weight: 700; border: none; background: transparent; margin: 0 0.5rem; color: var(--text-primary); }
-        input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-        input[type=number] { -moz-appearance: textfield; }
-        .product-calculation { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
-        .product-calculation .value { font-size: 1.2rem; font-weight: 700; }
-        .product-actions { display: flex; gap: 0.5rem; }
-        .action-btn { background: var(--bg-color); border: 1px solid var(--border-color); font-size: 1.2rem; cursor: pointer; color: var(--text-secondary); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;}
-        .save-bar {
-            position: fixed; bottom: calc(70px + var(--safe-area-inset-bottom)); left: 1rem; right: 1rem;
-            max-width: 768px; margin: 0 auto; background: var(--card-bg); border: 1px solid var(--border-color);
-            padding: 0.75rem; z-index: 999; display: flex; justify-content: space-between; align-items: center;
-            border-radius: var(--border-radius-lg); box-shadow: var(--shadow-md); transform: translateY(200%);
-            opacity: 0; transition: transform 0.4s ease-out, opacity 0.4s ease-out; pointer-events: none;
-        }
-        .save-bar.visible { transform: translateY(0); opacity: 1; pointer-events: auto; }
-        .save-bar .label { font-size: 1rem; font-weight: 600; color: var(--text-secondary); }
-        .save-bar .total-amount { font-size: 1.5rem; font-weight: 700; }
-        .save-bar-actions { display: flex; gap: 0.5rem; }
-        .save-bar-actions button { border: none; border-radius: var(--border-radius-md); padding: 0.75rem 1.25rem; font-size: 1.2rem; font-weight: 600; cursor: pointer; }
-        .save-bar .save-btn { background: var(--primary-gradient); color: white; }
-        .save-bar .ac-btn { background: var(--accent-grey); color: white; }
-        .summary-display { text-align: center; margin-bottom: 2rem; }
-        .summary-display .value { font-size: 2.5rem; font-weight: 700; color: var(--primary-color);}
-        .summary-display .label { color: var(--text-secondary); }
-        .filters { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; align-items: center; }
-        .filter-btn { padding: 0.5rem 1rem; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-secondary); border-radius: 50px; cursor: pointer; font-size: 0.9rem; }
-        .filter-btn.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
-        .date-filter { display: flex; gap: 0.5rem; border: 1px solid var(--border-color); padding: 0.5rem; border-radius: var(--border-radius-md); }
-        .date-filter input { border: none; background: var(--bg-color); color: var(--text-primary); border-radius: 6px; padding: 0.25rem; }
-        .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background-color: rgba(22, 27, 34, 0.9); backdrop-filter: blur(5px); color: white; padding: 0.75rem 1.5rem; border-radius: 50px; z-index: 2000; opacity: 0; visibility: hidden; transition: all 0.5s ease; transform: translate(-50%, 20px); }
-        .toast.show { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); z-index: 3000; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; }
-        .modal-overlay.show { display: flex; opacity: 1; }
-        .modal-content { background: var(--card-bg); border-radius: var(--border-radius-lg); padding: 2rem; width: 90%; max-width: 500px; transform: scale(0.95); transition: transform 0.3s ease; }
-        .modal-overlay.show .modal-content { transform: scale(1); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-        .modal-close-btn { background: none; border: none; font-size: 1.8rem; cursor: pointer; color: var(--text-secondary); }
-        
-        .profit-date-group { margin-bottom: 1.5rem; }
-        .profit-date-header { font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; padding-left: 0.5rem; }
-        .profit-user-item { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--border-color); }
-        .profit-user-item:last-child { border-bottom: none; }
-        .profit-user-name { font-weight: 500; }
-        .profit-user-amount { font-weight: 700; color: var(--accent-green); }
-        .profit-date-total { text-align: right; margin-top: 0.5rem; font-weight: 700; font-size: 1.1rem; }
-
-        /* Calculator Styles */
+    /* Calculator Styles */
 #calculator-screen { padding: 0; background-color: var(--bg-color-light); }
 .calculator-container {
-    display: flex;
-    flex-direction: column;
-    height: calc(100vh - var(--safe-area-inset-top) - 80px - var(--safe-area-inset-bottom) - 2rem);
-    background-color: var(--bg-color-light);
-    color: var(--text-primary-light);
+display: flex;
+flex-direction: column;
+height: calc(100vh - var(--safe-area-inset-top) - 80px - var(--safe-area-inset-bottom) - 2rem);
+background-color: var(--bg-color-light);
+color: var(--text-primary-light);
 }
 .calculator-display-area {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    padding: 1.5rem;
-    overflow: hidden;
-    min-height: 0;
+flex: 1;
+display: flex;
+flex-direction: column;
+justify-content: flex-end;
+padding: 1.5rem;
+overflow: hidden;
+min-height: 0;
 }
 #calculator-history-view {
-    flex-grow: 1;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column-reverse;
-    padding-bottom: 1rem;
+flex-grow: 1;
+overflow-y: auto;
+display: flex;
+flex-direction: column-reverse;
+padding-bottom: 1rem;
 }
 .calc-history-entry {
-    text-align: right;
-    margin-bottom: 0.5rem;
-    animation: fadeIn 0.3s ease-out;
+text-align: right;
+margin-bottom: 0.5rem;
+animation: fadeIn 0.3s ease-out;
 }
 .calc-history-expr {
-    font-size: 1.2rem;
-    color: var(--text-secondary-light);
-    margin-bottom: 0.25rem;
+font-size: 1.2rem;
+color: var(--text-secondary-light);
+margin-bottom: 0.25rem;
 }
 .calc-history-res {
-    font-size: 1.8rem;
-    font-weight: 500;
-    color: var(--text-secondary-light);
+font-size: 1.8rem;
+font-weight: 500;
+color: var(--text-secondary-light);
 }
 .calculator-current-view { text-align: right; }
 .calculator-expression {
-    font-size: 2rem;
-    color: var(--text-secondary-light);
-    min-height: 2.5rem;
-    word-break: break-all;
-    font-weight: 400;
-    margin-bottom: 0.5rem;
+font-size: 2rem;
+color: var(--text-secondary-light);
+min-height: 2.5rem;
+word-break: break-all;
+font-weight: 400;
+margin-bottom: 0.5rem;
 }
 .calculator-result {
-    font-size: 3.5rem;
-    font-weight: 400;
-    min-height: 4rem;
-    word-break: break-all;
-    color: var(--text-primary-light);
+font-size: 3.5rem;
+font-weight: 400;
+min-height: 4rem;
+word-break: break-all;
+color: var(--text-primary-light);
 }
 .calculator-keypad {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0.8rem;
-    padding: 1rem 1.5rem;
+display: grid;
+grid-template-columns: repeat(4, 1fr);
+gap: 0.8rem;
+padding: 1rem 1.5rem;
 }
 .calc-btn {
-    height: 0;
-    padding-bottom: 100%;
-    position: relative;
-    border-radius: 50%;
-    border: none;
-    font-size: 2rem;
-    font-weight: 400;
-    cursor: pointer;
-    user-select: none;
-    background-color: #ffffff;
-    color: var(--text-primary-light);
-    transition: background-color 0.2s;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+height: 0;
+padding-bottom: 100%;
+position: relative;
+border-radius: 50%;
+border: none;
+font-size: 2rem;
+font-weight: 400;
+cursor: pointer;
+user-select: none;
+background-color: #ffffff;
+color: var(--text-primary-light);
+transition: background-color 0.2s;
+box-shadow: 0 2px 10px rgba(0,0,0,0.08);
 }
 .calc-btn > span {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+position: absolute;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%);
 }
 .calc-btn:active { background-color: #f0f0f0; }
 .calc-btn.operator, .calc-btn.equals { background-color: var(--primary-color); color: white; }
 .calc-btn.operator:active, .calc-btn.equals:active { background: #4a6ae6; }
 .calc-btn.special { background-color: #e9ecef; color: var(--text-primary-light); }
 .calc-btn.special:active { background-color: #d8dde3; }
-    </style>
+</style>
 </head>
 <body>
-
 <header class="app-header">
-    <h1 id="header-title">Dashboard</h1>
-    <div style="display: flex; align-items: center; gap: 1rem;">
-        <button id="theme-toggle" class="theme-toggle" title="Toggle Theme">🌙</button>
-    </div>
+<h1 id="header-title">Dashboard</h1>
+<div style="display: flex; align-items: center; gap: 1rem;">
+<button id="theme-toggle" class="theme-toggle" title="Toggle Theme">🌙</button>
+</div>
 </header>
-
 <main class="app-container">
-    <!-- Screen: Setup -->
-    <section id="setup-screen" class="screen">
-        <div class="card" style="margin-top: 20vh; text-align: center;">
-            <h2>Welcome!</h2>
-            <p style="color: var(--text-secondary); margin-bottom: 2rem;">Let's get started by setting up your name.</p>
-            <form id="setup-form">
-                <div class="form-group"><div class="input-wrapper"><input type="text" id="userName" placeholder="Enter Your Name" required></div></div>
-                <button type="submit" class="btn">Save & Continue</button>
-            </form>
+<!-- Screen: Setup -->
+<section id="setup-screen" class="screen">
+<div class="card" style="margin-top: 20vh; text-align: center;">
+<h2>Welcome!</h2>
+<p style="color: var(--text-secondary); margin-bottom: 2rem;">Let's get started by setting up your name.</p>
+<form id="setup-form">
+<div class="form-group"><div class="input-wrapper"><input type="text" id="userName" placeholder="Enter Your Name" required></div></div>
+<button type="submit" class="btn">Save & Continue</button>
+</form>
+</div>
+</section>
+<!-- Screen: Mode Selection -->
+<section id="mode-screen" class="screen">
+    <div class="card" style="margin-top: 20vh; text-align: center;">
+        <h2>Choose Your Mode</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 2rem;">Select how you want to use the app.</p>
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <button id="salesman-mode-btn" class="btn">Salesman Mode</button>
+            <button id="manager-mode-btn" class="btn btn-secondary">Manager Mode</button>
         </div>
-    </section>
+    </div>
+</section>
 
-    <!-- Screen: Mode Selection -->
-    <section id="mode-screen" class="screen">
-        <div class="card" style="margin-top: 20vh; text-align: center;">
-            <h2>Choose Your Mode</h2>
-            <p style="color: var(--text-secondary); margin-bottom: 2rem;">Select how you want to use the app.</p>
-            <div style="display: flex; flex-direction: column; gap: 1rem;">
-                <button id="salesman-mode-btn" class="btn">Salesman Mode</button>
-                <button id="manager-mode-btn" class="btn btn-secondary">Manager Mode</button>
-            </div>
-        </div>
-    </section>
-
-    <!-- Screen: Add Product -->
-    <section id="add-product-screen" class="screen">
-        <div class="card">
-            <form id="add-product-form">
-                <div class="form-group"><label for="sourceCode">Product Code (Unique)</label><div class="input-wrapper"><input type="text" id="sourceCode" required></div></div>
-                <div class="form-group"><label for="productName">Product Name</label><div class="input-wrapper"><input type="text" id="productName" required></div></div>
-                <div class="form-group"><label for="buyPrice">Buy Price</label><div class="input-wrapper"><input type="number" id="buyPrice" step="0.01" placeholder="0.00"></div></div>
-                <div class="form-group"><label for="sellPrice">Sell Price</label><div class="input-wrapper"><input type="number" id="sellPrice" step="0.01" placeholder="0.00"></div></div>
-                <button type="submit" class="btn">Save Product</button>
-            </form>
-        </div>
-    </section>
-
-    <!-- Screen: Dashboard -->
-    <section id="dashboard-screen" class="screen">
-        <div id="salesperson-selector-container" class="card hidden"><div class="form-group" style="margin-bottom: 0;"><label for="salesperson-selector">Select User for Sale</label><div class="input-wrapper"><select id="salesperson-selector"></select></div></div></div>
-        <div id="product-list"></div>
-    </section>
-    
-    <!-- Screen: History -->
-    <section id="history-screen" class="screen">
-        <div class="summary-display"><div id="history-summary-value" class="value">₹0.00</div><div class="label">Total Sales</div></div>
-        <div class="card">
-            <div class="filters">
-                <button class="filter-btn active" data-filter="today">Today</button>
-                <button class="filter-btn" data-filter="7days">7 Days</button>
-                <button class="filter-btn" data-filter="lifetime">Lifetime</button>
-                <div class="date-filter"><input type="date" id="start-date"><input type="date" id="end-date"></div>
-            </div>
-            <button id="view-profit-btn" class="btn btn-secondary" style="margin-top: 1rem;">View Profit History</button>
-        </div>
-        <div id="history-list"></div>
-    </section>
-
-    <!-- Screen: Manager Panel -->
-    <section id="manager-screen" class="screen">
-        <div class="card">
-            <h2>Add New User</h2>
-            <form id="add-salesperson-form">
-                <div class="form-group"><label for="salespersonName">User Name</label><div class="input-wrapper"><input type="text" id="salespersonName" required></div></div>
-                <button type="submit" class="btn">Add User</button>
-            </form>
-        </div>
-        <div class="card">
-            <h2>Managed Users</h2>
-            <div id="salesperson-list"></div>
-        </div>
-        <div class="card">
-            <h2>Data Management</h2>
-            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">Backup all app data to a file, or restore from a backup.</p>
-            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                <button id="export-data-btn" class="btn btn-secondary" style="flex: 1;">Export Data</button>
-                <button id="import-data-btn" class="btn" style="flex: 1;">Import Data</button>
-                <input type="file" id="import-file-input" accept=".json" style="display: none;">
-            </div>
-        </div>
-    </section>
-
-    <!-- Screen: Profit -->
-    <section id="profit-screen" class="screen">
-        <button id="back-to-history-btn" class="btn btn-secondary" style="margin-bottom: 1rem; width: auto; padding: 0.5rem 1rem;">← Back</button>
-        <div class="summary-display"><div id="profit-summary-value" class="value">₹0.00</div><div class="label">Total Profit</div></div>
-        <div id="profit-list"></div>
-    </section>
-    
-    <!-- Screen: Calculator -->
-    <section id="calculator-screen" class="screen">
-        <div class="calculator-container">
-            <div class="calculator-display-area">
-                 <div id="calculator-history-view"></div>
-                 <div class="calculator-current-view">
-                    <div id="calculator-expression" class="calculator-expression"></div>
-                    <div id="calculator-result" class="calculator-result">0</div>
-                 </div>
-            </div>
-            <div id="calculator-keypad" class="calculator-keypad">
-                <button class="calc-btn special" data-key="ac"><span>AC</span></button>
-                <button class="calc-btn special" data-key="("><span>(</span></button>
-                <button class="calc-btn special" data-key=")"><span>)</span></button>
-                <button class="calc-btn operator" data-key="/"><span>÷</span></button>
-                <button class="calc-btn" data-key="7"><span>7</span></button>
-                <button class="calc-btn" data-key="8"><span>8</span></button>
-                <button class="calc-btn" data-key="9"><span>9</span></button>
-                <button class="calc-btn operator" data-key="*"><span>×</span></button>
-                <button class="calc-btn" data-key="4"><span>4</span></button>
-                <button class="calc-btn" data-key="5"><span>5</span></button>
-                <button class="calc-btn" data-key="6"><span>6</span></button>
-                <button class="calc-btn operator" data-key="-"><span>−</span></button>
-                <button class="calc-btn" data-key="1"><span>1</span></button>
-                <button class="calc-btn" data-key="2"><span>2</span></button>
-                <button class="calc-btn" data-key="3"><span>3</span></button>
-                <button class="calc-btn operator" data-key="+"><span>+</span></button>
-                <button class="calc-btn" data-key="0"><span>0</span></button>
-                <button class="calc-btn" data-key="."><span>.</span></button>
-                <button class="calc-btn special" data-key="backspace"><span>⌫</span></button>
-                <button class="calc-btn equals" data-key="="><span>=</span></button>
-            </div>
-        </div>
-    </section>
-
-</main>
-
-<!-- Modals -->
-<div id="edit-modal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header"><h2>Edit Product</h2><button class="modal-close-btn">&times;</button></div>
-        <form id="edit-product-form">
-            <input type="hidden" id="editProductId">
-            <div class="form-group"><label for="editSourceCode">Product Code</label><div class="input-wrapper"><input type="text" id="editSourceCode" readonly></div></div>
-            <div class="form-group"><label for="editProductName">Product Name</label><div class="input-wrapper"><input type="text" id="editProductName" required></div></div>
-            <div class="form-group"><label for="editBuyPrice">Buy Price</label><div class="input-wrapper"><input type="number" id="editBuyPrice" step="0.01"></div></div>
-            <div class="form-group"><label for="editSellPrice">Sell Price</label><div class="input-wrapper"><input type="number" id="editSellPrice" step="0.01"></div></div>
-            <button type="submit" class="btn">Save Changes</button>
+<!-- Screen: Add Product -->
+<section id="add-product-screen" class="screen">
+    <div class="card">
+        <form id="add-product-form">
+            <div class="form-group"><label for="sourceCode">Product Code (Unique)</label><div class="input-wrapper"><input type="text" id="sourceCode" required></div></div>
+            <div class="form-group"><label for="productName">Product Name</label><div class="input-wrapper"><input type="text" id="productName" required></div></div>
+            <div class="form-group"><label for="buyPrice">Buy Price</label><div class="input-wrapper"><input type="number" id="buyPrice" step="0.01" placeholder="0.00"></div></div>
+            <div class="form-group"><label for="sellPrice">Sell Price</label><div class="input-wrapper"><input type="number" id="sellPrice" step="0.01" placeholder="0.00"></div></div>
+            <button type="submit" class="btn">Save Product</button>
         </form>
     </div>
-</div>
+</section>
 
-<div id="shared-delete-modal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header"><h2 id="shared-modal-title">Confirm</h2><button class="modal-close-btn">&times;</button></div>
-        <p id="shared-modal-message" style="margin-bottom: 1.5rem; color: var(--text-secondary);"></p>
-        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
-            <button class="btn btn-secondary modal-close-btn">Cancel</button>
-            <button id="shared-modal-confirm-btn" class="btn btn-danger">Confirm</button>
+<!-- Screen: Dashboard -->
+<section id="dashboard-screen" class="screen">
+    <div id="salesperson-selector-container" class="card hidden"><div class="form-group" style="margin-bottom: 0;"><label for="salesperson-selector">Select User for Sale</label><div class="input-wrapper"><select id="salesperson-selector"></select></div></div></div>
+    <div id="product-list"></div>
+</section>
+
+<!-- Screen: History -->
+<section id="history-screen" class="screen">
+    <div class="summary-display"><div id="history-summary-value" class="value">₹0.00</div><div class="label">Total Sales</div></div>
+    <div class="card">
+        <div class="filters">
+            <button class="filter-btn active" data-filter="today">Today</button>
+            <button class="filter-btn" data-filter="7days">7 Days</button>
+            <button class="filter-btn" data-filter="lifetime">Lifetime</button>
+            <div class="date-filter"><input type="date" id="start-date"><input type="date" id="end-date"></div>
+        </div>
+        <button id="view-profit-btn" class="btn btn-secondary" style="margin-top: 1rem;">View Profit History</button>
+    </div>
+    <div id="history-list"></div>
+</section>
+
+<!-- Screen: Manager Panel -->
+<section id="manager-screen" class="screen">
+    <div class="card">
+        <h2>Add New User</h2>
+        <form id="add-salesperson-form">
+            <div class="form-group"><label for="salespersonName">User Name</label><div class="input-wrapper"><input type="text" id="salespersonName" required></div></div>
+            <button type="submit" class="btn">Add User</button>
+        </form>
+    </div>
+    <div class="card">
+        <h2>Managed Users</h2>
+        <div id="salesperson-list"></div>
+    </div>
+    <div class="card">
+        <h2>Data Management</h2>
+        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">Backup all app data to a file, or restore from a backup.</p>
+        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+            <button id="export-data-btn" class="btn btn-secondary" style="flex: 1;">Export Data</button>
+            <button id="import-data-btn" class="btn" style="flex: 1;">Import Data</button>
+            <input type="file" id="import-file-input" accept=".json" style="display: none;">
         </div>
     </div>
-</div>
+</section>
 
+<!-- Screen: User Rates -->
+<section id="user-rates-screen" class="screen">
+    <button id="back-to-manager-btn" class="btn btn-secondary" style="margin-bottom: 1rem; width: auto; padding: 0.5rem 1rem;">← Back</button>
+    <div class="card">
+        <h2 id="user-rates-header">User Rates</h2>
+        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">Set custom selling prices for this user. Leave blank to use the default price.</p>
+        <div id="user-rates-product-list" style="max-height: 50vh; overflow-y: auto;"></div>
+        <button id="save-user-rates-btn" class="btn" style="margin-top: 1.5rem;">Save Rates</button>
+    </div>
+</section>
+
+<!-- Screen: Profit -->
+<section id="profit-screen" class="screen">
+    <button id="back-to-history-btn" class="btn btn-secondary" style="margin-bottom: 1rem; width: auto; padding: 0.5rem 1rem;">← Back</button>
+    <div class="summary-display"><div id="profit-summary-value" class="value">₹0.00</div><div class="label">Total Profit</div></div>
+    <div id="profit-list"></div>
+</section>
+
+<!-- Screen: Calculator -->
+<section id="calculator-screen" class="screen">
+    <div class="calculator-container">
+        <div class="calculator-display-area">
+             <div id="calculator-history-view"></div>
+             <div class="calculator-current-view">
+                <div id="calculator-expression" class="calculator-expression"></div>
+                <div id="calculator-result" class="calculator-result">0</div>
+             </div>
+        </div>
+        <div id="calculator-keypad" class="calculator-keypad">
+            <button class="calc-btn special" data-key="ac"><span>AC</span></button>
+            <button class="calc-btn special" data-key="("><span>(</span></button>
+            <button class="calc-btn special" data-key=")"><span>)</span></button>
+            <button class="calc-btn operator" data-key="/"><span>÷</span></button>
+            <button class="calc-btn" data-key="7"><span>7</span></button>
+            <button class="calc-btn" data-key="8"><span>8</span></button>
+            <button class="calc-btn" data-key="9"><span>9</span></button>
+            <button class="calc-btn operator" data-key="*"><span>×</span></button>
+            <button class="calc-btn" data-key="4"><span>4</span></button>
+            <button class="calc-btn" data-key="5"><span>5</span></button>
+            <button class="calc-btn" data-key="6"><span>6</span></button>
+            <button class="calc-btn operator" data-key="-"><span>−</span></button>
+            <button class="calc-btn" data-key="1"><span>1</span></button>
+            <button class="calc-btn" data-key="2"><span>2</span></button>
+            <button class="calc-btn" data-key="3"><span>3</span></button>
+            <button class="calc-btn operator" data-key="+"><span>+</span></button>
+            <button class="calc-btn" data-key="0"><span>0</span></button>
+            <button class="calc-btn" data-key="."><span>.</span></button>
+            <button class="calc-btn special" data-key="backspace"><span>⌫</span></button>
+            <button class="calc-btn equals" data-key="="><span>=</span></button>
+        </div>
+    </div>
+</section>
+</main>
+<!-- Modals -->
+<div id="edit-modal" class="modal-overlay">
+<div class="modal-content">
+<div class="modal-header"><h2>Edit Product</h2><button class="modal-close-btn">&times;</button></div>
+<form id="edit-product-form">
+<input type="hidden" id="editProductId">
+<div class="form-group"><label for="editSourceCode">Product Code</label><div class="input-wrapper"><input type="text" id="editSourceCode" readonly></div></div>
+<div class="form-group"><label for="editProductName">Product Name</label><div class="input-wrapper"><input type="text" id="editProductName" required></div></div>
+<div class="form-group"><label for="editBuyPrice">Buy Price</label><div class="input-wrapper"><input type="number" id="editBuyPrice" step="0.01"></div></div>
+<div class="form-group"><label for="editSellPrice">Sell Price</label><div class="input-wrapper"><input type="number" id="editSellPrice" step="0.01"></div></div>
+<button type="submit" class="btn">Save Changes</button>
+</form>
+</div>
+</div>
+<div id="shared-delete-modal" class="modal-overlay">
+<div class="modal-content">
+<div class="modal-header"><h2 id="shared-modal-title">Confirm</h2><button class="modal-close-btn">&times;</button></div>
+<p id="shared-modal-message" style="margin-bottom: 1.5rem; color: var(--text-secondary);"></p>
+<div style="display: flex; gap: 1rem; justify-content: flex-end;">
+<button class="btn btn-secondary modal-close-btn">Cancel</button>
+<button id="shared-modal-confirm-btn" class="btn btn-danger">Confirm</button>
+</div>
+</div>
+</div>
 <!-- Floating Save Bar -->
 <div id="save-bar" class="save-bar">
-    <div class="save-bar-info"><span class="label">Total</span><span id="grand-total-amount" class="total-amount">₹0.00</span></div>
-    <div class="save-bar-actions">
-        <button id="reset-quantities-btn" class="ac-btn" title="Reset">AC</button>
-        <button id="save-sale-btn" class="save-btn" title="Save">✓</button>
-    </div>
+<div class="save-bar-info"><span class="label">Total</span><span id="grand-total-amount" class="total-amount">₹0.00</span></div>
+<div class="save-bar-actions">
+<button id="reset-quantities-btn" class="ac-btn" title="Reset">AC</button>
+<button id="save-sale-btn" class="save-btn" title="Save">✓</button>
 </div>
-
+</div>
 <div id="toast" class="toast"></div>
-
 <nav class="bottom-nav">
-    <div class="nav-item" data-screen="add-product"><span class="icon">➕</span><span class="label">Add</span></div>
-    <div class="nav-item active" data-screen="dashboard"><span class="icon">🧮</span><span class="label">Billing</span></div>
-    <div class="nav-item" data-screen="calculator"><span class="icon">🔢</span><span class="label">Calculator</span></div>
-    <div id="manager-nav-item" class="nav-item hidden" data-screen="manager"><span class="icon">💼</span><span class="label">Manager</span></div>
-    <div class="nav-item" data-screen="history"><span class="icon">📜</span><span class="label">History</span></div>
+<div class="nav-item" data-screen="add-product"><span class="icon">➕</span><span class="label">Add</span></div>
+<div class="nav-item active" data-screen="dashboard"><span class="icon">🧮</span><span class="label">Billing</span></div>
+<div class="nav-item" data-screen="calculator"><span class="icon">🔢</span><span class="label">Calculator</span></div>
+<div id="manager-nav-item" class="nav-item hidden" data-screen="manager"><span class="icon">💼</span><span class="label">Manager</span></div>
+<div class="nav-item" data-screen="history"><span class="icon">📜</span><span class="label">History</span></div>
 </nav>
-
 <!-- Embedded JavaScript -->
 <script>
 // =========== SERVICE WORKER REGISTRATION ===========
 const registerServiceWorker = async () => {
-    if ('serviceWorker' in navigator) {
-        try {
-            const swContent = `
-                const CACHE_NAME = 'offline-billing-cache-v1';
-                const urlsToCache = ['/'];
-                self.addEventListener('install', event => {
-                    event.waitUntil(
-                        caches.open(CACHE_NAME).then(cache => {
-                            return fetch(event.request.referrer).then(response => cache.put(urlsToCache[0], response));
-                        })
-                    );
-                });
-                self.addEventListener('fetch', event => {
-                    event.respondWith(
-                        caches.match(event.request).then(response => response || fetch(event.request))
-                    );
-                });
-                self.addEventListener('activate', event => {
-                    const cacheWhitelist = [CACHE_NAME];
-                    event.waitUntil(
-                        caches.keys().then(cacheNames => Promise.all(
-                            cacheNames.map(cacheName => {
-                                if (!cacheWhitelist.includes(cacheName)) return caches.delete(cacheName);
-                            })
-                        ))
-                    );
-                });
-            `;
-            const swBlob = new Blob([swContent], { type: 'application/javascript' });
-            const swUrl = URL.createObjectURL(swBlob);
-            await navigator.serviceWorker.register(swUrl);
-            console.log('Service Worker registered');
-        } catch (error) {
-            console.error('Service Worker registration failed:', error);
-        }
-    }
+if ('serviceWorker' in navigator) {
+try {
+const swContent = `
+const CACHE_NAME = 'offline-billing-cache-v1';
+const urlsToCache = ['/'];
+self.addEventListener('install', event => {
+event.waitUntil(
+caches.open(CACHE_NAME).then(cache => {
+return fetch(event.request.referrer).then(response => cache.put(urlsToCache[0], response));
+})
+);
+});
+self.addEventListener('fetch', event => {
+event.respondWith(
+caches.match(event.request).then(response => response || fetch(event.request))
+);
+});
+self.addEventListener('activate', event => {
+const cacheWhitelist = [CACHE_NAME];
+event.waitUntil(
+caches.keys().then(cacheNames => Promise.all(
+cacheNames.map(cacheName => {
+if (!cacheWhitelist.includes(cacheName)) return caches.delete(cacheName);
+})
+))
+);
+});
+`;
+const swBlob = new Blob([swContent], { type: 'application/javascript' });
+const swUrl = URL.createObjectURL(swBlob);
+await navigator.serviceWorker.register(swUrl);
+console.log('Service Worker registered');
+} catch (error) {
+console.error('Service Worker registration failed:', error);
+}
+}
 };
 
 // =========== LOCAL DATABASE (IndexedDB) ===========
 const storage = (() => {
-    let db;
-    const DB_NAME = 'OfflineBillingDB';
-    const DB_VERSION = 1;
+let db;
+const DB_NAME = 'OfflineBillingDB';
+const DB_VERSION = 1;
 
-    const initDB = () => new Promise((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME, DB_VERSION);
-        request.onerror = () => reject("Error opening DB. Please enable cookies/site data.");
-        request.onsuccess = (event) => { db = event.target.result; resolve(); };
-        request.onupgradeneeded = (event) => {
-            const dbInstance = event.target.result;
-            if (!dbInstance.objectStoreNames.contains('products')) dbInstance.createObjectStore('products', { keyPath: 'id' });
-            if (!dbInstance.objectStoreNames.contains('salesHistory')) dbInstance.createObjectStore('salesHistory', { keyPath: 'id' });
-            if (!dbInstance.objectStoreNames.contains('salespersons')) dbInstance.createObjectStore('salespersons', { keyPath: 'id' });
-        };
-    });
+const initDB = () => new Promise((resolve, reject) => {
+const request = indexedDB.open(DB_NAME, DB_VERSION);
+request.onerror = () => reject("Error opening DB. Please enable cookies/site data.");
+request.onsuccess = (event) => { db = event.target.result; resolve(); };
+request.onupgradeneeded = (event) => {
+const dbInstance = event.target.result;
+if (!dbInstance.objectStoreNames.contains('products')) dbInstance.createObjectStore('products', { keyPath: 'id' });
+if (!dbInstance.objectStoreNames.contains('salesHistory')) dbInstance.createObjectStore('salesHistory', { keyPath: 'id' });
+if (!dbInstance.objectStoreNames.contains('salespersons')) dbInstance.createObjectStore('salespersons', { keyPath: 'id' });
+};
+});
 
-    const performTransaction = (storeName, mode, callback) => new Promise((resolve, reject) => {
-        if (!db) return reject("Database not initialized.");
-        const transaction = db.transaction(storeName, mode);
-        const store = transaction.objectStore(storeName);
-        const result = callback(store);
-        if (result && result.onsuccess !== undefined) {
-             result.onsuccess = () => resolve(result.result);
-             result.onerror = () => reject(result.error);
-        }
-        transaction.oncomplete = () => { if (!result || result.onsuccess === undefined) resolve(); };
-        transaction.onerror = () => reject(transaction.error);
-    });
-    
-    return {
-        initDB,
-        saveItem: (storeName, item) => performTransaction(storeName, 'readwrite', store => store.put(item)),
-        getAll: (storeName) => performTransaction(storeName, 'readonly', store => store.getAll()),
-        deleteItem: (storeName, id) => performTransaction(storeName, 'readwrite', store => store.delete(id)),
-        importData: async (data) => {
-            for (const storeName of ['products', 'salespersons', 'salesHistory']) {
-                await performTransaction(storeName, 'readwrite', store => {
-                    store.clear();
-                    if (data[storeName]) data[storeName].forEach(item => store.put(item));
-                });
-            }
-        }
-    };
+const performTransaction = (storeName, mode, callback) => new Promise((resolve, reject) => {
+if (!db) return reject("Database not initialized.");
+const transaction = db.transaction(storeName, mode);
+const store = transaction.objectStore(storeName);
+const result = callback(store);
+if (result && result.onsuccess !== undefined) {
+result.onsuccess = () => resolve(result.result);
+result.onerror = () => reject(result.error);
+}
+transaction.oncomplete = () => { if (!result || result.onsuccess === undefined) resolve(); };
+transaction.onerror = () => reject(transaction.error);
+});
+
+return {
+initDB,
+saveItem: (storeName, item) => performTransaction(storeName, 'readwrite', store => store.put(item)),
+getAll: (storeName) => performTransaction(storeName, 'readonly', store => store.getAll()),
+deleteItem: (storeName, id) => performTransaction(storeName, 'readwrite', store => store.delete(id)),
+importData: async (data) => {
+for (const storeName of ['products', 'salespersons', 'salesHistory']) {
+await performTransaction(storeName, 'readwrite', store => {
+store.clear();
+if (data[storeName]) data[storeName].forEach(item => store.put(item));
+});
+}
+}
+};
 })();
 
 
 // =========== MAIN APP LOGIC ===========
 document.addEventListener('DOMContentLoaded', () => {
-    // App State
-    let products = [];
-    let salesHistory = [];
-    let salespersons = [];
-    let tempQuantities = {};
-    let activeModals = [];
-    let screenHistory = ['dashboard'];
-    let calcExpression = '';
-    let isResultShown = false;
+// App State
+let products = [];
+let salesHistory = [];
+let salespersons = [];
+let currentUserIdForRates = null;
+let tempQuantities = {};
+let activeModals = [];
+let screenHistory = ['dashboard'];
+let calcExpression = '';
+let isResultShown = false;
 
-    // DOM Elements
-    const screens = document.querySelectorAll('.screen');
-    const navItems = document.querySelectorAll('.nav-item');
-    const headerTitle = document.getElementById('header-title');
-    const saveBar = document.getElementById('save-bar');
-    const themeToggle = document.getElementById('theme-toggle');
-    const toast = document.getElementById('toast');
+// DOM Elements
+const screens = document.querySelectorAll('.screen');
+const navItems = document.querySelectorAll('.nav-item');
+const headerTitle = document.getElementById('header-title');
+const saveBar = document.getElementById('save-bar');
+const themeToggle = document.getElementById('theme-toggle');
+const toast = document.getElementById('toast');
 
-    // Utility Functions
-    const generateUniqueId = () => Date.now().toString(36) + Math.random().toString(36).substring(2);
-    const showToast = (message) => {
-        toast.textContent = message;
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 3000);
-    };
-    const formatCurrency = (num) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(num || 0);
-    const formatDate = (timestamp) => {
-        const date = new Date(timestamp);
-        const today = new Date();
-        const yesterday = new Date(today);
-        yesterday.setDate(yesterday.getDate() - 1);
-        if (date.toDateString() === today.toDateString()) return 'Today';
-        if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
-        return date.toLocaleDateString('en-GB'); // DD/MM/YYYY
-    };
+// Utility Functions
+const generateUniqueId = () => Date.now().toString(36) + Math.random().toString(36).substring(2);
+const showToast = (message) => {
+toast.textContent = message;
+toast.classList.add('show');
+setTimeout(() => toast.classList.remove('show'), 3000);
+};
+const formatCurrency = (num) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(num || 0);
+const formatDate = (timestamp) => {
+const date = new Date(timestamp);
+const today = new Date();
+const yesterday = new Date(today);
+yesterday.setDate(yesterday.getDate() - 1);
+if (date.toDateString() === today.toDateString()) return 'Today';
+if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
+return date.toLocaleDateString('en-GB'); // DD/MM/YYYY
+};
 
-    // Theme Management
-    const applyTheme = (theme) => {
-        document.body.classList.toggle('dark-mode', theme === 'dark');
-        themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
-        localStorage.setItem('theme', theme);
-    };
+// Theme Management
+const applyTheme = (theme) => {
+document.body.classList.toggle('dark-mode', theme === 'dark');
+themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+localStorage.setItem('theme', theme);
+};
 
-    // Navigation
-    const switchScreen = (screenId, isBack = false) => {
-        document.body.classList.toggle('calculator-active', screenId === 'calculator');
-        const titles = { 'dashboard': 'Billing', 'add-product': 'Add Product', 'history': 'Sales History', 'manager': 'Manager Panel', 'profit': 'Profit History', 'calculator': 'Calculator' };
-        headerTitle.textContent = titles[screenId] || 'App';
-        screens.forEach(s => s.classList.toggle('active', s.id === `${screenId}-screen`));
-        navItems.forEach(item => item.classList.toggle('active', item.dataset.screen === screenId));
-        saveBar.classList.toggle('visible', screenId === 'dashboard' && parseFloat(document.getElementById('grand-total-amount').textContent.replace(/[^0-9.]/g, '')) > 0);
-        
-        if (!isBack && screenHistory[screenHistory.length - 1] !== screenId) screenHistory.push(screenId);
-        
-        if (screenId === 'dashboard') renderDashboard();
-        if (screenId === 'history') renderHistory();
-        if (screenId === 'profit') renderProfitHistory();
-        if (screenId === 'manager') renderManagerScreen();
-        if (screenId === 'calculator') {
-            renderCalculatorHistory();
-            updateCalcDisplay();
-        }
-    };
+// Navigation
+const switchScreen = (screenId, isBack = false) => {
+document.body.classList.toggle('calculator-active', screenId === 'calculator');
+const titles = { 'dashboard': 'Billing', 'add-product': 'Add Product', 'history': 'Sales History', 'manager': 'Manager Panel', 'profit': 'Profit History', 'calculator': 'Calculator', 'user-rates': 'User Rates' };
+headerTitle.textContent = titles[screenId] || 'App';
+screens.forEach(s => s.classList.toggle('active', s.id === `${screenId}-screen`));
+navItems.forEach(item => item.classList.toggle('active', item.dataset.screen === screenId));
+saveBar.classList.toggle('visible', screenId === 'dashboard' && parseFloat(document.getElementById('grand-total-amount').textContent.replace(/[^0-9.]/g, '')) > 0);
 
-    // Modal Logic
-    const showModal = (modalId) => {
-        document.getElementById(modalId).classList.add('show');
-        activeModals.push(modalId);
-    };
-    const closeModal = () => {
-        if (activeModals.length > 0) {
-            document.getElementById(activeModals.pop()).classList.remove('show');
-            return true;
-        }
-        return false;
-    };
-    const showConfirmationModal = (title, message, onConfirm) => {
-        document.getElementById('shared-modal-title').textContent = title;
-        document.getElementById('shared-modal-message').innerHTML = message;
-        const confirmBtn = document.getElementById('shared-modal-confirm-btn');
-        const newConfirmBtn = confirmBtn.cloneNode(true);
-        confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
-        newConfirmBtn.onclick = () => { onConfirm(); closeModal(); };
-        showModal('shared-delete-modal');
-    };
+if (!isBack && screenHistory[screenHistory.length - 1] !== screenId) screenHistory.push(screenId);
 
-    // Android Back Button
-    const handleBackButton = (e) => {
-        e.preventDefault();
-        if (closeModal()) return;
-        if (screenHistory.length > 1) {
-            screenHistory.pop();
-            switchScreen(screenHistory[screenHistory.length - 1], true);
-        } else {
-            showConfirmationModal('Exit App', 'Are you sure you want to exit?', () => {
-                if (navigator.app) navigator.app.exitApp();
-            });
-        }
-    };
-    document.addEventListener('backbutton', handleBackButton, false);
+if (screenId === 'dashboard') renderDashboard();
+if (screenId === 'history') renderHistory();
+if (screenId === 'profit') renderProfitHistory();
+if (screenId === 'manager') renderManagerScreen();
+if (screenId === 'user-rates') renderUserRatesScreen();
+if (screenId === 'calculator') {
+renderCalculatorHistory();
+updateCalcDisplay();
+}
+};
 
-    // Dashboard UI
-    const renderDashboard = () => {
-        const listDiv = document.getElementById('product-list');
-        listDiv.innerHTML = products.length === 0
-            ? `<div class="card" style="text-align:center; color: var(--text-secondary);">No products added. Use the 'Add' button to start.</div>`
-            : products.map(p => `
-                <div class="card product-card" data-product-id="${p.id}">
-                    <div class="product-card-main">
-                        <div class="product-info">
-                            <h3>${p.productName}</h3>
-                            <div class="meta">Code: ${p.sourceCode} | Sell: ${formatCurrency(p.sellPrice)}</div>
-                        </div>
-                        <div class="quantity-controls">
-                            <button class="quantity-btn minus-btn">-</button>
-                            <input type="number" class="quantity-input" value="${tempQuantities[p.id] || 0}" min="0" pattern="[0-9]*">
-                            <button class="quantity-btn plus-btn">+</button>
-                        </div>
-                    </div>
-                    <div class="product-calculation">
-                        <div class="product-actions">
-                            <button class="action-btn edit-btn" title="Edit">✏️</button>
-                            <button class="action-btn delete-btn" title="Delete">🗑️</button>
-                        </div>
-                        <div class="value total-price">${formatCurrency((tempQuantities[p.id] || 0) * p.sellPrice)}</div>
-                    </div>
-                </div>`).join('');
-        attachDashboardListeners();
-    };
+// Modal Logic
+const showModal = (modalId) => {
+document.getElementById(modalId).classList.add('show');
+activeModals.push(modalId);
+};
+const closeModal = () => {
+if (activeModals.length > 0) {
+document.getElementById(activeModals.pop()).classList.remove('show');
+return true;
+}
+return false;
+};
+const showConfirmationModal = (title, message, onConfirm) => {
+document.getElementById('shared-modal-title').textContent = title;
+document.getElementById('shared-modal-message').innerHTML = message;
+const confirmBtn = document.getElementById('shared-modal-confirm-btn');
+const newConfirmBtn = confirmBtn.cloneNode(true);
+confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+newConfirmBtn.onclick = () => { onConfirm(); closeModal(); };
+showModal('shared-delete-modal');
+};
 
-    const attachDashboardListeners = () => {
-        document.querySelectorAll('.product-card').forEach(card => {
-            const id = card.dataset.productId;
-            const input = card.querySelector('.quantity-input');
-            const product = products.find(p => p.id === id);
-            
-            const update = () => {
-                const quantity = Math.max(0, parseInt(input.value) || 0);
-                tempQuantities[id] = quantity;
-                input.value = quantity;
-                card.querySelector('.total-price').textContent = formatCurrency(quantity * (product?.sellPrice || 0));
-                updateGrandTotal();
-            };
-            card.querySelector('.plus-btn').onclick = () => { input.value++; update(); };
-            card.querySelector('.minus-btn').onclick = () => { if (input.value > 0) input.value--; update(); };
-            input.oninput = update;
-            card.querySelector('.edit-btn').onclick = () => openEditModal(id);
-            card.querySelector('.delete-btn').onclick = () => handleDeleteProduct(id);
-        });
-    };
+// Android Back Button
+const handleBackButton = (e) => {
+e.preventDefault();
+if (closeModal()) return;
+if (screenHistory.length > 1) {
+screenHistory.pop();
+switchScreen(screenHistory[screenHistory.length - 1], true);
+} else {
+showConfirmationModal('Exit App', 'Are you sure you want to exit?', () => {
+if (navigator.app) navigator.app.exitApp();
+});
+}
+};
+document.addEventListener('backbutton', handleBackButton, false);
 
-    const updateGrandTotal = () => {
-        let total = Object.keys(tempQuantities).reduce((sum, id) => {
-            const product = products.find(p => p.id === id);
-            return sum + (tempQuantities[id] * (product?.sellPrice || 0));
-        }, 0);
-        document.getElementById('grand-total-amount').textContent = formatCurrency(total);
-        saveBar.classList.toggle('visible', total > 0);
-    };
+// Price Logic
+const getAppliedSellPrice = (product, userId) => {
+if (!userId || userId === 'direct_sale' || !product) {
+return product?.sellPrice || 0;
+}
+const user = salespersons.find(s => s.id === userId);
+if (user && user.customRates && user.customRates[product.id]) {
+return parseFloat(user.customRates[product.id]);
+}
+return product.sellPrice;
+};
 
-    // Data Handlers
-    const handleAddProduct = async (e) => {
-        e.preventDefault();
-        const sourceCode = document.getElementById('sourceCode').value.trim().toUpperCase();
-        const productName = document.getElementById('productName').value.trim();
-        if (!sourceCode || !productName) return showToast('Product Code and Name are required.');
-        if (products.some(p => p.sourceCode === sourceCode)) return showToast('This Product Code already exists.');
-        
-        const newProduct = {
-            id: generateUniqueId(), sourceCode, productName,
-            buyPrice: parseFloat(document.getElementById('buyPrice').value) || 0,
-            sellPrice: parseFloat(document.getElementById('sellPrice').value) || 0,
-            createdAt: Date.now()
-        };
-        await storage.saveItem('products', newProduct);
-        products.unshift(newProduct);
-        products.sort((a,b) => b.createdAt - a.createdAt);
-        e.target.reset();
-        switchScreen('dashboard');
-        showToast('Product added successfully.');
-    };
+// Dashboard UI
+const renderDashboard = () => {
+const listDiv = document.getElementById('product-list');
+const selectedUserId = document.getElementById('salesperson-selector').value;
+listDiv.innerHTML = products.length === 0
+? `<div class="card" style="text-align:center; color: var(--text-secondary);">No products added. Use the 'Add' button to start.</div>`
+: products.map(p => {
+const appliedPrice = getAppliedSellPrice(p, selectedUserId);
+return `
+<div class="card product-card" data-product-id="${p.id}">
+<div class="product-card-main">
+<div class="product-info">
+<h3>${p.productName}</h3>
+<div class="meta">Code: ${p.sourceCode} | Sell: ${formatCurrency(appliedPrice)}</div>
+</div>
+<div class="quantity-controls">
+<button class="quantity-btn minus-btn">-</button>
+<input type="number" class="quantity-input" value="${tempQuantities[p.id] || 0}" min="0" pattern="[0-9]*">
+<button class="quantity-btn plus-btn">+</button>
+</div>
+</div>
+<div class="product-calculation">
+<div class="product-actions">
+<button class="action-btn edit-btn" title="Edit">✏️</button>
+<button class="action-btn delete-btn" title="Delete">🗑️</button>
+</div>
+<div class="value total-price">${formatCurrency((tempQuantities[p.id] || 0) * appliedPrice)}</div>
+</div>
+</div>`}).join('');
+attachDashboardListeners();
+};
 
-    const handleDeleteProduct = (id) => {
-        showConfirmationModal('Delete Product', 'Are you sure you want to permanently delete this product?', async () => {
-            await storage.deleteItem('products', id);
-            products = products.filter(p => p.id !== id);
-            renderDashboard();
-            showToast('Product deleted.');
-        });
-    };
-    
-    const openEditModal = (id) => {
-        const product = products.find(p => p.id === id);
-        if (!product) return;
-        document.getElementById('editProductId').value = id;
-        document.getElementById('editSourceCode').value = product.sourceCode;
-        document.getElementById('editProductName').value = product.productName;
-        document.getElementById('editBuyPrice').value = product.buyPrice;
-        document.getElementById('editSellPrice').value = product.sellPrice;
-        showModal('edit-modal');
-    };
+const attachDashboardListeners = () => {
+document.querySelectorAll('.product-card').forEach(card => {
+const id = card.dataset.productId;
+const input = card.querySelector('.quantity-input');
+const product = products.find(p => p.id === id);
 
-    const handleEditProduct = async (e) => {
-        e.preventDefault();
-        const id = document.getElementById('editProductId').value;
-        const updatedData = {
-            productName: document.getElementById('editProductName').value.trim(),
-            buyPrice: parseFloat(document.getElementById('editBuyPrice').value) || 0,
-            sellPrice: parseFloat(document.getElementById('editSellPrice').value) || 0,
-        };
-        const item = await storage.saveItem('products', {...products.find(p => p.id === id), ...updatedData});
-        const index = products.findIndex(p => p.id === id);
-        if (index > -1) Object.assign(products[index], updatedData);
-        closeModal();
-        renderDashboard();
-        showToast('Product updated.');
-    };
+const update = () => {
+const quantity = Math.max(0, parseInt(input.value) || 0);
+const selectedUserId = document.getElementById('salesperson-selector').value;
+const appliedPrice = getAppliedSellPrice(product, selectedUserId);
+tempQuantities[id] = quantity;
+input.value = quantity;
+card.querySelector('.total-price').textContent = formatCurrency(quantity * appliedPrice);
+updateGrandTotal();
+};
+card.querySelector('.plus-btn').onclick = () => { input.value++; update(); };
+card.querySelector('.minus-btn').onclick = () => { if (input.value > 0) input.value--; update(); };
+input.oninput = update;
+card.querySelector('.edit-btn').onclick = () => openEditModal(id);
+card.querySelector('.delete-btn').onclick = () => handleDeleteProduct(id);
+});
+};
 
-    const handleSaveSale = async () => {
-        const items = Object.keys(tempQuantities).filter(id => tempQuantities[id] > 0);
-        if (items.length === 0) return showToast('No items selected to save.');
-        
-        let totalAmount = 0, totalProfit = 0;
-        const saleQuantities = {};
-        
-        items.forEach(id => {
-            const product = products.find(p => p.id === id);
-            if(product) {
-                const quantity = tempQuantities[id];
-                totalAmount += quantity * product.sellPrice;
-                totalProfit += quantity * (product.sellPrice - (product.buyPrice || 0));
-                saleQuantities[id] = quantity;
-            }
-        });
+const updateGrandTotal = () => {
+const selectedUserId = document.getElementById('salesperson-selector').value;
+let total = Object.keys(tempQuantities).reduce((sum, id) => {
+const product = products.find(p => p.id === id);
+const appliedPrice = getAppliedSellPrice(product, selectedUserId);
+return sum + (tempQuantities[id] * appliedPrice);
+}, 0);
+document.getElementById('grand-total-amount').textContent = formatCurrency(total);
+saveBar.classList.toggle('visible', total > 0);
+};
 
-        const sale = {
-            id: generateUniqueId(), timestamp: Date.now(), totalAmount, totalProfit, quantities: saleQuantities,
-            salespersonId: localStorage.getItem('appMode') === 'manager' ? document.getElementById('salesperson-selector').value : 'direct_sale'
-        };
-        
-        await storage.saveItem('salesHistory', sale);
-        salesHistory.unshift(sale);
-        tempQuantities = {};
-        renderDashboard();
-        updateGrandTotal();
-        showToast('Sale saved successfully!');
-    };
+// Data Handlers
+const handleAddProduct = async (e) => {
+e.preventDefault();
+const sourceCode = document.getElementById('sourceCode').value.trim().toUpperCase();
+const productName = document.getElementById('productName').value.trim();
+if (!sourceCode || !productName) return showToast('Product Code and Name are required.');
+if (products.some(p => p.sourceCode === sourceCode)) return showToast('This Product Code already exists.');
 
-    // History & Profit Screens
-    const renderHistory = () => {
-        const listDiv = document.getElementById('history-list');
-        const filtered = filterData(salesHistory);
-        document.getElementById('history-summary-value').textContent = formatCurrency(filtered.reduce((sum, s) => sum + s.totalAmount, 0));
-        
-        listDiv.innerHTML = filtered.length === 0 
-            ? `<div class="card" style="text-align:center; color: var(--text-secondary);">No sales history for this period.</div>`
-            : filtered.map(sale => {
-                const saleItems = Object.keys(sale.quantities).map(pid => {
-                    const p = products.find(prod => prod.id === pid);
-                    return `${p ? p.sourceCode : 'N/A'}x${sale.quantities[pid]}`;
-                }).join(', ');
-                let userName = 'Direct Sale';
-                if (sale.salespersonId && sale.salespersonId !== 'direct_sale') {
-                    const user = salespersons.find(s => s.id === sale.salespersonId);
-                    userName = user ? user.name : 'Unknown User';
-                }
-                return `<div class="card">
-                    <div style="font-size: 0.8rem; color: var(--text-secondary);">${new Date(sale.timestamp).toLocaleString()}</div>
-                    <div style="font-weight:bold; margin: 0.5rem 0; font-size: 1.2rem;">${formatCurrency(sale.totalAmount)} <span style="font-size: 0.9rem; font-weight: 500;">(${userName})</span></div>
-                    <div style="font-size:0.9rem; color:var(--text-secondary); background: var(--bg-color); padding: 0.5rem; border-radius: 8px;">${saleItems}</div>
-                </div>`;
-            }).join('');
-    };
+const newProduct = {
+id: generateUniqueId(), sourceCode, productName,
+buyPrice: parseFloat(document.getElementById('buyPrice').value) || 0,
+sellPrice: parseFloat(document.getElementById('sellPrice').value) || 0,
+createdAt: Date.now()
+};
+await storage.saveItem('products', newProduct);
+products.unshift(newProduct);
+products.sort((a,b) => b.createdAt - a.createdAt);
+e.target.reset();
+switchScreen('dashboard');
+showToast('Product added successfully.');
+};
 
-    const renderProfitHistory = () => {
-        const listDiv = document.getElementById('profit-list');
-        const filtered = filterData(salesHistory);
-        document.getElementById('profit-summary-value').textContent = formatCurrency(filtered.reduce((sum, s) => sum + s.totalProfit, 0));
-        
-        const profitData = {};
-        filtered.forEach(sale => {
-            const dateStr = formatDate(sale.timestamp);
-            if (!profitData[dateStr]) profitData[dateStr] = { total: 0, users: {} };
-            
-            const user = salespersons.find(s => s.id === sale.salespersonId);
-            const userName = sale.salespersonId === 'direct_sale' ? 'Direct Sale' : (user ? user.name : 'Unknown User');
-            
-            profitData[dateStr].total += sale.totalProfit;
-            profitData[dateStr].users[userName] = (profitData[dateStr].users[userName] || 0) + sale.totalProfit;
-        });
+const handleDeleteProduct = (id) => {
+showConfirmationModal('Delete Product', 'Are you sure you want to permanently delete this product?', async () => {
+await storage.deleteItem('products', id);
+products = products.filter(p => p.id !== id);
+renderDashboard();
+showToast('Product deleted.');
+});
+};
 
-        if (Object.keys(profitData).length === 0) {
-            listDiv.innerHTML = `<div class="card" style="text-align:center; color: var(--text-secondary);">No profit data for this period.</div>`;
-            return;
-        }
+const openEditModal = (id) => {
+const product = products.find(p => p.id === id);
+if (!product) return;
+document.getElementById('editProductId').value = id;
+document.getElementById('editSourceCode').value = product.sourceCode;
+document.getElementById('editProductName').value = product.productName;
+document.getElementById('editBuyPrice').value = product.buyPrice;
+document.getElementById('editSellPrice').value = product.sellPrice;
+showModal('edit-modal');
+};
 
-        listDiv.innerHTML = Object.keys(profitData).map(date => `
-            <div class="profit-date-group">
-                <div class="profit-date-header">${date}</div>
-                <div class="card">
-                    ${Object.entries(profitData[date].users).map(([name, profit]) => `
-                        <div class="profit-user-item">
-                            <span class="profit-user-name">${name}</span>
-                            <span class="profit-user-amount">${formatCurrency(profit)}</span>
-                        </div>
-                    `).join('')}
-                    <div class="profit-date-total">Total: ${formatCurrency(profitData[date].total)}</div>
-                </div>
-            </div>
-        `).join('');
-    };
+const handleEditProduct = async (e) => {
+e.preventDefault();
+const id = document.getElementById('editProductId').value;
+const updatedData = {
+productName: document.getElementById('editProductName').value.trim(),
+buyPrice: parseFloat(document.getElementById('editBuyPrice').value) || 0,
+sellPrice: parseFloat(document.getElementById('editSellPrice').value) || 0,
+};
+const item = await storage.saveItem('products', {...products.find(p => p.id === id), ...updatedData});
+const index = products.findIndex(p => p.id === id);
+if (index > -1) Object.assign(products[index], updatedData);
+closeModal();
+renderDashboard();
+showToast('Product updated.');
+};
 
-    const filterData = (data) => {
-        const activeFilter = document.querySelector('#history-screen .filter-btn.active')?.dataset.filter;
-        if (!activeFilter) return data;
+const handleSaveSale = async () => {
+const items = Object.keys(tempQuantities).filter(id => tempQuantities[id] > 0);
+if (items.length === 0) return showToast('No items selected to save.');
 
-        const now = new Date();
-        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-        if (activeFilter === 'today') return data.filter(s => s.timestamp >= startOfDay);
-        if (activeFilter === '7days') return data.filter(s => s.timestamp >= now.getTime() - 7 * 86400000);
-        if (activeFilter === 'lifetime') return data;
-        
-        const start = document.getElementById('start-date').value;
-        const end = document.getElementById('end-date').value;
-        if (start && end) {
-            const startTime = new Date(start).getTime();
-            const endTime = new Date(end).setHours(23, 59, 59, 999);
-            return data.filter(s => s.timestamp >= startTime && s.timestamp <= endTime);
-        }
-        return data;
-    };
+let totalAmount = 0, totalProfit = 0;
+const saleQuantities = {};
+const selectedUserId = localStorage.getItem('appMode') === 'manager' ? document.getElementById('salesperson-selector').value : 'direct_sale';
 
-    // Manager Panel
-    const renderManagerScreen = () => {
-        const listDiv = document.getElementById('salesperson-list');
-        const selector = document.getElementById('salesperson-selector');
-        
-        listDiv.innerHTML = salespersons.length === 0 ? `<p style="text-align:center; color: var(--text-secondary);">No users added yet.</p>` : salespersons.map(s => `
-            <div class="card" style="display:flex; justify-content:space-between; align-items:center; padding: 1rem 1.5rem;">
-                <span>${s.name}</span>
-                <button class="action-btn delete-salesperson-btn" data-id="${s.id}" title="Delete User">🗑️</button>
-            </div>`).join('');
-        selector.innerHTML = salespersons.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
-        if (salespersons.length === 0) selector.innerHTML = '<option>No users available</option>';
-        document.querySelectorAll('.delete-salesperson-btn').forEach(btn => btn.onclick = () => handleDeleteSalesperson(btn.dataset.id));
-    };
-    
-    const handleAddSalesperson = async (e) => {
-        e.preventDefault();
-        const name = document.getElementById('salespersonName').value.trim();
-        if (!name) return showToast('User name cannot be empty.');
-        if (salespersons.some(s => s.name.toLowerCase() === name.toLowerCase())) return showToast('User name already exists.');
-        const newUser = { id: generateUniqueId(), name };
-        await storage.saveItem('salespersons', newUser);
-        salespersons.push(newUser);
-        renderManagerScreen();
-        e.target.reset();
-        showToast('User added successfully.');
-    };
+items.forEach(id => {
+const product = products.find(p => p.id === id);
+if(product) {
+const quantity = tempQuantities[id];
+const appliedPrice = getAppliedSellPrice(product, selectedUserId);
+totalAmount += quantity * appliedPrice;
+totalProfit += quantity * (appliedPrice - (product.buyPrice || 0));
+saleQuantities[id] = quantity;
+}
+});
 
-    const handleDeleteSalesperson = (id) => {
-        const user = salespersons.find(s => s.id === id);
-        showConfirmationModal('Delete User', `Are you sure you want to delete <strong>${user.name}</strong>?`, async () => {
-            await storage.deleteItem('salespersons', id);
-            salespersons = salespersons.filter(s => s.id !== id);
-            renderManagerScreen();
-            showToast('User deleted.');
-        });
-    };
-    
-    // Calculator Logic
-    const calcExprEl = document.getElementById('calculator-expression');
-    const calcResEl = document.getElementById('calculator-result');
+const sale = {
+id: generateUniqueId(), timestamp: Date.now(), totalAmount, totalProfit, quantities: saleQuantities,
+salespersonId: selectedUserId
+};
 
-    const formatCalcExpression = (expr) => expr.replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−');
-    
-    const updateCalcDisplay = () => {
-        calcExprEl.textContent = formatCalcExpression(calcExpression);
+await storage.saveItem('salesHistory', sale);
+salesHistory.unshift(sale);
+tempQuantities = {};
+renderDashboard();
+updateGrandTotal();
+showToast('Sale saved successfully!');
+};
 
-        if (isResultShown) {
-            return;
-        }
+// History & Profit Screens
+const renderHistory = () => {
+const listDiv = document.getElementById('history-list');
+const filtered = filterData(salesHistory);
+document.getElementById('history-summary-value').textContent = formatCurrency(filtered.reduce((sum, s) => sum + s.totalAmount, 0));
 
-        if (calcExpression === '') {
-            calcResEl.textContent = '0';
-            return;
-        }
+listDiv.innerHTML = filtered.length === 0
+? `<div class="card" style="text-align:center; color: var(--text-secondary);">No sales history for this period.</div>`
+: filtered.map(sale => {
+const saleItems = Object.keys(sale.quantities).map(pid => {
+const p = products.find(prod => prod.id === pid);
+return `${p ? p.sourceCode : 'N/A'}x${sale.quantities[pid]}`;
+}).join(', ');
+let userName = 'Direct Sale';
+if (sale.salespersonId && sale.salespersonId !== 'direct_sale') {
+const user = salespersons.find(s => s.id === sale.salespersonId);
+userName = user ? user.name : 'Unknown User';
+}
+return `<div class="card">
+<div style="font-size: 0.8rem; color: var(--text-secondary);">${new Date(sale.timestamp).toLocaleString()}</div>
+<div style="font-weight:bold; margin: 0.5rem 0; font-size: 1.2rem;">${formatCurrency(sale.totalAmount)} <span style="font-size: 0.9rem; font-weight: 500;">(${userName})</span></div>
+<div style="font-size:0.9rem; color:var(--text-secondary); background: var(--bg-color); padding: 0.5rem; border-radius: 8px;">${saleItems}</div>
+</div>`;
+}).join('');
+};
 
-        try {
-            let exprToEvaluate = calcExpression;
-            if (/[+\-*/]$/.test(exprToEvaluate)) {
-                exprToEvaluate = exprToEvaluate.slice(0, -1);
-            }
-            
-            if (!exprToEvaluate) { return; }
+const renderProfitHistory = () => {
+const listDiv = document.getElementById('profit-list');
+const filtered = filterData(salesHistory);
+document.getElementById('profit-summary-value').textContent = formatCurrency(filtered.reduce((sum, s) => sum + s.totalProfit, 0));
 
-            const result = new Function('return ' + exprToEvaluate.replace(/[^-()\d/*+.]/g, ''))();
-            if (isFinite(result)) {
-                calcResEl.textContent = result;
-            }
-        } catch (err) {
-            // Silently ignore, keeping the last valid result visible
-        }
-    };
-    
-    const evaluateExpression = () => {
-        if (!calcExpression || /[+\-*/.]$/.test(calcExpression)) return;
-        try {
-            const finalExpression = calcExpression;
-            const result = new Function('return ' + finalExpression.replace(/[^-()\d/*+.]/g, ''))();
-            
-            if (!isFinite(result)) {
-                throw new Error('Invalid calculation');
-            }
+const profitData = {};
+filtered.forEach(sale => {
+const dateStr = formatDate(sale.timestamp);
+if (!profitData[dateStr]) profitData[dateStr] = { total: 0, users: {} };
 
-            if (String(finalExpression) !== String(result)) {
-                saveCalcHistory(finalExpression, result);
-                renderCalculatorHistory();
-            }
+const user = salespersons.find(s => s.id === sale.salespersonId);
+const userName = sale.salespersonId === 'direct_sale' ? 'Direct Sale' : (user ? user.name : 'Unknown User');
 
-            calcExprEl.textContent = formatCalcExpression(finalExpression) + ' =';
-            calcResEl.textContent = result;
-            calcExpression = String(result);
-            isResultShown = true;
+profitData[dateStr].total += sale.totalProfit;
+profitData[dateStr].users[userName] = (profitData[dateStr].users[userName] || 0) + sale.totalProfit;
+});
 
-        } catch (err) {
-            return;
-        }
-    };
-    
-    const saveCalcHistory = (expression, result) => {
-        let history = JSON.parse(localStorage.getItem('calculatorHistory') || '[]');
-        history.unshift({ expression, result, timestamp: Date.now() });
-        if (history.length > 50) history.pop();
-        localStorage.setItem('calculatorHistory', JSON.stringify(history));
-    };
-    
-    const renderCalculatorHistory = () => {
-        const history = JSON.parse(localStorage.getItem('calculatorHistory') || '[]');
-        const view = document.getElementById('calculator-history-view');
-        view.innerHTML = history.map(item => `
-            <div class="calc-history-entry">
-                <div class="calc-history-expr">${formatCalcExpression(item.expression)} =</div>
-                <div class="calc-history-res">${item.result}</div>
-            </div>
-        `).join('');
-        if (view.firstChild) {
-             view.firstChild.scrollIntoView({ behavior: 'smooth' });
-        }
-    };
+if (Object.keys(profitData).length === 0) {
+listDiv.innerHTML = `<div class="card" style="text-align:center; color: var(--text-secondary);">No profit data for this period.</div>`;
+return;
+}
 
-    const handleCalcInput = (key) => {
-        if (key === 'ac') {
-            calcExpression = '';
-            calcExprEl.textContent = '';
-            calcResEl.textContent = '0';
-            isResultShown = false;
-            return;
-        }
-        
-        if (isResultShown) {
-            if (/[+\-*/]/.test(key)) {
-                isResultShown = false;
-            } else if (/[\d.(]/.test(key)) {
-                 if (calcExpression) {
-                     saveCalcHistory(calcExpression, calcExpression);
-                     renderCalculatorHistory();
-                }
-                calcExpression = '';
-                isResultShown = false;
-            }
-        }
-        
-        if (key === 'backspace') {
-            calcExpression = calcExpression.slice(0, -1);
-        } else if (key === '=') {
-            evaluateExpression();
-            return;
-        } else if (/[+\-*/]/.test(key)) {
-            if (/[+\-*/]$/.test(calcExpression)) {
-                calcExpression = calcExpression.slice(0, -1) + key;
-            } else {
-                calcExpression += key;
-            }
-        } else {
-            calcExpression += key;
-        }
-        updateCalcDisplay();
-    };
+listDiv.innerHTML = Object.keys(profitData).map(date => `
+<div class="profit-date-group">
+<div class="profit-date-header">${date}</div>
+<div class="card">
+${Object.entries(profitData[date].users).map(([name, profit]) => `
+<div class="profit-user-item">
+<span class="profit-user-name">${name}</span>
+<span class="profit-user-amount">${formatCurrency(profit)}</span>
+</div>
+`).join('')}
+<div class="profit-date-total">Total: ${formatCurrency(profitData[date].total)}</div>
+</div>
+</div>
+`).join('');
+};
 
-    // Data Backup & Restore
-    const handleExportData = async () => {
-        showToast("Generating backup file...");
-        try {
-            const data = {
-                products: await storage.getAll('products'),
-                salespersons: await storage.getAll('salespersons'),
-                salesHistory: await storage.getAll('salesHistory'),
-                settings: {
-                    theme: localStorage.getItem('theme'),
-                    userName: localStorage.getItem('userName'),
-                    appMode: localStorage.getItem('appMode'),
-                    calculatorHistory: localStorage.getItem('calculatorHistory')
-                }
-            };
-            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `billing-app-backup-${new Date().toISOString().slice(0,10)}.json`;
-            
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+const filterData = (data) => {
+const activeFilter = document.querySelector('#history-screen .filter-btn.active')?.dataset.filter;
+if (!activeFilter) return data;
 
-            URL.revokeObjectURL(a.href);
-            showToast("Backup file downloaded!");
-        } catch (error) {
-            console.error('Export failed:', error);
-            showToast('Export failed. See console for details.');
-        }
-    };
+const now = new Date();
+const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+if (activeFilter === 'today') return data.filter(s => s.timestamp >= startOfDay);
+if (activeFilter === '7days') return data.filter(s => s.timestamp >= now.getTime() - 7 * 86400000);
+if (activeFilter === 'lifetime') return data;
 
-    const handleImportData = () => {
-        showConfirmationModal('Import Data', 'This will <strong>overwrite all current data</strong>. This action cannot be undone. Are you sure?', () => {
-            document.getElementById('import-file-input').click();
-        });
-    };
-    
-    const processImportFile = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = async (event) => {
-            try {
-                const data = JSON.parse(event.target.result);
-                if (!data.products || !data.salespersons || !data.salesHistory || !data.settings) throw new Error("Invalid file format");
-                await storage.importData(data);
-                for (const key in data.settings) {
-                    if (data.settings[key] !== null && data.settings[key] !== undefined && typeof data.settings[key] === 'string') {
-                         localStorage.setItem(key, data.settings[key]);
-                    }
-                }
-                showToast('Import successful! App will now reload.');
-                setTimeout(() => window.location.reload(), 2000);
-            } catch (err) {
-                showToast(`Import failed: ${err.message}`);
-            }
-        };
-        reader.readAsText(file);
-    };
+const start = document.getElementById('start-date').value;
+const end = document.getElementById('end-date').value;
+if (start && end) {
+const startTime = new Date(start).getTime();
+const endTime = new Date(end).setHours(23, 59, 59, 999);
+return data.filter(s => s.timestamp >= startTime && s.timestamp <= endTime);
+}
+return data;
+};
 
-    // Initializer
-    const initApp = async () => {
-        try { await storage.initDB(); } catch (error) { alert(error); return; }
+// Manager Panel
+const renderManagerScreen = () => {
+const listDiv = document.getElementById('salesperson-list');
+const selector = document.getElementById('salesperson-selector');
 
-        products = (await storage.getAll('products')).sort((a,b) => b.createdAt - a.createdAt);
-        salesHistory = (await storage.getAll('salesHistory')).sort((a,b) => b.timestamp - a.timestamp);
-        salespersons = await storage.getAll('salespersons');
-        applyTheme(localStorage.getItem('theme') || 'light');
+listDiv.innerHTML = salespersons.length === 0 ? `<p style="text-align:center; color: var(--text-secondary);">No users added yet.</p>` : salespersons.map(s => `
+<div class="card salesperson-item" data-id="${s.id}" style="display:flex; justify-content:space-between; align-items:center; padding: 1rem 1.5rem; cursor: pointer;">
+<span>${s.name}</span>
+<button class="action-btn delete-salesperson-btn" data-id="${s.id}" title="Delete User">🗑️</button>
+</div>`).join('');
+selector.innerHTML = salespersons.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+if (salespersons.length === 0) selector.innerHTML = '<option>No users available</option>';
 
-        // Event Listeners
-        themeToggle.onclick = () => applyTheme(document.body.classList.contains('dark-mode') ? 'light' : 'dark');
-        navItems.forEach(item => item.onclick = () => switchScreen(item.dataset.screen));
-        document.getElementById('setup-form').onsubmit = (e) => {
-            e.preventDefault();
-            localStorage.setItem('userName', document.getElementById('userName').value.trim());
-            switchScreen('mode');
-        };
-        document.getElementById('salesman-mode-btn').onclick = () => { localStorage.setItem('appMode', 'salesman'); initializeAppUI(); };
-        document.getElementById('manager-mode-btn').onclick = () => { localStorage.setItem('appMode', 'manager'); initializeAppUI(); };
-        document.getElementById('add-product-form').onsubmit = handleAddProduct;
-        document.getElementById('edit-product-form').onsubmit = handleEditProduct;
-        document.getElementById('save-sale-btn').onclick = handleSaveSale;
-        document.getElementById('reset-quantities-btn').onclick = () => { tempQuantities = {}; renderDashboard(); updateGrandTotal(); };
-        document.getElementById('view-profit-btn').onclick = () => switchScreen('profit');
-        document.getElementById('back-to-history-btn').onclick = () => switchScreen('history');
-        document.querySelectorAll('#history-screen .filter-btn').forEach(btn => btn.onclick = (e) => {
-            const currentActive = document.querySelector('#history-screen .filter-btn.active');
-            if(currentActive) currentActive.classList.remove('active');
-            e.currentTarget.classList.add('active');
-            if(e.currentTarget.dataset.filter !== 'custom') {
-                document.getElementById('start-date').value = '';
-                document.getElementById('end-date').value = '';
-            }
-            renderHistory();
-        });
-        const dateChangeHandler = () => {
-             const activeBtn = document.querySelector('#history-screen .filter-btn.active');
-             if(activeBtn) activeBtn.classList.remove('active');
-             renderHistory();
-        };
-        document.getElementById('start-date').onchange = dateChangeHandler;
-        document.getElementById('end-date').onchange = dateChangeHandler;
+document.querySelectorAll('.delete-salesperson-btn').forEach(btn => {
+btn.onclick = (e) => {
+e.stopPropagation();
+handleDeleteSalesperson(btn.dataset.id);
+};
+});
+document.querySelectorAll('.salesperson-item').forEach(item => {
+item.onclick = () => {
+currentUserIdForRates = item.dataset.id;
+switchScreen('user-rates');
+};
+});
+};
 
-        document.getElementById('add-salesperson-form').onsubmit = handleAddSalesperson;
-        document.getElementById('export-data-btn').onclick = handleExportData;
-        document.getElementById('import-data-btn').onclick = handleImportData;
-        document.getElementById('import-file-input').onchange = processImportFile;
-        document.querySelectorAll('.modal-close-btn').forEach(btn => btn.onclick = closeModal);
-        document.getElementById('calculator-keypad').addEventListener('click', (e) => {
-             const button = e.target.closest('.calc-btn');
-             if (button) handleCalcInput(button.dataset.key);
-        });
+const renderUserRatesScreen = () => {
+const user = salespersons.find(s => s.id === currentUserIdForRates);
+if (!user) {
+showToast('User not found.');
+switchScreen('manager');
+return;
+}
+document.getElementById('user-rates-header').textContent = `Rates for ${user.name}`;
+const productListDiv = document.getElementById('user-rates-product-list');
 
-        // App Start Logic
-        if (!localStorage.getItem('userName')) switchScreen('setup');
-        else if (!localStorage.getItem('appMode')) switchScreen('mode');
-        else initializeAppUI();
-        
-        document.body.classList.add('app-loaded');
-        registerServiceWorker();
-    };
-    
-    const initializeAppUI = () => {
-        const mode = localStorage.getItem('appMode');
-        document.getElementById('manager-nav-item').classList.toggle('hidden', mode !== 'manager');
-        document.getElementById('salesperson-selector-container').classList.toggle('hidden', mode !== 'manager');
-        switchScreen('dashboard');
-    };
+const sortedProducts = [...products].sort((a,b) => a.productName.localeCompare(b.productName));
 
-    initApp();
+productListDiv.innerHTML = sortedProducts.map(p => `
+<div class="form-group" style="border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1rem;">
+<label for="rate-for-${p.id}">${p.productName} (Default: ${formatCurrency(p.sellPrice)})</label>
+<div class="input-wrapper">
+<input type="number" step="0.01" class="user-rate-input" data-product-id="${p.id}" id="rate-for-${p.id}" placeholder="${p.sellPrice}" value="${user.customRates && user.customRates[p.id] ? user.customRates[p.id] : ''}">
+</div>
+</div>
+`).join('');
+};
+
+const handleSaveUserRates = async () => {
+const user = salespersons.find(s => s.id === currentUserIdForRates);
+if (!user) return showToast('Error saving: User not found.');
+
+if (!user.customRates) user.customRates = {};
+
+document.querySelectorAll('.user-rate-input').forEach(input => {
+const productId = input.dataset.productId;
+const rate = parseFloat(input.value);
+if (!isNaN(rate) && rate > 0) {
+user.customRates[productId] = rate;
+} else {
+delete user.customRates[productId];
+}
+});
+
+await storage.saveItem('salespersons', user);
+showToast(`Custom rates for ${user.name} saved.`);
+switchScreen('manager');
+};
+
+const handleAddSalesperson = async (e) => {
+e.preventDefault();
+const name = document.getElementById('salespersonName').value.trim();
+if (!name) return showToast('User name cannot be empty.');
+if (salespersons.some(s => s.name.toLowerCase() === name.toLowerCase())) return showToast('User name already exists.');
+const newUser = { id: generateUniqueId(), name, customRates: {} };
+await storage.saveItem('salespersons', newUser);
+salespersons.push(newUser);
+renderManagerScreen();
+e.target.reset();
+showToast('User added successfully.');
+};
+
+const handleDeleteSalesperson = (id) => {
+const user = salespersons.find(s => s.id === id);
+showConfirmationModal('Delete User', `Are you sure you want to delete <strong>${user.name}</strong>?`, async () => {
+await storage.deleteItem('salespersons', id);
+salespersons = salespersons.filter(s => s.id !== id);
+renderManagerScreen();
+showToast('User deleted.');
+});
+};
+
+// Calculator Logic
+const calcExprEl = document.getElementById('calculator-expression');
+const calcResEl = document.getElementById('calculator-result');
+
+const formatCalcExpression = (expr) => expr.replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−');
+
+const updateCalcDisplay = () => {
+calcExprEl.textContent = formatCalcExpression(calcExpression);
+
+if (isResultShown) {
+return;
+}
+
+if (calcExpression === '') {
+calcResEl.textContent = '0';
+return;
+}
+
+try {
+let exprToEvaluate = calcExpression;
+if (/[+\-*/]$/.test(exprToEvaluate)) {
+exprToEvaluate = exprToEvaluate.slice(0, -1);
+}
+
+if (!exprToEvaluate) { return; }
+
+const result = new Function('return ' + exprToEvaluate.replace(/[^-()\d/*+.]/g, ''))();
+if (isFinite(result)) {
+calcResEl.textContent = result;
+}
+} catch (err) {
+// Silently ignore, keeping the last valid result visible
+}
+};
+
+const evaluateExpression = () => {
+if (!calcExpression || /[+\-*/.]$/.test(calcExpression)) return;
+try {
+const finalExpression = calcExpression;
+const result = new Function('return ' + finalExpression.replace(/[^-()\d/*+.]/g, ''))();
+
+if (!isFinite(result)) {
+throw new Error('Invalid calculation');
+}
+
+if (String(finalExpression) !== String(result)) {
+saveCalcHistory(finalExpression, result);
+renderCalculatorHistory();
+}
+
+calcExprEl.textContent = formatCalcExpression(finalExpression) + ' =';
+calcResEl.textContent = result;
+calcExpression = String(result);
+isResultShown = true;
+
+} catch (err) {
+return;
+}
+};
+
+const saveCalcHistory = (expression, result) => {
+let history = JSON.parse(localStorage.getItem('calculatorHistory') || '[]');
+history.unshift({ expression, result, timestamp: Date.now() });
+if (history.length > 50) history.pop();
+localStorage.setItem('calculatorHistory', JSON.stringify(history));
+};
+
+const renderCalculatorHistory = () => {
+const history = JSON.parse(localStorage.getItem('calculatorHistory') || '[]');
+const view = document.getElementById('calculator-history-view');
+view.innerHTML = history.map(item => `
+<div class="calc-history-entry">
+<div class="calc-history-expr">${formatCalcExpression(item.expression)} =</div>
+<div class="calc-history-res">${item.result}</div>
+</div>
+`).join('');
+if (view.firstChild) {
+view.firstChild.scrollIntoView({ behavior: 'smooth' });
+}
+};
+
+const handleCalcInput = (key) => {
+if (key === 'ac') {
+calcExpression = '';
+calcExprEl.textContent = '';
+calcResEl.textContent = '0';
+isResultShown = false;
+return;
+}
+
+if (isResultShown) {
+if (/[+\-*/]/.test(key)) {
+isResultShown = false;
+} else if (/[\d.(]/.test(key)) {
+if (calcExpression) {
+saveCalcHistory(calcExpression, calcExpression);
+renderCalculatorHistory();
+}
+calcExpression = '';
+isResultShown = false;
+}
+}
+
+if (key === 'backspace') {
+calcExpression = calcExpression.slice(0, -1);
+} else if (key === '=') {
+evaluateExpression();
+return;
+} else if (/[+\-*/]/.test(key)) {
+if (/[+\-*/]$/.test(calcExpression)) {
+calcExpression = calcExpression.slice(0, -1) + key;
+} else {
+calcExpression += key;
+}
+} else {
+calcExpression += key;
+}
+updateCalcDisplay();
+};
+
+// Data Backup & Restore
+const handleExportData = async () => {
+showToast("Generating backup file...");
+try {
+const data = {
+products: await storage.getAll('products'),
+salespersons: await storage.getAll('salespersons'),
+salesHistory: await storage.getAll('salesHistory'),
+settings: {
+theme: localStorage.getItem('theme'),
+userName: localStorage.getItem('userName'),
+appMode: localStorage.getItem('appMode'),
+calculatorHistory: localStorage.getItem('calculatorHistory')
+}
+};
+const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+const a = document.createElement('a');
+a.href = URL.createObjectURL(blob);
+a.download = `billing-app-backup-${new Date().toISOString().slice(0,10)}.json`;
+
+document.body.appendChild(a);
+a.click();
+document.body.removeChild(a);
+
+URL.revokeObjectURL(a.href);
+showToast("Backup file downloaded!");
+} catch (error) {
+console.error('Export failed:', error);
+showToast('Export failed. See console for details.');
+}
+};
+
+const handleImportData = () => {
+showConfirmationModal('Import Data', 'This will <strong>overwrite all current data</strong>. This action cannot be undone. Are you sure?', () => {
+document.getElementById('import-file-input').click();
+});
+};
+
+const processImportFile = (e) => {
+const file = e.target.files;
+if (!file) return;
+const reader = new FileReader();
+reader.onload = async (event) => {
+try {
+const data = JSON.parse(event.target.result);
+if (!data.products || !data.salespersons || !data.salesHistory || !data.settings) throw new Error("Invalid file format");
+await storage.importData(data);
+for (const key in data.settings) {
+if (data.settings[key] !== null && data.settings[key] !== undefined && typeof data.settings[key] === 'string') {
+localStorage.setItem(key, data.settings[key]);
+}
+}
+showToast('Import successful! App will now reload.');
+setTimeout(() => window.location.reload(), 2000);
+} catch (err) {
+showToast(`Import failed: ${err.message}`);
+}
+};
+reader.readAsText(file);
+};
+
+// Initializer
+const initApp = async () => {
+try { await storage.initDB(); } catch (error) { alert(error); return; }
+
+products = (await storage.getAll('products')).sort((a,b) => b.createdAt - a.createdAt);
+salesHistory = (await storage.getAll('salesHistory')).sort((a,b) => b.timestamp - a.timestamp);
+salespersons = await storage.getAll('salespersons');
+applyTheme(localStorage.getItem('theme') || 'light');
+
+// Event Listeners
+themeToggle.onclick = () => applyTheme(document.body.classList.contains('dark-mode') ? 'light' : 'dark');
+navItems.forEach(item => item.onclick = () => switchScreen(item.dataset.screen));
+document.getElementById('setup-form').onsubmit = (e) => {
+e.preventDefault();
+localStorage.setItem('userName', document.getElementById('userName').value.trim());
+switchScreen('mode');
+};
+document.getElementById('salesman-mode-btn').onclick = () => { localStorage.setItem('appMode', 'salesman'); initializeAppUI(); };
+document.getElementById('manager-mode-btn').onclick = () => { localStorage.setItem('appMode', 'manager'); initializeAppUI(); };
+document.getElementById('add-product-form').onsubmit = handleAddProduct;
+document.getElementById('edit-product-form').onsubmit = handleEditProduct;
+document.getElementById('save-sale-btn').onclick = handleSaveSale;
+document.getElementById('reset-quantities-btn').onclick = () => { tempQuantities = {}; renderDashboard(); updateGrandTotal(); };
+document.getElementById('view-profit-btn').onclick = () => switchScreen('profit');
+document.getElementById('back-to-history-btn').onclick = () => switchScreen('history');
+document.querySelectorAll('#history-screen .filter-btn').forEach(btn => btn.onclick = (e) => {
+const currentActive = document.querySelector('#history-screen .filter-btn.active');
+if(currentActive) currentActive.classList.remove('active');
+e.currentTarget.classList.add('active');
+if(e.currentTarget.dataset.filter !== 'custom') {
+document.getElementById('start-date').value = '';
+document.getElementById('end-date').value = '';
+}
+renderHistory();
+});
+const dateChangeHandler = () => {
+const activeBtn = document.querySelector('#history-screen .filter-btn.active');
+if(activeBtn) activeBtn.classList.remove('active');
+renderHistory();
+};
+document.getElementById('start-date').onchange = dateChangeHandler;
+document.getElementById('end-date').onchange = dateChangeHandler;
+
+document.getElementById('add-salesperson-form').onsubmit = handleAddSalesperson;
+document.getElementById('export-data-btn').onclick = handleExportData;
+document.getElementById('import-data-btn').onclick = handleImportData;
+document.getElementById('import-file-input').onchange = processImportFile;
+document.querySelectorAll('.modal-close-btn').forEach(btn => btn.onclick = closeModal);
+document.getElementById('calculator-keypad').addEventListener('click', (e) => {
+const button = e.target.closest('.calc-btn');
+if (button) handleCalcInput(button.dataset.key);
+});
+
+document.getElementById('salesperson-selector').onchange = () => {
+renderDashboard();
+updateGrandTotal();
+};
+document.getElementById('back-to-manager-btn').onclick = () => switchScreen('manager');
+document.getElementById('save-user-rates-btn').onclick = handleSaveUserRates;
+
+// App Start Logic
+if (!localStorage.getItem('userName')) switchScreen('setup');
+else if (!localStorage.getItem('appMode')) switchScreen('mode');
+else initializeAppUI();
+
+document.body.classList.add('app-loaded');
+registerServiceWorker();
+};
+
+const initializeAppUI = () => {
+const mode = localStorage.getItem('appMode');
+document.getElementById('manager-nav-item').classList.toggle('hidden', mode !== 'manager');
+document.getElementById('salesperson-selector-container').classList.toggle('hidden', mode !== 'manager');
+switchScreen('dashboard');
+};
+
+initApp();
 });
 </script>
-
 </body>
 </html>
