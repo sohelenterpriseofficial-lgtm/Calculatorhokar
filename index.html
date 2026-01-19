@@ -296,7 +296,7 @@
     </div>
 </section>
 
-<!-- Screen: Add Product (Now handled by nav button logic) -->
+<!-- Screen: Add Product -->
 <section id="add-product-screen" class="screen">
     <div class="card">
         <form id="add-product-form">
@@ -687,6 +687,7 @@ if (screenId === 'history') renderHistory();
 if (screenId === 'profit') renderProfitHistory();
 if (screenId === 'manager') renderManagerScreen();
 if (screenId === 'user-rates') renderUserRatesScreen();
+if (screenId === 'add-product') document.getElementById('add-product-form').reset();
 if (screenId === 'calculator') {
 renderCalculatorHistory();
 updateCalcDisplay();
@@ -813,25 +814,52 @@ saveBar.classList.toggle('visible', total > 0);
 };
 
 // Data Handlers
+// ================= FIX START =================
+// This function now merges data instead of replacing it.
 const handleLoadProductionData = async () => {
-    const dataExists = products.some(p => PRODUCTION_DATA.products.some(pd => pd.id === p.id));
-    if (dataExists) {
-        showToast('Chair & Table data is already loaded.');
+    // 1. Get source codes of products already in the database
+    const existingSourceCodes = new Set(products.map(p => p.sourceCode));
+
+    // 2. Find which products from the production data are new
+    const newProductsToAdd = PRODUCTION_DATA.products.filter(
+        prod => !existingSourceCodes.has(prod.sourceCode)
+    );
+
+    // 3. If there are no new products to add, inform the user and stop.
+    if (newProductsToAdd.length === 0) {
+        showToast('All Chair/Table products already exist.');
         return;
     }
 
-    showConfirmationModal('Load Default Data', 'This will load default Chair/Table data. This will replace all current products. Continue?', async () => {
+    // 4. Ask for confirmation
+    const message = `This will add ${newProductsToAdd.length} new Chair/Table product(s). Your existing products will not be affected. Continue?`;
+    showConfirmationModal('Add Chair/Table Data', message, async () => {
         try {
-            await storage.clearAndBulkInsert('products', PRODUCTION_DATA.products);
-            products = (await storage.getAll('products')).sort((a, b) => b.createdAt - a.createdAt);
+            // 5. Add each new product to IndexedDB and the local state array
+            for (const product of newProductsToAdd) {
+                const productToAdd = { 
+                    ...product, 
+                    id: generateUniqueId(), 
+                    createdAt: Date.now(),
+                    isFavorite: false
+                };
+                await storage.saveItem('products', productToAdd);
+                products.push(productToAdd);
+            }
+
+            // 6. Re-sort the local array to maintain order
+            products.sort((a, b) => b.createdAt - a.createdAt);
+
+            // 7. Re-render the dashboard to show the updated list
             renderDashboard();
-            showToast('Chair & Table data loaded successfully.');
+            showToast(`${newProductsToAdd.length} product(s) added successfully.`);
         } catch (error) {
             console.error('Failed to load production data:', error);
-            showToast('Error loading data.');
+            showToast('Error adding products.');
         }
     });
 };
+// ================= FIX END =================
 
 const handleToggleFavorite = async (id) => {
     const product = products.find(p => p.id === id);
@@ -1394,14 +1422,18 @@ applyTheme(localStorage.getItem('theme') || 'light');
 
 // Event Listeners
 themeToggle.onclick = () => applyTheme(document.body.classList.contains('dark-mode') ? 'light' : 'dark');
-navItems.forEach(item => item.onclick = () => {
-    const screen = item.dataset.screen;
-    if (screen === 'add-product') {
-        handleLoadProductionData();
-    } else {
+
+// ================= FIX START =================
+// Replaced navigation logic with the required version.
+// This ensures that all nav buttons, including 'Add', only switch screens.
+navItems.forEach(item => {
+    item.onclick = () => {
+        const screen = item.dataset.screen;
         switchScreen(screen);
-    }
+    };
 });
+// ================= FIX END =================
+
 document.getElementById('setup-form').onsubmit = (e) => {
     e.preventDefault();
     localStorage.setItem('userName', document.getElementById('userName').value.trim());
