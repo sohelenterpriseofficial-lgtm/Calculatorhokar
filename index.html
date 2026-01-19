@@ -272,6 +272,7 @@
 </div>
 </section>
 
+<!-- Screen: Preload (UI Suppressed) -->
 <section id="preload-screen" class="screen">
     <div class="card" style="margin-top: 20vh; text-align: center;">
         <h2>Load Production Data</h2>
@@ -283,7 +284,7 @@
     </div>
 </section>
 
-<!-- Screen: Mode Selection -->
+<!-- Screen: Mode Selection (UI Suppressed) -->
 <section id="mode-screen" class="screen">
     <div class="card" style="margin-top: 20vh; text-align: center;">
         <h2>Choose Your Mode</h2>
@@ -295,7 +296,7 @@
     </div>
 </section>
 
-<!-- Screen: Add Product -->
+<!-- Screen: Add Product (Now handled by nav button logic) -->
 <section id="add-product-screen" class="screen">
     <div class="card">
         <form id="add-product-form">
@@ -553,7 +554,11 @@ store.clear();
 if (data[storeName]) data[storeName].forEach(item => store.put(item));
 });
 }
-}
+},
+clearAndBulkInsert: (storeName, items) => performTransaction(storeName, 'readwrite', store => {
+    store.clear();
+    items.forEach(item => store.put(item));
+})
 };
 })();
 
@@ -808,6 +813,26 @@ saveBar.classList.toggle('visible', total > 0);
 };
 
 // Data Handlers
+const handleLoadProductionData = async () => {
+    const dataExists = products.some(p => PRODUCTION_DATA.products.some(pd => pd.id === p.id));
+    if (dataExists) {
+        showToast('Chair & Table data is already loaded.');
+        return;
+    }
+
+    showConfirmationModal('Load Default Data', 'This will load default Chair/Table data. This will replace all current products. Continue?', async () => {
+        try {
+            await storage.clearAndBulkInsert('products', PRODUCTION_DATA.products);
+            products = (await storage.getAll('products')).sort((a, b) => b.createdAt - a.createdAt);
+            renderDashboard();
+            showToast('Chair & Table data loaded successfully.');
+        } catch (error) {
+            console.error('Failed to load production data:', error);
+            showToast('Error loading data.');
+        }
+    });
+};
+
 const handleToggleFavorite = async (id) => {
     const product = products.find(p => p.id === id);
     if (product) {
@@ -1369,14 +1394,20 @@ applyTheme(localStorage.getItem('theme') || 'light');
 
 // Event Listeners
 themeToggle.onclick = () => applyTheme(document.body.classList.contains('dark-mode') ? 'light' : 'dark');
-navItems.forEach(item => item.onclick = () => switchScreen(item.dataset.screen));
+navItems.forEach(item => item.onclick = () => {
+    const screen = item.dataset.screen;
+    if (screen === 'add-product') {
+        handleLoadProductionData();
+    } else {
+        switchScreen(screen);
+    }
+});
 document.getElementById('setup-form').onsubmit = (e) => {
-e.preventDefault();
-localStorage.setItem('userName', document.getElementById('userName').value.trim());
-switchScreen('mode');
+    e.preventDefault();
+    localStorage.setItem('userName', document.getElementById('userName').value.trim());
+    localStorage.setItem('appMode', 'manager');
+    initializeAppUI();
 };
-document.getElementById('salesman-mode-btn').onclick = () => { localStorage.setItem('appMode', 'salesman'); initializeAppUI(); };
-document.getElementById('manager-mode-btn').onclick = () => { localStorage.setItem('appMode', 'manager'); initializeAppUI(); };
 document.getElementById('add-product-form').onsubmit = handleAddProduct;
 document.getElementById('edit-product-form').onsubmit = handleEditProduct;
 document.getElementById('edit-sale-form').onsubmit = handleEditSale;
@@ -1411,6 +1442,7 @@ document.getElementById('add-salesperson-form').onsubmit = handleAddSalesperson;
 document.getElementById('export-data-btn').onclick = handleExportData;
 document.getElementById('import-data-btn').onclick = handleImportData;
 document.getElementById('import-file-input').onchange = processImportFile;
+document.getElementById('load-production-data-btn').onclick = handleLoadProductionData;
 document.querySelectorAll('.modal-close-btn').forEach(btn => btn.onclick = closeModal);
 document.getElementById('calculator-keypad').addEventListener('click', (e) => {
 const button = e.target.closest('.calc-btn');
@@ -1425,9 +1457,14 @@ document.getElementById('back-to-manager-btn').onclick = () => switchScreen('man
 document.getElementById('save-user-rates-btn').onclick = handleSaveUserRates;
 
 // App Start Logic
-if (!localStorage.getItem('userName')) switchScreen('setup');
-else if (!localStorage.getItem('appMode')) switchScreen('mode');
-else initializeAppUI();
+if (!localStorage.getItem('userName')) {
+    switchScreen('setup');
+} else {
+    if (!localStorage.getItem('appMode')) {
+        localStorage.setItem('appMode', 'manager'); // Default for returning users
+    }
+    initializeAppUI();
+}
 
 document.body.classList.add('app-loaded');
 registerServiceWorker();
