@@ -1379,29 +1379,11 @@ categories = await storage.getAll('categories');
 applyTheme(localStorage.getItem('theme') || 'light');
 
 // Event Listeners
-themeToggle.onclick = () => applyTheme(document.body.classList.contains('dark-mode') ? 'light' : 'dark');
-navItems.forEach(item => item.onclick = () => switchScreen(item.dataset.screen));
+themeToggle.addEventListener('click', () => applyTheme(document.body.classList.contains('dark-mode') ? 'light' : 'dark'));
+navItems.forEach(item => item.addEventListener('click', () => switchScreen(item.dataset.screen)));
 searchInput.addEventListener('input', () => renderDashboard());
 
-
-// Event Delegation for Product List
-const updateProductCardQuantity = (card) => {
-    const id = card.dataset.productId;
-    const input = card.querySelector('.quantity-input');
-    const product = products.find(p => p.id === id);
-    if (!product) return;
-
-    const quantity = Math.max(0, parseInt(input.value) || 0);
-    const selectedUserId = localStorage.getItem('selectedUserId');
-    const appliedPrice = getAppliedSellPrice(product, selectedUserId);
-    tempQuantities[id] = quantity;
-    input.value = quantity; // Ensure value is consistent
-    card.querySelector('.total-price').textContent = formatCurrency(quantity * appliedPrice);
-    updateGrandTotal();
-};
-
 const productList = document.getElementById('product-list');
-
 productList.addEventListener('click', (e) => {
     const target = e.target;
     const productCard = target.closest('.product-card');
@@ -1416,7 +1398,7 @@ productList.addEventListener('click', (e) => {
         if (isUserRequired && !isUserSelected) return showToast('Please select a user first');
         
         if (target.closest('.plus-btn')) {
-            input.value++;
+            input.value = parseInt(input.value || 0) + 1;
         } else if (input.value > 0) {
             input.value--;
         }
@@ -1440,54 +1422,74 @@ productList.addEventListener('input', (e) => {
     const isUserRequired = salespersons.length > 0;
     const isUserSelected = !!localStorage.getItem('selectedUserId');
     if (isUserRequired && !isUserSelected) {
-        input.value = 0; // Reset value
-        updateProductCardQuantity(productCard); // Update total to 0
+        input.value = 0;
+        updateProductCardQuantity(productCard);
         return showToast('Please select a user first');
     }
     updateProductCardQuantity(productCard);
 });
 
-document.getElementById('setup-form').onsubmit = (e) => { e.preventDefault(); localStorage.setItem('userName', document.getElementById('userName').value.trim()); localStorage.setItem('appMode', 'manager'); initializeAppUI(); };
-document.getElementById('add-product-form').onsubmit = handleAddProduct;
-document.getElementById('edit-product-form').onsubmit = handleEditProduct;
-document.getElementById('edit-sale-form').onsubmit = handleEditSale;
-document.getElementById('save-sale-btn').onclick = handleSaveSale;
-document.getElementById('reset-quantities-btn').onclick = () => { tempQuantities = {}; renderDashboard(); updateGrandTotal(); };
-document.getElementById('view-profit-btn').onclick = () => switchScreen('profit');
-document.getElementById('back-to-history-btn').onclick = () => switchScreen('history');
-document.querySelectorAll('#history-screen .filter-btn').forEach(btn => btn.onclick = (e) => {
-document.querySelector('#history-screen .filter-btn.active')?.classList.remove('active');
-e.currentTarget.classList.add('active');
-if(e.currentTarget.dataset.filter !== 'custom') { document.getElementById('start-date').value = ''; document.getElementById('end-date').value = ''; }
-renderHistory();
-});
+const updateProductCardQuantity = (card) => {
+    const id = card.dataset.productId;
+    const input = card.querySelector('.quantity-input');
+    const product = products.find(p => p.id === id);
+    if (!product) return;
+
+    const quantity = Math.max(0, parseInt(input.value) || 0);
+    const selectedUserId = localStorage.getItem('selectedUserId');
+    const appliedPrice = getAppliedSellPrice(product, selectedUserId);
+    tempQuantities[id] = quantity;
+    input.value = quantity;
+    card.querySelector('.total-price').textContent = formatCurrency(quantity * appliedPrice);
+    updateGrandTotal();
+};
+
+document.getElementById('setup-form').addEventListener('submit', (e) => { e.preventDefault(); localStorage.setItem('userName', document.getElementById('userName').value.trim()); localStorage.setItem('appMode', 'manager'); initializeAppUI(); });
+document.getElementById('add-product-form').addEventListener('submit', handleAddProduct);
+document.getElementById('edit-product-form').addEventListener('submit', handleEditProduct);
+document.getElementById('edit-sale-form').addEventListener('submit', handleEditSale);
+document.getElementById('save-sale-btn').addEventListener('click', handleSaveSale);
+document.getElementById('reset-quantities-btn').addEventListener('click', () => { tempQuantities = {}; renderDashboard(); updateGrandTotal(); });
+document.getElementById('view-profit-btn').addEventListener('click', () => switchScreen('profit'));
+document.getElementById('back-to-history-btn').addEventListener('click', () => switchScreen('history'));
+document.querySelectorAll('#history-screen .filter-btn').forEach(btn => btn.addEventListener('click', (e) => {
+    document.querySelector('#history-screen .filter-btn.active')?.classList.remove('active');
+    e.currentTarget.classList.add('active');
+    if(e.currentTarget.dataset.filter !== 'custom') { document.getElementById('start-date').value = ''; document.getElementById('end-date').value = ''; }
+    renderHistory();
+}));
 const dateChangeHandler = () => { document.querySelector('#history-screen .filter-btn.active')?.classList.remove('active'); renderHistory(); };
-document.getElementById('start-date').onchange = dateChangeHandler; document.getElementById('end-date').onchange = dateChangeHandler;
-document.querySelectorAll('#profit-filters .filter-btn').forEach(btn => btn.onclick = (e) => { document.querySelector('#profit-filters .filter-btn.active')?.classList.remove('active'); e.currentTarget.classList.add('active'); renderProfitHistory(); });
+document.getElementById('start-date').addEventListener('change', dateChangeHandler);
+document.getElementById('end-date').addEventListener('change', dateChangeHandler);
+document.querySelectorAll('#profit-filters .filter-btn').forEach(btn => btn.addEventListener('click', (e) => { document.querySelector('#profit-filters .filter-btn.active')?.classList.remove('active'); e.currentTarget.classList.add('active'); renderProfitHistory(); }));
 
-document.getElementById('add-salesperson-form').onsubmit = handleAddSalesperson;
-document.getElementById('edit-user-form').onsubmit = handleEditUser;
-document.getElementById('export-data-btn').onclick = handleExportData;
-document.getElementById('import-data-btn').onclick = handleImportData;
-document.getElementById('import-file-input').onchange = processImportFile;
-document.getElementById('load-production-data-btn').onclick = handleLoadProductionData;
-document.querySelectorAll('.modal-close-btn').forEach(btn => btn.onclick = closeModal);
+document.getElementById('add-salesperson-form').addEventListener('submit', handleAddSalesperson);
+document.getElementById('edit-user-form').addEventListener('submit', handleEditUser);
+document.getElementById('export-data-btn').addEventListener('click', handleExportData);
+document.getElementById('import-data-btn').addEventListener('click', handleImportData);
+document.getElementById('import-file-input').addEventListener('change', processImportFile);
+document.getElementById('load-production-data-btn').addEventListener('click', handleLoadProductionData);
+document.querySelectorAll('.modal-close-btn').forEach(btn => btn.addEventListener('click', closeModal));
 document.getElementById('calculator-keypad').addEventListener('click', (e) => { const button = e.target.closest('.calc-btn'); if (button) handleCalcInput(button.dataset.key); });
-document.getElementById('calc-back-btn').onclick = () => switchScreen('dashboard');
-document.getElementById('calc-history-btn').onclick = renderCalculatorHistory;
+document.getElementById('calc-back-btn').addEventListener('click', () => switchScreen('dashboard'));
+document.getElementById('calc-history-btn').addEventListener('click', renderCalculatorHistory);
 
-document.getElementById('salesperson-selector').onchange = (e) => { const userId = e.target.value; if(userId) localStorage.setItem('selectedUserId', userId); else localStorage.removeItem('selectedUserId'); renderDashboard(); updateGrandTotal(); };
-document.querySelectorAll('.back-to-manager-btn').forEach(btn => btn.onclick = () => switchScreen('manager'));
-document.getElementById('save-user-rates-btn').onclick = handleSaveUserRates;
+document.getElementById('salesperson-selector').addEventListener('change', (e) => { const userId = e.target.value; if(userId) localStorage.setItem('selectedUserId', userId); else localStorage.removeItem('selectedUserId'); tempQuantities = {}; renderDashboard(); updateGrandTotal(); });
+document.querySelectorAll('.back-to-manager-btn').forEach(btn => btn.addEventListener('click', () => switchScreen('manager')));
+document.getElementById('save-user-rates-btn').addEventListener('click', handleSaveUserRates);
 document.getElementById('user-profile-menu').addEventListener('click', e => { const action = e.target.closest('.user-profile-menu-item')?.dataset.action; if(action) handleUserProfileMenu(action); });
-document.getElementById('manage-categories-btn').onclick = () => switchScreen('category-manager');
-document.getElementById('back-to-manager-btn-cat').onclick = () => switchScreen('manager');
-document.getElementById('add-category-form').onsubmit = handleAddCategory;
-document.getElementById('edit-category-form').onsubmit = handleEditCategory;
+document.getElementById('manage-categories-btn').addEventListener('click', () => switchScreen('category-manager'));
+document.getElementById('back-to-manager-btn-cat').addEventListener('click', () => switchScreen('manager'));
+document.getElementById('add-category-form').addEventListener('submit', handleAddCategory);
+document.getElementById('edit-category-form').addEventListener('submit', handleEditCategory);
 
 // App Start Logic
-if (!localStorage.getItem('userName')) { switchScreen('setup'); } else {
-    if (!localStorage.getItem('appMode')) { localStorage.setItem('appMode', 'manager'); }
+if (!localStorage.getItem('userName')) {
+    switchScreen('setup');
+} else {
+    if (!localStorage.getItem('appMode')) {
+        localStorage.setItem('appMode', 'manager');
+    }
     initializeAppUI();
 }
 document.body.classList.add('app-loaded');
