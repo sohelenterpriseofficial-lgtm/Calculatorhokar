@@ -693,11 +693,15 @@ document.addEventListener('backbutton', handleBackButton, false);
 
 // Price Logic
 const getAppliedSellPrice = (product, userId) => {
-if (!userId || userId === 'direct_sale' || !product) { return product?.sellPrice || 0; }
-const user = salespersons.find(s => s.id === userId);
-if (user && user.customRates && user.customRates[product.id]) { return parseFloat(user.customRates[product.id]); }
-return product.sellPrice;
+    if (!userId || userId === 'direct_sale' || !product) { return product?.sellPrice || 0; }
+    const user = salespersons.find(s => s.id === userId);
+    // CRITICAL FIX: Check for null/undefined to allow 0 and negative rates.
+    if (user && user.customRates && user.customRates[product.id] != null) {
+        return parseFloat(user.customRates[product.id]);
+    }
+    return product.sellPrice;
 };
+
 
 // Dashboard UI & Logic
 const renderDashboard = () => {
@@ -1134,22 +1138,42 @@ if (!user) { showToast('User not found.'); switchScreen('manager'); return; }
 document.getElementById('user-rates-header').textContent = `Rates for ${user.name}`;
 const productListDiv = document.getElementById('user-rates-product-list');
 const sortedProducts = [...products].sort((a,b) => a.productName.localeCompare(b.productName));
-productListDiv.innerHTML = sortedProducts.map(p => `<div class="form-group" style="border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1rem;"><label for="rate-for-${p.id}">${p.productName} (Default: ${formatCurrency(p.sellPrice)})</label><div class="input-wrapper"><input type="number" step="0.01" class="user-rate-input" data-product-id="${p.id}" id="rate-for-${p.id}" placeholder="${p.sellPrice}" value="${user.customRates && user.customRates[p.id] ? user.customRates[p.id] : ''}"></div></div>`).join('');
+productListDiv.innerHTML = sortedProducts.map(p => `<div class="form-group" style="border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1rem;"><label for="rate-for-${p.id}">${p.productName} (Default: ${formatCurrency(p.sellPrice)})</label><div class="input-wrapper"><input type="number" step="0.01" class="user-rate-input" data-product-id="${p.id}" id="rate-for-${p.id}" placeholder="${p.sellPrice}" value="${(user.customRates && user.customRates[p.id] != null) ? user.customRates[p.id] : ''}"></div></div>`).join('');
 };
 
 const handleSaveUserRates = async () => {
-const user = salespersons.find(s => s.id === currentUserIdForRates);
-if (!user) return showToast('Error saving: User not found.');
-if (!user.customRates) user.customRates = {};
-document.querySelectorAll('.user-rate-input').forEach(input => {
-const productId = input.dataset.productId;
-const rate = parseFloat(input.value);
-if (!isNaN(rate) && rate > 0) { user.customRates[productId] = rate; } else { delete user.customRates[productId]; }
-});
-await storage.saveItem('salespersons', user);
-showToast(`Custom rates for ${user.name} saved.`);
-switchScreen('manager');
+    const user = salespersons.find(s => s.id === currentUserIdForRates);
+    if (!user) return showToast('Error saving: User not found.');
+    if (!user.customRates) user.customRates = {};
+    let invalidInput = false;
+
+    document.querySelectorAll('.user-rate-input').forEach(input => {
+        if (invalidInput) return;
+        const productId = input.dataset.productId;
+        const rawValue = input.value.trim();
+
+        if (rawValue === '') {
+            delete user.customRates[productId];
+        } else {
+            const rate = parseFloat(rawValue);
+            if (isNaN(rate)) {
+                showToast('Invalid price entered. Changes not saved.');
+                invalidInput = true;
+            } else {
+                user.customRates[productId] = rate;
+            }
+        }
+    });
+
+    if (invalidInput) {
+        return; // Abort save if any input was invalid
+    }
+
+    await storage.saveItem('salespersons', user);
+    showToast(`Custom rates for ${user.name} saved.`);
+    switchScreen('manager');
 };
+
 
 const handleAddSalesperson = async (e) => {
 e.preventDefault();
