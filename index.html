@@ -94,7 +94,8 @@
     .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: var(--text-secondary); }
     .form-group .input-wrapper { background-color: var(--bg-color); border-radius: var(--border-radius-md); border: 1px solid var(--border-color); transition: border-color var(--transition-speed), box-shadow var(--transition-speed); display: flex; align-items: center; }
     .form-group .input-wrapper:focus-within { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(91, 124, 255, 0.2); }
-    .form-group input, .form-group select { width: 100%; padding: 0.9rem; border: none; background: none; color: var(--text-primary); font-size: 1rem; outline: none; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 0.9rem; border: none; background: none; color: var(--text-primary); font-size: 1rem; outline: none; }
+    .form-group textarea { resize: vertical; }
     .btn { display: inline-block; width: 100%; padding: 1rem 1.5rem; border: none; border-radius: var(--border-radius-md); background: var(--primary-gradient); color: white; font-size: 1.1rem; font-weight: 600; cursor: pointer; text-align: center; user-select: none; transition: transform 0.2s ease-out; }
     .btn:active { transform: scale(0.98); }
     .btn-danger { background: var(--accent-red); }
@@ -142,7 +143,7 @@
     .summary-display { text-align: center; margin-bottom: 2rem; }
     .summary-display .value { font-size: 2.5rem; font-weight: 700; color: var(--primary-color);}
     .summary-display .label { color: var(--text-secondary); }
-    .filters { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; align-items: center; }
+    .filters { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; align-items: center; }
     .filter-btn { padding: 0.5rem 1rem; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-secondary); border-radius: 50px; cursor: pointer; font-size: 0.9rem; }
     .filter-btn.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
     .date-filter { display: flex; gap: 0.5rem; border: 1px solid var(--border-color); padding: 0.5rem; border-radius: var(--border-radius-md); }
@@ -156,82 +157,54 @@
     .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
     .modal-close-btn { background: none; border: none; font-size: 1.8rem; cursor: pointer; color: var(--text-secondary); }
     
-    .profit-date-group { margin-bottom: 1.5rem; }
-    .profit-date-header { font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; padding-left: 0.5rem; }
-    .profit-user-item { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--border-color); }
-    .profit-user-item:last-child { border-bottom: none; }
-    .profit-user-name { font-weight: 500; }
-    .profit-user-amount { font-weight: 700; color: var(--accent-green); }
-    .profit-date-total { text-align: right; margin-top: 0.5rem; font-weight: 700; font-size: 1.1rem; }
     .history-list-container { max-height: 60vh; overflow-y: auto; padding-right: 0.5rem; }
     .list-item { display:flex; justify-content:space-between; align-items:center; padding: 1rem 1.5rem; }
     .list-item > div { display: flex; align-items: center; gap: 1rem; }
+    
+    .tab-container { display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 1.5rem; }
+    .tab-btn { flex: 1; padding: 1rem; background: none; border: none; font-size: 1rem; font-weight: 600; color: var(--text-secondary); cursor: pointer; border-bottom: 3px solid transparent; }
+    .tab-btn.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
     .category-filter-tabs { display: flex; overflow-x: auto; padding-bottom: 10px; margin-bottom: 1rem; scrollbar-width: none; }
     .category-filter-tabs::-webkit-scrollbar { display: none; }
     .category-filter-tabs .filter-btn { flex-shrink: 0; }
-    .user-profile-menu-item { display: block; width: 100%; padding: 1rem; margin-bottom: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); text-align: left; font-size: 1.1rem; background: var(--bg-color); color: var(--text-primary); cursor: pointer; }
+    .profile-menu-item { display: block; width: 100%; padding: 1rem; margin-bottom: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); text-align: left; font-size: 1.1rem; background: var(--bg-color); color: var(--text-primary); cursor: pointer; }
     
-    #calculator-screen { padding: 0; background-color: var(--bg-color-light); position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 5000; }
-    .calculator-container {
-        display: flex;
-        flex-direction: column;
-        height: 100vh;
-        height: -webkit-fill-available;
-        background-color: var(--bg-color-light);
-        color: var(--text-primary-light);
+    .financial-summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+    .summary-card { background-color: var(--bg-color); padding: 1rem; border-radius: var(--border-radius-md); text-align: center; }
+    .summary-card .label { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem; }
+    .summary-card .value { font-size: 1.2rem; font-weight: 700; word-break: break-word;}
+    .value.total-sales { color: var(--text-primary); }
+    .value.gross-profit { color: var(--primary-color); }
+    .value.total-expense { color: var(--accent-red); }
+    .value.net-profit { color: var(--accent-green); }
+    .summary-date-group { margin-bottom: 1rem; }
+    .summary-date-header { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; padding-left: 0.5rem; border-left: 3px solid var(--primary-color); }
+    .summary-item-row { display: grid; grid-template-columns: 1fr auto; gap: 1rem; text-align: right; padding: 0.5rem 0; align-items: center; }
+    .summary-item-row > div:first-child { text-align: left; font-weight: 500;}
+    
+    .bottom-total {
+        position: sticky; bottom: calc(80px + var(--safe-area-inset-bottom)); background-color: var(--card-bg);
+        border-top: 2px solid var(--primary-color); padding: 1.5rem; margin-top: 1rem;
+        border-radius: var(--border-radius-lg); box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.1);
     }
+    .bottom-total h3 { text-align: center; margin-bottom: 1rem; }
+    .total-row { display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; }
+
+    #calculator-screen { padding: 0; background-color: var(--bg-color-light); position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 5000; }
+    .calculator-container { display: flex; flex-direction: column; height: 100vh; height: -webkit-fill-available; background-color: var(--bg-color-light); color: var(--text-primary-light); }
     .calculator-header { padding: 1rem 1.5rem; padding-top: calc(1rem + var(--safe-area-inset-top)); display: flex; justify-content: space-between; }
     .calculator-header .btn-secondary { width: auto; padding: 0.5rem 1rem; }
-    .calculator-display-area {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end;
-        padding: 1.5rem;
-        overflow: hidden;
-        min-height: 0;
-    }
+    .calculator-display-area { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; padding: 1.5rem; overflow: hidden; min-height: 0; }
     .calculator-current-view { text-align: right; }
-    .calculator-expression {
-        font-size: 2rem;
-        color: var(--text-secondary-light);
-        min-height: 2.5rem;
-        word-break: break-all;
-        font-weight: 400;
-        margin-bottom: 0.5rem;
-    }
-    .calculator-result {
-        font-size: 3.5rem;
-        font-weight: 400;
-        min-height: 4rem;
-        word-break: break-all;
-        color: var(--text-primary-light);
-        display: none; /* Initially hidden */
-    }
+    .calculator-expression { font-size: 2rem; color: var(--text-secondary-light); min-height: 2.5rem; word-break: break-all; font-weight: 400; margin-bottom: 0.5rem; }
+    .calculator-result { font-size: 3.5rem; font-weight: 400; min-height: 4rem; word-break: break-all; color: var(--text-primary-light); display: none; }
     .calculator-result.visible { display: block; }
-    .calculator-keypad {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 0.8rem;
-        padding: 1.5rem;
-        padding-bottom: calc(1.5rem + var(--safe-area-inset-bottom));
-    }
-    .calc-btn {
-        height: 70px;
-        border-radius: 35px;
-        border: none;
-        font-size: 2rem;
-        font-weight: 400;
-        cursor: pointer;
-        user-select: none;
-        background-color: #ffffff;
-        color: var(--text-primary-light);
-        transition: background-color 0.2s;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-    }
-    .calc-btn > span {
-        display: flex; align-items: center; justify-content: center; height: 100%;
-    }
+    .calculator-keypad { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.8rem; padding: 1.5rem; padding-bottom: calc(1.5rem + var(--safe-area-inset-bottom)); }
+    .calc-btn { height: 70px; border-radius: 35px; border: none; font-size: 2rem; font-weight: 400; cursor: pointer; user-select: none; background-color: #ffffff; color: var(--text-primary-light); transition: background-color 0.2s; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+    .calc-btn > span { display: flex; align-items: center; justify-content: center; height: 100%; }
     .calc-btn:active { background-color: #f0f0f0; }
     .calc-btn.operator, .calc-btn.equals { background-color: var(--primary-color); color: white; }
     .calc-btn.operator:active, .calc-btn.equals:active { background: #4a6ae6; }
@@ -253,67 +226,123 @@
 <h2>Welcome!</h2>
 <p style="color: var(--text-secondary); margin-bottom: 2rem;">Let's get started by setting up your name.</p>
 <form id="setup-form">
-<div class="form-group"><div class="input-wrapper"><input type="text" id="userName" placeholder="Enter Your Name" required></div></div>
+<div class="form-group"><div class="input-wrapper"><input type="text" id="profileNameSetup" placeholder="Enter Your Name" required></div></div>
 <button type="submit" class="btn">Save & Continue</button>
 </form>
 </div>
 </section>
 
-<!-- Screen: Add Product -->
-<section id="add-product-screen" class="screen">
-    <div class="card">
-        <form id="add-product-form">
-            <div class="form-group"><label for="sourceCode">Product Code (Unique)</label><div class="input-wrapper"><input type="text" id="sourceCode" required></div></div>
-            <div class="form-group"><label for="productName">Product Name</label><div class="input-wrapper"><input type="text" id="productName" required></div></div>
-            <div class="form-group hidden" id="category-select-group"><label for="productCategory">Category (Optional)</label><div class="input-wrapper"><select id="productCategory"></select></div></div>
-            <div class="form-group"><label for="buyPrice">Buy Price</label><div class="input-wrapper"><input type="number" id="buyPrice" step="0.01" placeholder="0.00"></div></div>
-            <div class="form-group"><label for="sellPrice">Sell Price</label><div class="input-wrapper"><input type="number" id="sellPrice" step="0.01" placeholder="0.00"></div></div>
-            <button type="submit" class="btn">Save Product</button>
-        </form>
+<!-- Screen: Add -->
+<section id="add-screen" class="screen">
+    <div class="tab-container">
+        <button class="tab-btn active" data-tab="add-item-tab">Add Item</button>
+        <button class="tab-btn" data-tab="add-expense-tab">Add Expense</button>
+        <button class="tab-btn" data-tab="categories-tab">Categories</button>
+    </div>
+    
+    <div id="add-item-tab" class="tab-content active">
+        <div class="card">
+            <form id="add-product-form">
+                <div class="form-group"><label for="sourceCode">Item Code (Unique)</label><div class="input-wrapper"><input type="text" id="sourceCode" required></div></div>
+                <div class="form-group"><label for="productName">Item Name</label><div class="input-wrapper"><input type="text" id="productName" required></div></div>
+                <div class="form-group hidden" id="category-select-group"><label for="productCategory">Category (Optional)</label><div class="input-wrapper"><select id="productCategory"></select></div></div>
+                <div class="form-group"><label for="buyPrice">Buy Price</label><div class="input-wrapper"><input type="number" id="buyPrice" step="0.01" placeholder="0.00"></div></div>
+                <div class="form-group"><label for="sellPrice">Sell Price</label><div class="input-wrapper"><input type="number" id="sellPrice" step="0.01" placeholder="0.00"></div></div>
+                <button type="submit" class="btn">Save Item</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="add-expense-tab" class="tab-content">
+        <div class="card">
+            <form id="add-expense-tab-form">
+                <div class="form-group"><label for="add-expense-profile-select">Select Profile</label><div class="input-wrapper"><select id="add-expense-profile-select" required></select></div></div>
+                <div class="form-group"><label for="add-expense-tab-amount">Amount</label><div class="input-wrapper"><input type="number" id="add-expense-tab-amount" step="0.01" placeholder="0.00" required></div></div>
+                <div class="form-group"><label for="add-expense-tab-category">Expense Type</label><div class="input-wrapper"><select id="add-expense-tab-category" required></select></div></div>
+                 <div class="form-group"><label for="add-expense-tab-note">Note (Optional)</label><div class="input-wrapper"><textarea id="add-expense-tab-note" rows="3" placeholder="Expense Name/Note"></textarea></div></div>
+                <button type="submit" class="btn">Save Expense</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="categories-tab" class="tab-content">
+        <div class="card">
+             <h2>Item Categories</h2>
+             <div id="item-category-list" style="margin-top: 1rem;"></div>
+             <form id="add-item-category-form" style="margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
+                 <div class="form-group"><label for="itemCategoryName">New Item Category</label><div class="input-wrapper"><input type="text" id="itemCategoryName" required></div></div>
+                 <button type="submit" class="btn btn-secondary">Add Item Category</button>
+             </form>
+        </div>
+        <div class="card">
+             <h2>Expense Categories</h2>
+             <div id="expense-type-list" style="margin-top: 1rem;"></div>
+             <form id="add-expense-type-form" style="margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
+                 <div class="form-group"><label for="expenseTypeName">New Expense Category</label><div class="input-wrapper"><input type="text" id="expenseTypeName" required></div></div>
+                 <div class="form-group"><label for="expenseTypeDefaultAmount">Default Amount (Optional)</label><div class="input-wrapper"><input type="number" step="0.01" id="expenseTypeDefaultAmount" placeholder="0.00"></div></div>
+                 <button type="submit" class="btn btn-secondary">Add Expense Category</button>
+             </form>
+        </div>
     </div>
 </section>
 
-<!-- Screen: Dashboard -->
+<!-- Screen: Billing -->
 <section id="dashboard-screen" class="screen">
-    <div id="salesperson-selector-container" class="card hidden"><div class="form-group" style="margin-bottom: 0;"><label for="salesperson-selector">Select User for Sale</label><div class="input-wrapper"><select id="salesperson-selector"></select></div></div></div>
-    <div class="form-group"><div class="input-wrapper" style="padding-left: 1rem;"><span style="color: var(--text-secondary);">🔍</span><input type="search" id="product-search" placeholder="Search by name or code..." style="padding-left: 0.5rem;"></div></div>
-    <div id="category-filter-container" class="hidden"></div>
-    <div id="product-list"></div>
+    <div id="profile-selector-container" class="card hidden"><div class="form-group" style="margin-bottom: 0;"><label for="profile-selector">Select Profile</label><div class="input-wrapper"><select id="profile-selector"></select></div></div></div>
+    
+    <div class="tab-container">
+        <button class="tab-btn active" data-tab="billing-items-tab">Items</button>
+        <button class="tab-btn" data-tab="billing-expenses-tab">Expenses</button>
+    </div>
+
+    <div id="billing-items-tab" class="tab-content active">
+        <div class="form-group"><div class="input-wrapper" style="padding-left: 1rem;"><span style="color: var(--text-secondary);">🔍</span><input type="search" id="product-search" placeholder="Search by name or code..." style="padding-left: 0.5rem;"></div></div>
+        <div id="category-filter-container" class="hidden"></div>
+        <div id="product-list"></div>
+    </div>
+    
+    <div id="billing-expenses-tab" class="tab-content">
+        <div id="expense-list"></div>
+    </div>
 </section>
 
 <!-- Screen: History -->
 <section id="history-screen" class="screen">
-    <div id="history-header">
-        <div class="summary-display"><div id="history-summary-value" class="value">₹0.00</div><div class="label">Total Sales</div></div>
-        <div class="card">
-            <div class="filters">
-                <button class="filter-btn active" data-filter="today">Today</button>
-                <button class="filter-btn" data-filter="7days">7 Days</button>
-                <button class="filter-btn" data-filter="lifetime">Lifetime</button>
-                <div class="date-filter"><input type="date" id="start-date"><input type="date" id="end-date"></div>
-            </div>
-             <button id="view-profit-btn" class="btn btn-secondary" style="margin-top: 1rem;">View Profit History</button>
+    <div class="card">
+        <h3>Overall Summary</h3>
+        <div id="history-unified-filters" class="filters" style="margin-top: 1rem;">
+             <button class="filter-btn active" data-filter="1">1 Day</button>
+             <button class="filter-btn" data-filter="7">7 Days</button>
+             <button class="filter-btn" data-filter="15">15 Days</button>
+             <button class="filter-btn" data-filter="30">1 Month</button>
+             <button class="filter-btn" data-filter="lifetime">Lifetime</button>
+             <div class="date-filter"><input type="date" id="history-start-date"><input type="date" id="history-end-date"></div>
         </div>
-    </div>
-    <div id="history-list" class="history-list-container"></div>
-</section>
-
-<!-- Screen: Manager Panel -->
-<section id="manager-screen" class="screen">
-     <div class="card">
-        <button id="manage-categories-btn" class="btn btn-secondary" style="margin-bottom: 1rem;">Manage Categories</button>
+        <div class="form-group" style="margin-top: 1rem; margin-bottom: 0;">
+            <label for="history-profile-filter">Filter by Profile</label>
+            <div class="input-wrapper"><select id="history-profile-filter"></select></div>
+        </div>
+        <div id="overall-summary-grid" class="financial-summary-grid" style="margin-top: 1.5rem;"></div>
     </div>
     <div class="card">
-        <h2>Add New User</h2>
-        <form id="add-salesperson-form">
-            <div class="form-group"><label for="salespersonName">User Name</label><div class="input-wrapper"><input type="text" id="salespersonName" required></div></div>
-            <div class="form-group"><label for="salespersonWhatsapp">WhatsApp Number (Optional)</label><div class="input-wrapper"><input type="tel" id="salespersonWhatsapp" placeholder="e.g., 919876543210"></div></div>
-            <button type="submit" class="btn">Add User</button>
+        <h3>Sales History</h3>
+        <div id="history-list"></div>
+    </div>
+</section>
+
+<!-- Screen: Profiles -->
+<section id="profiles-screen" class="screen">
+    <div class="card">
+        <h2>Add New Profile</h2>
+        <form id="add-profile-form">
+            <div class="form-group"><label for="profileName">Profile Name</label><div class="input-wrapper"><input type="text" id="profileName" required></div></div>
+            <div class="form-group"><label for="profileWhatsapp">WhatsApp Number (Optional)</label><div class="input-wrapper"><input type="tel" id="profileWhatsapp" placeholder="e.g., 919876543210"></div></div>
+            <button type="submit" class="btn">Add Profile</button>
         </form>
     </div>
     <div class="card">
-        <h2>Managed Users</h2>
-        <div id="salesperson-list"></div>
+        <h2>Saved Profiles</h2>
+        <div id="profile-list"></div>
     </div>
     <div class="card">
         <h2>Data Management</h2>
@@ -324,54 +353,43 @@
             <input type="file" id="import-file-input" accept=".json" style="display: none;">
         </div>
         <div style="margin-top: 1rem;">
-             <button id="load-production-data-btn" class="btn" style="background: var(--accent-green);">Chair Table Add</button>
+             <button id="load-production-data-btn" class="btn" style="background: var(--accent-green);">Add Sample Items</button>
         </div>
-    </div>
-</section>
-
-<!-- Screen: Category Manager -->
-<section id="category-manager-screen" class="screen">
-    <button id="back-to-manager-btn-cat" class="btn btn-secondary" style="margin-bottom: 1rem; width: auto; padding: 0.5rem 1rem;">← Back</button>
-    <div class="card">
-        <h2>Add New Category</h2>
-        <form id="add-category-form">
-            <div class="form-group"><label for="categoryName">Category Name</label><div class="input-wrapper"><input type="text" id="categoryName" required></div></div>
-            <button type="submit" class="btn">Add Category</button>
-        </form>
-    </div>
-    <div class="card">
-        <h2>Existing Categories</h2>
-        <div id="category-list"></div>
     </div>
 </section>
 
 <!-- Screen: User Rates -->
-<section id="user-rates-screen" class="screen">
-    <button class="back-to-manager-btn btn btn-secondary" style="margin-bottom: 1rem; width: auto; padding: 0.5rem 1rem;">← Back</button>
+<section id="profile-rates-screen" class="screen">
+    <button class="back-to-profiles-btn btn btn-secondary" style="margin-bottom: 1rem; width: auto; padding: 0.5rem 1rem;">← Back</button>
     <div class="card">
-        <h2 id="user-rates-header">User Rates</h2>
-        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">Set custom selling prices for this user. Leave blank to use the default price.</p>
-        <div id="user-rates-product-list" style="max-height: 50vh; overflow-y: auto;"></div>
-        <button id="save-user-rates-btn" class="btn" style="margin-top: 1.5rem;">Save Rates</button>
+        <h2 id="profile-rates-header">Custom Rates</h2>
+        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">Set custom selling prices for this profile. Leave blank to use the default price.</p>
+        <div id="profile-rates-product-list" style="max-height: 50vh; overflow-y: auto;"></div>
+        <button id="save-profile-rates-btn" class="btn" style="margin-top: 1.5rem;">Save Rates</button>
     </div>
 </section>
 
-<!-- Screen: Profit -->
-<section id="profit-screen" class="screen">
-    <div id="profit-header">
-        <button id="back-to-history-btn" class="btn btn-secondary" style="margin-bottom: 1rem; width: auto; padding: 0.5rem 1rem;">← Back</button>
-        <div class="summary-display"><div id="profit-summary-value" class="value">₹0.00</div><div class="label">Total Profit</div></div>
-        <div class="card">
-            <div id="profit-filters" class="filters">
-                <button class="filter-btn active" data-filter="today">Today</button>
-                <button class="filter-btn" data-filter="7days">7 Days</button>
-                <button class="filter-btn" data-filter="1month">1 Month</button>
-                <button class="filter-btn" data-filter="lifetime">Lifetime</button>
-            </div>
+<!-- Screen: Profile Summary -->
+<section id="profile-summary-screen" class="screen">
+    <button id="back-to-profiles-btn-from-summary" class="btn btn-secondary" style="margin-bottom: 1rem; width: auto; padding: 0.5rem 1rem;">← Back to Profiles</button>
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h2 id="profile-summary-title">Profile Summary</h2>
+            <button id="profile-summary-add-expense-btn" class="btn" style="width:auto; padding: 0.5rem 1rem;">Add Expense</button>
+        </div>
+        <div id="profile-summary-filters" class="filters">
+            <button class="filter-btn active" data-filter="1">1 Day</button>
+            <button class="filter-btn" data-filter="7">7 Days</button>
+            <button class="filter-btn" data-filter="15">15 Days</button>
+            <button class="filter-btn" data-filter="30">1 Month</button>
+            <button class="filter-btn" data-filter="lifetime">Lifetime</button>
+            <div class="date-filter"><input type="date" id="summary-start-date"><input type="date" id="summary-end-date"></div>
         </div>
     </div>
-    <div id="profit-list"></div>
+    <div id="profile-summary-cards" class="financial-summary-grid"></div>
+    <div id="profile-summary-list"></div>
 </section>
+
 </main>
 
 <!-- Full Screen Calculator -->
@@ -413,13 +431,13 @@
 </section>
 
 <!-- Modals -->
-<div id="edit-modal" class="modal-overlay">
+<div id="edit-product-modal" class="modal-overlay">
 <div class="modal-content">
-<div class="modal-header"><h2>Edit Product</h2><button class="modal-close-btn">&times;</button></div>
+<div class="modal-header"><h2>Edit Item</h2><button class="modal-close-btn">&times;</button></div>
 <form id="edit-product-form">
 <input type="hidden" id="editProductId">
-<div class="form-group"><label for="editSourceCode">Product Code</label><div class="input-wrapper"><input type="text" id="editSourceCode" readonly></div></div>
-<div class="form-group"><label for="editProductName">Product Name</label><div class="input-wrapper"><input type="text" id="editProductName" required></div></div>
+<div class="form-group"><label for="editSourceCode">Item Code</label><div class="input-wrapper"><input type="text" id="editSourceCode" readonly></div></div>
+<div class="form-group"><label for="editProductName">Item Name</label><div class="input-wrapper"><input type="text" id="editProductName" required></div></div>
 <div class="form-group hidden" id="edit-category-select-group"><label for="editProductCategory">Category</label><div class="input-wrapper"><select id="editProductCategory"></select></div></div>
 <div class="form-group"><label for="editBuyPrice">Buy Price</label><div class="input-wrapper"><input type="number" id="editBuyPrice" step="0.01"></div></div>
 <div class="form-group"><label for="editSellPrice">Sell Price</label><div class="input-wrapper"><input type="number" id="editSellPrice" step="0.01"></div></div>
@@ -447,41 +465,41 @@
 </div>
 </div>
 </div>
-<div id="edit-category-modal" class="modal-overlay">
+<div id="edit-item-category-modal" class="modal-overlay">
     <div class="modal-content">
-        <div class="modal-header"><h2>Edit Category</h2><button class="modal-close-btn">&times;</button></div>
-        <form id="edit-category-form">
-            <input type="hidden" id="editCategoryId">
-            <div class="form-group"><label for="editCategoryName">Category Name</label><div class="input-wrapper"><input type="text" id="editCategoryName" required></div></div>
+        <div class="modal-header"><h2>Edit Item Category</h2><button class="modal-close-btn">&times;</button></div>
+        <form id="edit-item-category-form">
+            <input type="hidden" id="editItemCategoryId">
+            <div class="form-group"><label for="editItemCategoryName">Category Name</label><div class="input-wrapper"><input type="text" id="editItemCategoryName" required></div></div>
             <button type="submit" class="btn">Save Changes</button>
         </form>
     </div>
 </div>
-<div id="user-profile-modal" class="modal-overlay">
+<div id="profile-options-modal" class="modal-overlay">
     <div class="modal-content">
-        <div class="modal-header"><h2 id="user-profile-modal-title"></h2><button class="modal-close-btn">&times;</button></div>
-        <div id="user-profile-menu">
-            <button class="user-profile-menu-item" data-action="edit_user">Edit User Details</button>
-            <button class="user-profile-menu-item" data-action="change_price">Change Price</button>
-            <button class="user-profile-menu-item" data-action="view_sales">View Sale History</button>
-            <button class="user-profile-menu-item" data-action="view_profit">View Profit History</button>
+        <div class="modal-header"><h2 id="profile-options-modal-title"></h2><button class="modal-close-btn">&times;</button></div>
+        <div id="profile-options-menu">
+            <button class="profile-menu-item" data-action="edit_profile">Edit Profile Details</button>
+            <button class="profile-menu-item" data-action="change_price">Set Custom Prices</button>
+            <button class="profile-menu-item" data-action="view_sales">View Sale History</button>
+            <button class="profile-menu-item" data-action="view_summary">View Summary</button>
         </div>
     </div>
 </div>
-<div id="edit-user-modal" class="modal-overlay">
+<div id="edit-profile-modal" class="modal-overlay">
     <div class="modal-content">
-        <div class="modal-header"><h2>Edit User</h2><button class="modal-close-btn">&times;</button></div>
-        <form id="edit-user-form">
-            <input type="hidden" id="editUserId">
-            <div class="form-group"><label for="editSalespersonName">User Name</label><div class="input-wrapper"><input type="text" id="editSalespersonName" required></div></div>
-            <div class="form-group"><label for="editSalespersonWhatsapp">WhatsApp Number</label><div class="input-wrapper"><input type="tel" id="editSalespersonWhatsapp"></div></div>
+        <div class="modal-header"><h2>Edit Profile</h2><button class="modal-close-btn">&times;</button></div>
+        <form id="edit-profile-form">
+            <input type="hidden" id="editProfileId">
+            <div class="form-group"><label for="editProfileName">Profile Name</label><div class="input-wrapper"><input type="text" id="editProfileName" required></div></div>
+            <div class="form-group"><label for="editProfileWhatsapp">WhatsApp Number</label><div class="input-wrapper"><input type="tel" id="editProfileWhatsapp"></div></div>
             <button type="submit" class="btn">Save Changes</button>
         </form>
     </div>
 </div>
 <div id="move-category-modal" class="modal-overlay">
     <div class="modal-content">
-        <div class="modal-header"><h2>Move Product</h2><button class="modal-close-btn">&times;</button></div>
+        <div class="modal-header"><h2>Move Item</h2><button class="modal-close-btn">&times;</button></div>
         <p style="color: var(--text-secondary); margin-bottom: 1rem;">Select a new category for <strong id="move-product-name"></strong>.</p>
         <div id="move-category-list" style="max-height: 40vh; overflow-y: auto;"></div>
     </div>
@@ -493,6 +511,31 @@
     </div>
 </div>
 
+<div id="add-expense-modal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header"><h2 id="add-expense-modal-title">Add Expense</h2><button class="modal-close-btn">&times;</button></div>
+        <form id="add-expense-form">
+            <input type="hidden" id="expenseProfileId">
+            <div class="form-group"><label for="expenseDate">Date</label><div class="input-wrapper"><input type="date" id="expenseDate" required></div></div>
+            <div class="form-group"><label for="expenseAmount">Amount</label><div class="input-wrapper"><input type="number" id="expenseAmount" step="0.01" placeholder="0.00" required></div></div>
+            <div class="form-group"><label for="expenseCategory">Expense Type</label><div class="input-wrapper"><select id="expenseCategory" required></select></div></div>
+            <div class="form-group"><label for="expenseNote">Note (Optional)</label><div class="input-wrapper"><textarea id="expenseNote" rows="3"></textarea></div></div>
+            <button type="submit" class="btn">Save Expense</button>
+        </form>
+    </div>
+</div>
+
+<div id="edit-expense-type-modal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header"><h2>Edit Expense Category</h2><button class="modal-close-btn">&times;</button></div>
+        <form id="edit-expense-type-form">
+            <input type="hidden" id="editExpenseTypeId">
+            <div class="form-group"><label for="editExpenseTypeName">Category Name</label><div class="input-wrapper"><input type="text" id="editExpenseTypeName" required></div></div>
+            <div class="form-group"><label for="editExpenseTypeDefaultAmount">Default Amount (Optional)</label><div class="input-wrapper"><input type="number" step="0.01" id="editExpenseTypeDefaultAmount" placeholder="0.00"></div></div>
+            <button type="submit" class="btn">Save Changes</button>
+        </form>
+    </div>
+</div>
 
 <!-- Floating Save Bar -->
 <div id="save-bar" class="save-bar">
@@ -510,10 +553,10 @@
 
 <div id="toast" class="toast"></div>
 <nav class="bottom-nav">
-<div class="nav-item" data-screen="add-product"><span class="icon">➕</span><span class="label">Add</span></div>
+<div class="nav-item" data-screen="add"><span class="icon">➕</span><span class="label">Add</span></div>
 <div class="nav-item active" data-screen="dashboard"><span class="icon">🧮</span><span class="label">Billing</span></div>
 <div class="nav-item" data-screen="calculator"><span class="icon">🔢</span><span class="label">Calculator</span></div>
-<div id="manager-nav-item" class="nav-item hidden" data-screen="manager"><span class="icon">💼</span><span class="label">Manager</span></div>
+<div class="nav-item" data-screen="profiles"><span class="icon">💼</span><span class="label">Profiles</span></div>
 <div class="nav-item" data-screen="history"><span class="icon">📜</span><span class="label">History</span></div>
 </nav>
 <!-- Embedded JavaScript -->
@@ -522,7 +565,7 @@
 const storage = (() => {
 let db;
 const DB_NAME = 'OfflineBillingDB';
-const DB_VERSION = 2; // Version remains same as schema is unchanged
+const DB_VERSION = 4;
 
 const initDB = () => new Promise((resolve, reject) => {
 const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -532,8 +575,10 @@ request.onupgradeneeded = (event) => {
 const dbInstance = event.target.result;
 if (!dbInstance.objectStoreNames.contains('products')) dbInstance.createObjectStore('products', { keyPath: 'id' });
 if (!dbInstance.objectStoreNames.contains('salesHistory')) dbInstance.createObjectStore('salesHistory', { keyPath: 'id' });
-if (!dbInstance.objectStoreNames.contains('salespersons')) dbInstance.createObjectStore('salespersons', { keyPath: 'id' });
+if (!dbInstance.objectStoreNames.contains('profiles')) dbInstance.createObjectStore('profiles', { keyPath: 'id' });
 if (!dbInstance.objectStoreNames.contains('categories')) dbInstance.createObjectStore('categories', { keyPath: 'id' });
+if (!dbInstance.objectStoreNames.contains('expenses')) dbInstance.createObjectStore('expenses', { keyPath: 'id' });
+if (!dbInstance.objectStoreNames.contains('expenseCategories')) dbInstance.createObjectStore('expenseCategories', { keyPath: 'id' });
 };
 });
 
@@ -556,7 +601,7 @@ saveItem: (storeName, item) => performTransaction(storeName, 'readwrite', store 
 getAll: (storeName) => performTransaction(storeName, 'readonly', store => store.getAll()),
 deleteItem: (storeName, id) => performTransaction(storeName, 'readwrite', store => store.delete(id)),
 importData: async (data) => {
-for (const storeName of ['products', 'salespersons', 'salesHistory', 'categories']) {
+for (const storeName of ['products', 'profiles', 'salesHistory', 'categories', 'expenses', 'expenseCategories']) {
 await performTransaction(storeName, 'readwrite', store => {
 store.clear();
 if (data[storeName]) data[storeName].forEach(item => store.put(item));
@@ -572,24 +617,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
 const PRODUCTION_DATA = {
   "products": [{"id": "mkk7i9pnjpb2fcge7bh","sourceCode": "L","productName": "Lotas","buyPrice": 0,"sellPrice": 150,"createdAt": 1768769190059,"isFavorite": false}, {"id": "mkk8qen8wqxikpa3hbk","sourceCode": "B","productName": "Bulet","buyPrice": 0,"sellPrice": 205,"createdAt": 1768771249316,"isFavorite": false}, {"id": "mkk8qvw6y5lvtn7zvj","sourceCode": "F","productName": "Fise","buyPrice": 0,"sellPrice": 200,"createdAt": 1768771271670,"isFavorite": false}, {"id": "mkk8ryds4mu1u22jseu","sourceCode": "D","productName": "Box","buyPrice": 0,"sellPrice": 190,"createdAt": 1768771321552,"isFavorite": false}, {"id": "mkk8tnk2t0xqx9wcnba","sourceCode": "P","productName": "Tebile P","buyPrice": 0,"sellPrice": 950,"createdAt": 1768771400834,"isFavorite": false}, {"id": "mkmmi2636rdwp8387ud","sourceCode": "R","productName": "Rolex","buyPrice": 220,"sellPrice": 230,"createdAt": 1768915306875,"isFavorite": false}, {"id": "mkmmjn1f2kd8q5m2hwf","sourceCode": "C","productName": "Oscar","buyPrice": 0,"sellPrice": 200,"createdAt": 1768915380579,"isFavorite": false}],
-  "salespersons": [], "salesHistory": [], "categories": []
+  "profiles": [], "salesHistory": [], "categories": [], "expenses": [], "expenseCategories": []
 };
 
 // App State
 let products = [];
 let salesHistory = [];
-let salespersons = [];
+let profiles = [];
 let categories = [];
+let expenses = [];
+let expenseCategories = [];
 let tempQuantities = {};
+let tempExpenseQuantities = {}; // NEW for expense quick add
 let activeModals = [];
 let screenHistory = ['dashboard'];
 let calcExpression = '';
 let isResultShown = false;
-let currentProfileUserId = null; // For user profile modal
-let filteredHistoryUserId = null; // For filtering history/profit screens
-let currentUserIdForRates = null; // For user rates screen
-let productToMoveId = null; // For moving product between categories
-
+let currentProfileId = null; 
+let productToMoveId = null;
 
 // DOM Elements
 const screens = document.querySelectorAll('.screen');
@@ -608,13 +653,7 @@ toast.classList.add('show');
 setTimeout(() => toast.classList.remove('show'), 3000);
 };
 const formatCurrency = (num) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(num || 0);
-const formatDate = (timestamp) => {
-const date = new Date(timestamp); const today = new Date(); const yesterday = new Date(today);
-yesterday.setDate(yesterday.getDate() - 1);
-if (date.toDateString() === today.toDateString()) return 'Today';
-if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
-return date.toLocaleDateString('en-GB'); // DD/MM/YYYY
-};
+const formatDateDDMMYYYY = (timestamp) => new Date(timestamp).toLocaleDateString('en-GB');
 
 // Theme Management
 const applyTheme = (theme) => {
@@ -625,26 +664,32 @@ localStorage.setItem('theme', theme);
 
 // Navigation
 const switchScreen = (screenId, isBack = false, options = {}) => {
-filteredHistoryUserId = options.userId || null;
+currentProfileId = options.profileId || null;
 document.body.classList.toggle('calculator-active', screenId === 'calculator');
-const titles = { 'dashboard': 'Billing', 'add-product': 'Add Product', 'history': 'Sales History', 'manager': 'Manager Panel', 'profit': 'Profit History', 'calculator': 'Calculator', 'user-rates': 'User Rates', 'category-manager': 'Categories' };
+const titles = { 'dashboard': 'Billing', 'add': 'Add', 'history': 'History', 'profiles': 'Profiles', 'calculator': 'Calculator', 'profile-rates': 'Custom Rates', 'profile-summary': 'Profile Summary' };
 headerTitle.textContent = titles[screenId] || 'App';
 screens.forEach(s => s.classList.toggle('active', s.id === `${screenId}-screen`));
 navItems.forEach(item => item.classList.toggle('active', item.dataset.screen === screenId));
-const total = parseFloat(document.getElementById('grand-total-amount').textContent.replace(/[^0-9.]/g, ''));
-saveBar.classList.toggle('visible', screenId === 'dashboard' && total > 0);
+
+const activeTab = document.querySelector('#dashboard-screen .tab-btn.active')?.dataset.tab;
+if (screenId === 'dashboard' && activeTab === 'billing-items-tab') {
+    updateItemTotal();
+} else if (screenId === 'dashboard' && activeTab === 'billing-expenses-tab') {
+    updateExpenseTotal();
+} else {
+    saveBar.classList.remove('visible');
+}
+
 if (!isBack && screenHistory[screenHistory.length - 1] !== screenId) screenHistory.push(screenId);
 
-// Screen-specific render calls
 const renderMap = {
     'dashboard': renderDashboard,
     'history': renderHistory,
-    'profit': renderProfitHistory,
-    'manager': renderManagerScreen,
-    'user-rates': renderUserRatesScreen,
-    'category-manager': renderCategoryManagerScreen,
-    'add-product': () => { document.getElementById('add-product-form').reset(); renderCategorySelect('productCategory'); },
-    'calculator': () => { updateCalcDisplay(); } // No history render on open
+    'profiles': renderProfilesScreen,
+    'profile-rates': renderProfileRatesScreen,
+    'profile-summary': renderProfileSummary,
+    'add': renderAddScreen,
+    'calculator': () => { updateCalcDisplay(); }
 };
 if(renderMap[screenId]) renderMap[screenId]();
 };
@@ -655,17 +700,14 @@ const closeModal = () => { if (activeModals.length > 0) { document.getElementByI
 const showConfirmationModal = (title, message, onConfirm, onCancel = () => {}) => {
 document.getElementById('shared-modal-title').textContent = title;
 document.getElementById('shared-modal-message').innerHTML = message;
-
 const confirmBtn = document.getElementById('shared-modal-confirm-btn');
 const newConfirmBtn = confirmBtn.cloneNode(true);
 confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
 newConfirmBtn.onclick = () => { onConfirm(); closeModal(); };
-
 const cancelBtn = document.querySelector('#shared-delete-modal .modal-close-btn');
 const newCancelBtn = cancelBtn.cloneNode(true);
 cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
 newCancelBtn.onclick = () => { onCancel(); closeModal(); };
-
 showModal('shared-delete-modal');
 };
 
@@ -673,113 +715,103 @@ showModal('shared-delete-modal');
 const handleBackButton = (e) => {
 e.preventDefault();
 if (closeModal()) return;
-if(document.body.classList.contains('calculator-active')){
-    switchScreen('dashboard', true);
-    return;
-}
-if(filteredHistoryUserId) {
-    filteredHistoryUserId = null;
-    switchScreen('manager', true);
-    return;
-}
-if (screenHistory.length > 1) {
-screenHistory.pop();
-switchScreen(screenHistory[screenHistory.length - 1], true);
-} else {
-showConfirmationModal('Exit App', 'Are you sure you want to exit?', () => { if (navigator.app) navigator.app.exitApp(); });
-}
+if(document.body.classList.contains('calculator-active')){ switchScreen('dashboard', true); return; }
+if(currentProfileId) { currentProfileId = null; switchScreen('profiles', true); return; }
+if (screenHistory.length > 1) { screenHistory.pop(); switchScreen(screenHistory[screenHistory.length - 1], true); } 
+else { showConfirmationModal('Exit App', 'Are you sure you want to exit?', () => { if (navigator.app) navigator.app.exitApp(); }); }
 };
 document.addEventListener('backbutton', handleBackButton, false);
 
 // Price Logic
-const getAppliedSellPrice = (product, userId) => {
-    if (!userId || userId === 'direct_sale' || !product) { return product?.sellPrice || 0; }
-    const user = salespersons.find(s => s.id === userId);
-    // CRITICAL FIX: Check for null/undefined to allow 0 and negative rates.
-    if (user && user.customRates && user.customRates[product.id] != null) {
-        return parseFloat(user.customRates[product.id]);
-    }
+const getAppliedSellPrice = (product, profileId) => {
+    if (!profileId || profileId === 'direct_sale' || !product) { return product?.sellPrice || 0; }
+    const profile = profiles.find(p => p.id === profileId);
+    if (profile && profile.customRates && profile.customRates[product.id] != null) return parseFloat(profile.customRates[product.id]);
     return product.sellPrice;
 };
 
 
-// Dashboard UI & Logic
+// Billing Screen UI & Logic
 const renderDashboard = () => {
-const listDiv = document.getElementById('product-list');
-const catContainer = document.getElementById('category-filter-container');
-const selectedUserId = localStorage.getItem('selectedUserId');
-const activeCatId = catContainer.querySelector('.filter-btn.active')?.dataset.categoryId;
-const searchTerm = searchInput.value.toLowerCase();
+    const activeTab = document.querySelector('#dashboard-screen .tab-btn.active').dataset.tab;
+    
+    document.getElementById('billing-items-tab').classList.toggle('active', activeTab === 'billing-items-tab');
+    document.getElementById('billing-expenses-tab').classList.toggle('active', activeTab === 'billing-expenses-tab');
 
-catContainer.classList.toggle('hidden', categories.length === 0);
-if(categories.length > 0) {
-    catContainer.innerHTML = `<div class="category-filter-tabs"><button class="filter-btn ${!activeCatId || activeCatId === 'all' ? 'active' : ''}" data-category-id="all">All</button>${categories.map(c => `<button class="filter-btn ${activeCatId === c.id ? 'active' : ''}" data-category-id="${c.id}">${c.name}</button>`).join('')}</div>`;
-    catContainer.querySelectorAll('.filter-btn').forEach(btn => btn.onclick = (e) => {
-        catContainer.querySelector('.filter-btn.active')?.classList.remove('active');
-        e.currentTarget.classList.add('active');
-        renderDashboard();
-    });
-}
-
-// Filter logic
-let filteredProducts = products;
-if (activeCatId && activeCatId !== 'all') {
-    filteredProducts = filteredProducts.filter(p => p.categoryId === activeCatId);
-}
-if (searchTerm) {
-    filteredProducts = filteredProducts.filter(p => 
-        p.productName.toLowerCase().includes(searchTerm) || 
-        p.sourceCode.toLowerCase().includes(searchTerm)
-    );
-}
-
-if (products.length > 0 && filteredProducts.length === 0 && searchTerm) {
-    showToast("No product found");
-}
-
-const sortedProducts = [...filteredProducts].sort((a, b) => (b.isFavorite ? 1 : 0) - (a.isFavorite ? 1 : 0) || b.createdAt - a.createdAt);
-listDiv.innerHTML = sortedProducts.length === 0 ? `<div class="card" style="text-align:center; color: var(--text-secondary);">No products to show.</div>`
-: sortedProducts.map(p => {
-const appliedPrice = getAppliedSellPrice(p, selectedUserId);
-return `<div class="card product-card" data-product-id="${p.id}">
-<div class="product-card-main"><div class="product-info"><h3>${p.productName}</h3><div class="meta">Code: ${p.sourceCode} | Sell: ${formatCurrency(appliedPrice)}</div></div>
-<div class="quantity-controls"><button class="quantity-btn minus-btn">-</button><input type="number" class="quantity-input" value="${tempQuantities[p.id] || 0}" min="0" pattern="[0-9]*"><button class="quantity-btn plus-btn">+</button></div></div>
-<div class="product-calculation"><div class="product-actions">
-<button class="action-btn edit-btn" title="Edit">✏️</button>
-<button class="action-btn favorite-btn ${p.isFavorite ? 'is-favorite' : ''}" title="Favorite">${p.isFavorite ? '♥️' : '⭐'}</button>
-<button class="action-btn delete-btn" title="Delete">🗑️</button>
-<button class="action-btn move-btn" title="Move Category">⋮</button>
-</div><div class="value total-price">${formatCurrency((tempQuantities[p.id] || 0) * appliedPrice)}</div></div>
-</div>`}).join('');
+    if (activeTab === 'billing-items-tab') {
+        renderItemBilling();
+        updateItemTotal();
+    } else {
+        renderExpenseBilling();
+        updateExpenseTotal();
+    }
 };
 
-const updateGrandTotal = () => {
-const selectedUserId = localStorage.getItem('selectedUserId');
-let total = 0;
-const itemsSummary = Object.keys(tempQuantities)
-    .filter(id => tempQuantities[id] > 0)
-    .map(id => {
-        const product = products.find(p => p.id === id);
-        if (product) {
-            const appliedPrice = getAppliedSellPrice(product, selectedUserId);
-            total += tempQuantities[id] * appliedPrice;
-            return `${product.sourceCode}${tempQuantities[id]}`;
-        }
-        return '';
-    }).filter(Boolean).join(' + ');
+const renderItemBilling = () => {
+    const listDiv = document.getElementById('product-list');
+    const catContainer = document.getElementById('category-filter-container');
+    const selectedProfileId = localStorage.getItem('selectedProfileId');
+    const activeCatId = catContainer.querySelector('.filter-btn.active')?.dataset.categoryId;
+    const searchTerm = searchInput.value.toLowerCase();
 
-document.getElementById('sale-items-summary').textContent = `Items: ${itemsSummary || '-'}`;
-document.getElementById('grand-total-amount').textContent = formatCurrency(total);
-saveBar.classList.toggle('visible', total > 0);
+    catContainer.classList.toggle('hidden', categories.length === 0);
+    if(categories.length > 0) {
+        catContainer.innerHTML = `<div class="category-filter-tabs"><button class="filter-btn ${!activeCatId || activeCatId === 'all' ? 'active' : ''}" data-category-id="all">All</button>${categories.map(c => `<button class="filter-btn ${activeCatId === c.id ? 'active' : ''}" data-category-id="${c.id}">${c.name}</button>`).join('')}</div>`;
+        catContainer.querySelectorAll('.filter-btn').forEach(btn => btn.onclick = (e) => {
+            catContainer.querySelector('.filter-btn.active')?.classList.remove('active');
+            e.currentTarget.classList.add('active');
+            renderDashboard();
+        });
+    }
+
+    let filteredProducts = products;
+    if (activeCatId && activeCatId !== 'all') filteredProducts = filteredProducts.filter(p => p.categoryId === activeCatId);
+    if (searchTerm) filteredProducts = filteredProducts.filter(p => p.productName.toLowerCase().includes(searchTerm) || p.sourceCode.toLowerCase().includes(searchTerm));
+    if (products.length > 0 && filteredProducts.length === 0 && searchTerm) showToast("No item found");
+
+    const sortedProducts = [...filteredProducts].sort((a, b) => (b.isFavorite ? 1 : 0) - (a.isFavorite ? 1 : 0) || b.createdAt - a.createdAt);
+    listDiv.innerHTML = sortedProducts.length === 0 ? `<div class="card" style="text-align:center; color: var(--text-secondary);">No items to show.</div>`
+    : sortedProducts.map(p => {
+    const appliedPrice = getAppliedSellPrice(p, selectedProfileId);
+    return `<div class="card product-card" data-product-id="${p.id}">
+    <div class="product-card-main"><div class="product-info"><h3>${p.productName}</h3><div class="meta">Code: ${p.sourceCode} | Sell: ${formatCurrency(appliedPrice)}</div></div>
+    <div class="quantity-controls"><button class="quantity-btn minus-btn">-</button><input type="number" class="quantity-input" value="${tempQuantities[p.id] || 0}" min="0" pattern="[0-9]*"><button class="quantity-btn plus-btn">+</button></div></div>
+    <div class="product-calculation"><div class="product-actions">
+    <button class="action-btn edit-btn" title="Edit">✏️</button>
+    <button class="action-btn favorite-btn ${p.isFavorite ? 'is-favorite' : ''}" title="Favorite">${p.isFavorite ? '♥️' : '⭐'}</button>
+    <button class="action-btn delete-btn" title="Delete">🗑️</button>
+    <button class="action-btn move-btn" title="Move Category">⋮</button>
+    </div><div class="value total-price">${formatCurrency((tempQuantities[p.id] || 0) * appliedPrice)}</div></div>
+    </div>`}).join('');
+};
+
+const updateItemTotal = () => {
+    const selectedProfileId = localStorage.getItem('selectedProfileId');
+    let total = 0;
+    const itemsSummary = Object.keys(tempQuantities)
+        .filter(id => tempQuantities[id] > 0)
+        .map(id => {
+            const product = products.find(p => p.id === id);
+            if (product) {
+                const appliedPrice = getAppliedSellPrice(product, selectedProfileId);
+                total += tempQuantities[id] * appliedPrice;
+                return `${product.sourceCode}${tempQuantities[id]}`;
+            }
+            return '';
+        }).filter(Boolean).join(' + ');
+
+    document.getElementById('sale-items-summary').textContent = `Items: ${itemsSummary || '-'}`;
+    document.getElementById('grand-total-amount').textContent = formatCurrency(total);
+    saveBar.classList.toggle('visible', total !== 0);
 };
 
 // Data Handlers
 const handleLoadProductionData = async () => {
     const existingSourceCodes = new Set(products.map(p => p.sourceCode));
     const newProductsToAdd = PRODUCTION_DATA.products.filter(prod => !existingSourceCodes.has(prod.sourceCode));
-    if (newProductsToAdd.length === 0) { return showToast('All Chair/Table products already exist.'); }
-    const message = `This will add ${newProductsToAdd.length} new Chair/Table product(s). Your existing products will not be affected. Continue?`;
-    showConfirmationModal('Add Chair/Table Data', message, async () => {
+    if (newProductsToAdd.length === 0) { return showToast('All sample items already exist.'); }
+    const message = `This will add ${newProductsToAdd.length} new sample item(s). Your existing items will not be affected. Continue?`;
+    showConfirmationModal('Add Sample Items', message, async () => {
         try {
             for (const product of newProductsToAdd) {
                 const productToAdd = { ...product, id: generateUniqueId(), createdAt: Date.now(), isFavorite: false };
@@ -788,8 +820,8 @@ const handleLoadProductionData = async () => {
             }
             products.sort((a, b) => b.createdAt - a.createdAt);
             renderDashboard();
-            showToast(`${newProductsToAdd.length} product(s) added successfully.`);
-        } catch (error) { showToast('Error adding products.'); }
+            showToast(`${newProductsToAdd.length} item(s) added successfully.`);
+        } catch (error) { showToast('Error adding items.'); }
     });
 };
 
@@ -807,8 +839,8 @@ e.preventDefault();
 const sourceCode = document.getElementById('sourceCode').value.trim().toUpperCase();
 const productName = document.getElementById('productName').value.trim();
 const categoryId = document.getElementById('productCategory').value;
-if (!sourceCode || !productName) return showToast('Product Code and Name are required.');
-if (products.some(p => p.sourceCode === sourceCode)) return showToast('This Product Code already exists.');
+if (!sourceCode || !productName) return showToast('Item Code and Name are required.');
+if (products.some(p => p.sourceCode === sourceCode)) return showToast('This Item Code already exists.');
 
 const newProduct = {
 id: generateUniqueId(), sourceCode, productName,
@@ -822,19 +854,19 @@ products.unshift(newProduct);
 products.sort((a,b) => b.createdAt - a.createdAt);
 e.target.reset();
 switchScreen('dashboard');
-showToast('Product added successfully.');
+showToast('Item added successfully.');
 };
 
 const handleDeleteProduct = (id) => {
-showConfirmationModal('Delete Product', 'Are you sure you want to permanently delete this product?', async () => {
+showConfirmationModal('Delete Item', 'Are you sure you want to permanently delete this item?', async () => {
 await storage.deleteItem('products', id);
 products = products.filter(p => p.id !== id);
 renderDashboard();
-showToast('Product deleted.');
+showToast('Item deleted.');
 });
 };
 
-const openEditModal = (id) => {
+const openEditProductModal = (id) => {
 const product = products.find(p => p.id === id);
 if (!product) return;
 renderCategorySelect('editProductCategory', product.categoryId || 'none');
@@ -843,7 +875,7 @@ document.getElementById('editSourceCode').value = product.sourceCode;
 document.getElementById('editProductName').value = product.productName;
 document.getElementById('editBuyPrice').value = product.buyPrice;
 document.getElementById('editSellPrice').value = product.sellPrice;
-showModal('edit-modal');
+showModal('edit-product-modal');
 };
 
 const handleEditProduct = async (e) => {
@@ -863,132 +895,155 @@ const index = products.findIndex(p => p.id === id);
 if (index > -1) Object.assign(products[index], updatedData);
 closeModal();
 renderDashboard();
-showToast('Product updated.');
+showToast('Item updated.');
 };
 
 const handleSaveSale = async () => {
-const items = Object.keys(tempQuantities).filter(id => tempQuantities[id] > 0);
-if (items.length === 0) return showToast('No items selected to save.');
-
-const selectedUserId = localStorage.getItem('selectedUserId') || 'direct_sale';
-let totalAmount = 0, totalProfit = 0;
-const saleQuantities = {};
-
-items.forEach(id => {
-    const product = products.find(p => p.id === id);
-    if(product) {
-        const quantity = tempQuantities[id];
-        const appliedPrice = getAppliedSellPrice(product, selectedUserId);
-        totalAmount += quantity * appliedPrice;
-        totalProfit += quantity * (appliedPrice - (product.buyPrice || 0));
-        saleQuantities[id] = quantity;
+    const activeTab = document.querySelector('#dashboard-screen .tab-btn.active').dataset.tab;
+    if (activeTab === 'billing-items-tab') {
+        await saveItemSale();
+    } else {
+        await saveExpenseSale();
     }
-});
+};
 
-const sale = { id: generateUniqueId(), timestamp: Date.now(), totalAmount, totalProfit, quantities: saleQuantities, salespersonId: selectedUserId };
+const saveItemSale = async () => {
+    const items = Object.keys(tempQuantities).filter(id => tempQuantities[id] !== 0);
+    if (items.length === 0) return showToast('No items selected to save.');
 
-// --- CORE BILLING RULE: SAVE FIRST ---
-await storage.saveItem('salesHistory', sale);
-salesHistory.unshift(sale); // Update in-memory history
+    if (profiles.length > 0 && !localStorage.getItem('selectedProfileId')) {
+        return showToast("Please select a profile to save the sale.");
+    }
+    const selectedProfileId = localStorage.getItem('selectedProfileId') || 'direct_sale';
+    
+    let totalAmount = 0, totalProfit = 0;
+    const saleQuantities = {};
 
-showToast('Bill saved successfully');
+    items.forEach(id => {
+        const product = products.find(p => p.id === id);
+        if(product) {
+            const quantity = tempQuantities[id];
+            const appliedPrice = getAppliedSellPrice(product, selectedProfileId);
+            totalAmount += quantity * appliedPrice;
+            totalProfit += quantity * (appliedPrice - (product.buyPrice || 0));
+            saleQuantities[id] = quantity;
+        }
+    });
 
-// Reset quantities and UI immediately after saving
-tempQuantities = {};
-renderDashboard();
-updateGrandTotal();
+    const sale = { id: generateUniqueId(), timestamp: Date.now(), totalAmount, totalProfit, quantities: saleQuantities, profileId: selectedProfileId };
 
-// --- WHATSAPP CONFIRMATION FLOW ---
-showConfirmationModal(
-    'Share Bill',
-    'Bill saved successfully. Do you want to send this bill on WhatsApp?',
-    () => { // onConfirm (YES)
-        const user = salespersons.find(s => s.id === selectedUserId);
+    await storage.saveItem('salesHistory', sale);
+    salesHistory.unshift(sale);
+
+    showToast('Bill saved successfully');
+
+    tempQuantities = {};
+    renderDashboard();
+    updateItemTotal();
+
+    showConfirmationModal('Share Bill', 'Bill saved. Do you want to send this bill on WhatsApp?', () => { 
+        const profile = profiles.find(p => p.id === selectedProfileId);
         const billItems = Object.keys(sale.quantities).map(pid => {
             const p = products.find(prod => prod.id === pid);
             return p ? `${p.sourceCode}${sale.quantities[pid]}` : '';
         }).filter(Boolean).join(' + ');
-
-        const billMessage = `Bill Details\nCustomer: ${user ? user.name : 'Direct Sale'}\nItems: ${billItems}\nTotal: ${formatCurrency(sale.totalAmount)}\n\nThank you for your purchase.`;
+        const billMessage = `Bill Details\nCustomer: ${profile ? profile.name : 'Direct Sale'}\nItems: ${billItems}\nTotal: ${formatCurrency(sale.totalAmount)}\n\nThank you.`;
         const encodedMessage = encodeURIComponent(billMessage);
-        
         let whatsappUrl = `https://api.whatsapp.com/send?text=${encodedMessage}`;
-        if (user && user.whatsappNumber) {
-            const cleanNumber = user.whatsappNumber.replace(/[^0-9]/g, '');
+        if (profile && profile.whatsappNumber) {
+            const cleanNumber = profile.whatsappNumber.replace(/[^0-9]/g, '');
             if(cleanNumber) whatsappUrl = `https://wa.me/${cleanNumber}?text=${encodedMessage}`;
         }
         window.open(whatsappUrl, '_blank');
-    }
-    // No 'onCancel' needed, modal just closes.
-);
+    });
 };
 
-
-// History & Profit Screens
+// History Screen
 const renderHistory = () => {
-const header = document.getElementById('history-header');
-const listDiv = document.getElementById('history-list');
-header.style.display = 'block';
-let dataToFilter = salesHistory;
+    const profileFilter = document.getElementById('history-profile-filter');
+    const selectedProfileId = profileFilter.value;
+    
+    // Setup profile filter dropdown
+    profileFilter.innerHTML = `<option value="all">All Profiles</option>` + profiles.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+    if (currentProfileId) {
+        profileFilter.value = currentProfileId;
+    } else {
+        profileFilter.value = selectedProfileId || 'all';
+    }
 
-if(filteredHistoryUserId) {
-    header.style.display = 'none';
-    dataToFilter = salesHistory.filter(s => s.salespersonId === filteredHistoryUserId);
-    const user = salespersons.find(s => s.id === filteredHistoryUserId);
-    headerTitle.textContent = `Sales for ${user?.name || 'User'}`;
-} else {
-    headerTitle.textContent = 'Sales History';
-}
+    renderOverallSummary();
 
-const filtered = filterData(dataToFilter);
-document.getElementById('history-summary-value').textContent = formatCurrency(filtered.reduce((sum, s) => sum + s.totalAmount, 0));
-listDiv.innerHTML = filtered.length === 0
-? `<div class="card" style="text-align:center; color: var(--text-secondary);">No sales history for this period.</div>`
-: filtered.map(sale => {
-const saleItems = Object.keys(sale.quantities).map(pid => { const p = products.find(prod => prod.id === pid); return `${p ? p.sourceCode : 'N/A'}x${sale.quantities[pid]}`;}).join(', ');
-let userName = 'Direct Sale';
-if (sale.salespersonId && sale.salespersonId !== 'direct_sale') { const user = salespersons.find(s => s.id === sale.salespersonId); userName = user ? user.name : 'Unknown User'; }
-return `<div class="card">
-<div style="font-size: 0.8rem; color: var(--text-secondary);">${new Date(sale.timestamp).toLocaleString()}</div>
-<div style="font-weight:bold; margin: 0.5rem 0; font-size: 1.2rem;">${formatCurrency(sale.totalAmount)} <span style="font-size: 0.9rem; font-weight: 500;">(${userName})</span></div>
-<div style="font-size:0.9rem; color:var(--text-secondary); background: var(--bg-color); padding: 0.5rem; border-radius: 8px;">${saleItems}</div>
-<div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
-    <button class="btn btn-secondary" style="flex:1; padding: 0.5rem; font-size: 0.9rem;" onclick="openEditSaleModal('${sale.id}')">Edit</button>
-    <button class="btn btn-danger" style="flex:1; padding: 0.5rem; font-size: 0.9rem;" onclick="handleDeleteSale('${sale.id}')">Delete</button>
-</div></div>`;
-}).join('');
+    const listDiv = document.getElementById('history-list');
+    let dataToFilter = salesHistory;
+
+    // Filter by profile if one is selected
+    if (profileFilter.value !== 'all') {
+        dataToFilter = salesHistory.filter(s => s.profileId === profileFilter.value);
+    }
+    
+    // Hide summary if viewing a single profile's history from their options
+    document.querySelector('#history-screen .card:first-child').style.display = currentProfileId ? 'none' : 'block';
+    
+    if (currentProfileId) {
+        const profile = profiles.find(p => p.id === currentProfileId);
+        headerTitle.textContent = `Sales for ${profile?.name || 'Profile'}`;
+    } else {
+        headerTitle.textContent = 'History';
+    }
+
+    const activeFilter = document.querySelector('#history-unified-filters .filter-btn.active')?.dataset.filter;
+    const customStart = document.getElementById('history-start-date').value;
+    const customEnd = document.getElementById('history-end-date').value;
+    const { start, end } = getDateRangeFromFilter(activeFilter, customStart, customEnd);
+    const filtered = dataToFilter.filter(s => s.timestamp >= start && s.timestamp <= end);
+    
+    listDiv.innerHTML = filtered.length === 0
+        ? `<div class="card" style="text-align:center; color: var(--text-secondary); padding: 2rem;">No sales history for this period.</div>`
+        : filtered.map(sale => {
+            const saleItems = Object.keys(sale.quantities).map(pid => { const p = products.find(prod => prod.id === pid); return p ? `${p.sourceCode}${sale.quantities[pid]}`:''; }).filter(Boolean).join(' + ');
+            let profileName = 'Direct Sale';
+            if (sale.profileId && sale.profileId !== 'direct_sale') {
+                const profile = profiles.find(p => p.id === sale.profileId);
+                profileName = profile ? profile.name : 'Unknown Profile';
+            }
+            return `<div class="card" style="margin-bottom: 0.75rem;">
+                <div style="font-size: 0.8rem; color: var(--text-secondary);">${new Date(sale.timestamp).toLocaleString('en-GB')}</div>
+                <div style="font-weight:bold; margin: 0.5rem 0; font-size: 1.2rem;">${formatCurrency(sale.totalAmount)} <span style="font-size: 0.9rem; font-weight: 500;">(${profileName})</span></div>
+                <div style="font-size:0.9rem; color:var(--text-secondary); background: var(--bg-color); padding: 0.5rem; border-radius: 8px;">${saleItems}</div>
+                <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
+                    <button class="btn btn-secondary" style="flex:1; padding: 0.5rem; font-size: 0.9rem;" onclick="openEditSaleModal('${sale.id}')">Edit</button>
+                    <button class="btn btn-danger" style="flex:1; padding: 0.5rem; font-size: 0.9rem;" onclick="handleDeleteSale('${sale.id}')">Delete</button>
+                </div>
+            </div>`;
+        }).join('');
 };
 
-const renderProfitHistory = () => {
-const header = document.getElementById('profit-header');
-const listDiv = document.getElementById('profit-list');
-header.style.display = 'block';
-let dataToFilter = salesHistory;
+const renderOverallSummary = () => {
+    const activeFilter = document.querySelector('#history-unified-filters .filter-btn.active')?.dataset.filter;
+    const customStart = document.getElementById('history-start-date').value;
+    const customEnd = document.getElementById('history-end-date').value;
+    const { start, end } = getDateRangeFromFilter(activeFilter, customStart, customEnd);
+    
+    const profileFilter = document.getElementById('history-profile-filter').value;
+    
+    let salesToConsider = salesHistory;
+    let expensesToConsider = expenses;
 
-if(filteredHistoryUserId) {
-    header.style.display = 'none';
-    dataToFilter = salesHistory.filter(s => s.salespersonId === filteredHistoryUserId);
-    const user = salespersons.find(s => s.id === filteredHistoryUserId);
-    headerTitle.textContent = `Profit for ${user?.name || 'User'}`;
-} else {
-    headerTitle.textContent = 'Profit History';
-}
+    if (profileFilter !== 'all') {
+        salesToConsider = salesHistory.filter(s => s.profileId === profileFilter);
+        expensesToConsider = expenses.filter(e => e.profileId === profileFilter);
+    }
+    
+    const globalSales = salesToConsider.filter(s => s.timestamp >= start && s.timestamp <= end);
+    const globalExpenses = expensesToConsider.filter(e => e.timestamp >= start && e.timestamp <= end);
+    const globalTotals = calculateFinancials(globalSales, globalExpenses);
 
-const filtered = filterProfitData(dataToFilter);
-document.getElementById('profit-summary-value').textContent = formatCurrency(filtered.reduce((sum, s) => sum + s.totalProfit, 0));
-const profitData = {};
-filtered.forEach(sale => {
-const dateStr = formatDate(sale.timestamp);
-if (!profitData[dateStr]) profitData[dateStr] = { total: 0, users: {} };
-const user = salespersons.find(s => s.id === sale.salespersonId);
-const userName = sale.salespersonId === 'direct_sale' ? 'Direct Sale' : (user ? user.name : 'Unknown User');
-profitData[dateStr].total += sale.totalProfit;
-profitData[dateStr].users[userName] = (profitData[dateStr].users[userName] || 0) + sale.totalProfit;
-});
-if (Object.keys(profitData).length === 0) { listDiv.innerHTML = `<div class="card" style="text-align:center; color: var(--text-secondary);">No profit data for this period.</div>`; return; }
-listDiv.innerHTML = Object.keys(profitData).map(date => `<div class="profit-date-group"><div class="profit-date-header">${date}</div>
-<div class="card">${Object.entries(profitData[date].users).map(([name, profit]) => `<div class="profit-user-item"><span class="profit-user-name">${name}</span><span class="profit-user-amount">${formatCurrency(profit)}</span></div>`).join('')}
-<div class="profit-date-total">Total: ${formatCurrency(profitData[date].total)}</div></div></div>`).join('');
+    document.getElementById('overall-summary-grid').innerHTML = `
+        <div class="summary-card"><div class="label">Total Sales</div><div class="value total-sales">${formatCurrency(globalTotals.totalSales)}</div></div>
+        <div class="summary-card"><div class="label">Gross Profit</div><div class="value gross-profit">${formatCurrency(globalTotals.grossProfit)}</div></div>
+        <div class="summary-card"><div class="label">Total Expense</div><div class="value total-expense">${formatCurrency(globalTotals.totalExpense)}</div></div>
+        <div class="summary-card"><div class="label">Net Profit</div><div class="value net-profit">${formatCurrency(globalTotals.netProfit)}</div></div>
+    `;
 };
 
 const handleDeleteSale = (saleId) => {
@@ -1021,7 +1076,7 @@ const handleEditSale = async (e) => {
     if (saleIndex === -1) { showToast('Error: Sale not found.'); return closeModal(); }
     const sale = salesHistory[saleIndex];
     let totalAmount = 0, totalProfit = 0; const newQuantities = {};
-    const selectedUserId = sale.salespersonId;
+    const selectedProfileId = sale.profileId;
     document.querySelectorAll('.edit-sale-quantity').forEach(input => {
         const productId = input.dataset.productId;
         const quantity = parseInt(input.value) || 0;
@@ -1029,7 +1084,7 @@ const handleEditSale = async (e) => {
             newQuantities[productId] = quantity;
             const product = products.find(p => p.id === productId);
             if (product) {
-                const appliedPrice = getAppliedSellPrice(product, selectedUserId);
+                const appliedPrice = getAppliedSellPrice(product, selectedProfileId);
                 totalAmount += quantity * appliedPrice;
                 totalProfit += quantity * (appliedPrice - (product.buyPrice || 0));
             }
@@ -1044,231 +1099,464 @@ const handleEditSale = async (e) => {
     showToast('Sale updated successfully.');
 };
 
-const filterData = (data) => {
-const activeFilter = document.querySelector('#history-screen .filter-btn.active')?.dataset.filter;
-if (!activeFilter) return data; const now = new Date();
-const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-if (activeFilter === 'today') return data.filter(s => s.timestamp >= startOfDay);
-if (activeFilter === '7days') return data.filter(s => s.timestamp >= now.getTime() - 7 * 86400000);
-if (activeFilter === 'lifetime') return data;
-const start = document.getElementById('start-date').value; const end = document.getElementById('end-date').value;
-if (start && end) { const startTime = new Date(start).getTime(); const endTime = new Date(end).setHours(23, 59, 59, 999); return data.filter(s => s.timestamp >= startTime && s.timestamp <= endTime); }
-return data;
-};
-
-const filterProfitData = (data) => {
-    const activeFilter = document.querySelector('#profit-filters .filter-btn.active')?.dataset.filter;
-    if (!activeFilter) return data; const now = new Date();
-    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-    if (activeFilter === 'today') return data.filter(s => s.timestamp >= startOfDay);
-    if (activeFilter === '7days') return data.filter(s => s.timestamp >= now.getTime() - 7 * 86400000);
-    if (activeFilter === '1month') return data.filter(s => s.timestamp >= now.getTime() - 30 * 86400000); // Approximation
-    if (activeFilter === 'lifetime') return data;
-    return data;
-};
-
-// Manager Panel & User Profiles
-const renderManagerScreen = () => {
-const listDiv = document.getElementById('salesperson-list');
-listDiv.innerHTML = salespersons.length === 0 ? `<p style="text-align:center; color: var(--text-secondary);">No users added yet.</p>`
-: salespersons.map(s => `<div class="card list-item salesperson-item" data-id="${s.id}" style="cursor: pointer;"><span>${s.name}</span><button class="action-btn delete-salesperson-btn" data-id="${s.id}" title="Delete User">🗑️</button></div>`).join('');
-
-document.querySelectorAll('.delete-salesperson-btn').forEach(btn => {
-btn.onclick = (e) => { e.stopPropagation(); handleDeleteSalesperson(btn.dataset.id); };
-});
-document.querySelectorAll('.salesperson-item').forEach(item => { item.onclick = () => openUserProfileModal(item.dataset.id); });
-};
-
-
-const openUserProfileModal = (userId) => {
-    const user = salespersons.find(s => s.id === userId);
-    if (!user) return;
-    currentProfileUserId = userId;
-    document.getElementById('user-profile-modal-title').textContent = user.name;
-    showModal('user-profile-modal');
-};
-
-const handleUserProfileMenu = (action) => {
-    const userId = currentProfileUserId;
-    closeModal(); // Close the profile menu first
-    if (action === 'change_price') {
-        currentUserIdForRates = userId;
-        switchScreen('user-rates');
-    } else if (action === 'view_sales') {
-        switchScreen('history', false, { userId });
-    } else if (action === 'view_profit') {
-        switchScreen('profit', false, { userId });
-    } else if (action === 'edit_user') {
-        openEditUserModal(userId);
+// Financial Summary & Profit Logic
+const getDateRangeFromFilter = (filter, customStart, customEnd) => {
+    const now = new Date();
+    const end = new Date(now); end.setHours(23, 59, 59, 999);
+    const start = new Date(now); start.setHours(0, 0, 0, 0);
+    if (filter === 'lifetime') return { start: 0, end: end.getTime() };
+    if (filter === 'custom' && customStart && customEnd) {
+        const customStartDate = new Date(customStart); customStartDate.setHours(0, 0, 0, 0);
+        const customEndDate = new Date(customEnd); customEndDate.setHours(23, 59, 59, 999);
+        return { start: customStartDate.getTime(), end: customEndDate.getTime() };
     }
-    currentProfileUserId = null;
+    const days = parseInt(filter);
+    if (!isNaN(days)) { start.setDate(now.getDate() - (days - 1)); return { start: start.getTime(), end: end.getTime() }; }
+    return { start: start.getTime(), end: end.getTime() }; // Default to today
 };
 
-const openEditUserModal = (userId) => {
-    const user = salespersons.find(s => s.id === userId);
-    if (!user) return;
-    document.getElementById('editUserId').value = user.id;
-    document.getElementById('editSalespersonName').value = user.name;
-    document.getElementById('editSalespersonWhatsapp').value = user.whatsappNumber || '';
-    showModal('edit-user-modal');
+const calculateFinancials = (sales, expensesData) => {
+    const totalSales = sales.reduce((sum, s) => sum + s.totalAmount, 0);
+    const grossProfit = sales.reduce((sum, s) => sum + s.totalProfit, 0);
+    const totalExpense = expensesData.reduce((sum, e) => sum + e.amount, 0);
+    const netProfit = grossProfit - totalExpense;
+    return { totalSales, grossProfit, totalExpense, netProfit };
 };
 
-const handleEditUser = async (e) => {
-    e.preventDefault();
-    const userId = document.getElementById('editUserId').value;
-    const userIndex = salespersons.findIndex(s => s.id === userId);
-    if (userIndex === -1) return showToast('User not found.');
+const renderProfileSummary = async () => {
+    const profile = profiles.find(p => p.id === currentProfileId);
+    if (!profile) { switchScreen('profiles'); return; }
 
-    const updatedUser = {
-        ...salespersons[userIndex],
-        name: document.getElementById('editSalespersonName').value.trim(),
-        whatsappNumber: document.getElementById('editSalespersonWhatsapp').value.trim()
-    };
+    document.getElementById('profile-summary-title').textContent = `Summary for ${profile.name}`;
     
-    await storage.saveItem('salespersons', updatedUser);
-    salespersons[userIndex] = updatedUser;
-    renderManagerScreen();
+    const activeFilter = document.querySelector('#profile-summary-filters .filter-btn.active')?.dataset.filter;
+    const customStart = document.getElementById('summary-start-date').value;
+    const customEnd = document.getElementById('summary-end-date').value;
+    const { start, end } = getDateRangeFromFilter(activeFilter, customStart, customEnd);
+    
+    // STRICT FILTERING
+    const filteredSales = salesHistory.filter(s => s.profileId === currentProfileId && s.timestamp >= start && s.timestamp <= end);
+    const filteredExpenses = expenses.filter(e => e.profileId === currentProfileId && e.timestamp >= start && e.timestamp <= end);
+    const totals = calculateFinancials(filteredSales, filteredExpenses);
+
+    document.getElementById('profile-summary-cards').innerHTML = `
+        <div class="summary-card"><div class="label">Total Sales</div><div class="value total-sales">${formatCurrency(totals.totalSales)}</div></div>
+        <div class="summary-card"><div class="label">Gross Profit</div><div class="value gross-profit">${formatCurrency(totals.grossProfit)}</div></div>
+        <div class="summary-card"><div class="label">Total Expense</div><div class="value total-expense">${formatCurrency(totals.totalExpense)}</div></div>
+        <div class="summary-card"><div class="label">Net Profit</div><div class="value net-profit">${formatCurrency(totals.netProfit)}</div></div>
+    `;
+
+    const groupedData = {};
+    [...filteredSales, ...filteredExpenses].forEach(item => {
+        const dateStr = formatDateDDMMYYYY(item.timestamp);
+        if (!groupedData[dateStr]) groupedData[dateStr] = { gross: 0, expense: 0, timestamp: new Date(dateStr.split('/').reverse().join('-')).getTime() };
+        if (item.totalAmount !== undefined) groupedData[dateStr].gross += item.totalProfit;
+        if (item.amount !== undefined) groupedData[dateStr].expense += item.amount;
+    });
+    
+    const sortedDates = Object.keys(groupedData).sort((a,b) => groupedData[b].timestamp - groupedData[a].timestamp);
+    const listDiv = document.getElementById('profile-summary-list');
+    listDiv.innerHTML = sortedDates.length === 0
+        ? `<div class="card" style="text-align:center; color: var(--text-secondary);">No financial data for this period.</div>`
+        : sortedDates.map(date => `
+            <div class="summary-date-group">
+                <div class="summary-date-header">${date}</div>
+                <div class="card">
+                    <div class="summary-item-row"><div>Gross Profit</div> <span style="color:var(--primary-color)">${formatCurrency(groupedData[date].gross)}</span></div>
+                    <div class="summary-item-row"><div>Expense</div> <span style="color:var(--accent-red)">-${formatCurrency(groupedData[date].expense)}</span></div>
+                    <div class="summary-item-row" style="border-top: 1px solid var(--border-color); margin-top: 0.5rem; padding-top: 0.5rem;">
+                        <strong>Net Profit</strong> <strong>${formatCurrency(groupedData[date].gross - groupedData[date].expense)}</strong>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+};
+
+// Profiles Screen & Profile Options
+const renderProfilesScreen = async () => {
+    const listDiv = document.getElementById('profile-list');
+    listDiv.innerHTML = profiles.length === 0
+        ? `<p style="text-align:center; color: var(--text-secondary);">No profiles added yet.</p>`
+        : profiles.map(p => `<div class="card list-item profile-item" data-id="${p.id}" style="cursor: pointer;">
+            <span>${p.name}</span>
+            <button class="action-btn" onclick="event.stopPropagation(); openProfileOptionsModal('${p.id}')" title="Options">⋮</button>
+        </div>`).join('');
+
+    document.querySelectorAll('.profile-item').forEach(item => {
+        item.onclick = () => openProfileOptionsModal(item.dataset.id);
+    });
+};
+
+const openProfileOptionsModal = (profileId) => {
+    const profile = profiles.find(p => p.id === profileId);
+    if (!profile) return;
+    currentProfileId = profileId;
+    document.getElementById('profile-options-modal-title').textContent = profile.name;
+    showModal('profile-options-modal');
+};
+
+const handleProfileOptionsMenu = (action) => {
+    const profileId = currentProfileId;
     closeModal();
-    showToast('User details updated.');
+    if (action === 'change_price') switchScreen('profile-rates', false, { profileId });
+    else if (action === 'view_sales') switchScreen('history', false, { profileId });
+    else if (action === 'view_summary') switchScreen('profile-summary', false, { profileId });
+    else if (action === 'edit_profile') openEditProfileModal(profileId);
 };
 
-const renderUserRatesScreen = () => {
-const user = salespersons.find(s => s.id === currentUserIdForRates);
-if (!user) { showToast('User not found.'); switchScreen('manager'); return; }
-document.getElementById('user-rates-header').textContent = `Rates for ${user.name}`;
-const productListDiv = document.getElementById('user-rates-product-list');
+const openEditProfileModal = (profileId) => {
+    const profile = profiles.find(p => p.id === profileId);
+    if (!profile) return;
+    document.getElementById('editProfileId').value = profile.id;
+    document.getElementById('editProfileName').value = profile.name;
+    document.getElementById('editProfileWhatsapp').value = profile.whatsappNumber || '';
+    showModal('edit-profile-modal');
+};
+
+const handleEditProfile = async (e) => {
+    e.preventDefault();
+    const profileId = document.getElementById('editProfileId').value;
+    const profileIndex = profiles.findIndex(p => p.id === profileId);
+    if (profileIndex === -1) return showToast('Profile not found.');
+    const updatedProfile = {
+        ...profiles[profileIndex],
+        name: document.getElementById('editProfileName').value.trim(),
+        whatsappNumber: document.getElementById('editProfileWhatsapp').value.trim()
+    };
+    await storage.saveItem('profiles', updatedProfile);
+    profiles[profileIndex] = updatedProfile;
+    renderProfilesScreen();
+    closeModal();
+    showToast('Profile details updated.');
+};
+
+const renderProfileRatesScreen = () => {
+const profile = profiles.find(p => p.id === currentProfileId);
+if (!profile) { showToast('Profile not found.'); switchScreen('profiles'); return; }
+document.getElementById('profile-rates-header').textContent = `Rates for ${profile.name}`;
+const productListDiv = document.getElementById('profile-rates-product-list');
 const sortedProducts = [...products].sort((a,b) => a.productName.localeCompare(b.productName));
-productListDiv.innerHTML = sortedProducts.map(p => `<div class="form-group" style="border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1rem;"><label for="rate-for-${p.id}">${p.productName} (Default: ${formatCurrency(p.sellPrice)})</label><div class="input-wrapper"><input type="number" step="0.01" class="user-rate-input" data-product-id="${p.id}" id="rate-for-${p.id}" placeholder="${p.sellPrice}" value="${(user.customRates && user.customRates[p.id] != null) ? user.customRates[p.id] : ''}"></div></div>`).join('');
+productListDiv.innerHTML = sortedProducts.map(p => `<div class="form-group" style="border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1rem;"><label for="rate-for-${p.id}">${p.productName} (Default: ${formatCurrency(p.sellPrice)})</label><div class="input-wrapper"><input type="number" step="0.01" class="profile-rate-input" data-product-id="${p.id}" id="rate-for-${p.id}" placeholder="${p.sellPrice}" value="${(profile.customRates && profile.customRates[p.id] != null) ? profile.customRates[p.id] : ''}"></div></div>`).join('');
 };
 
-const handleSaveUserRates = async () => {
-    const user = salespersons.find(s => s.id === currentUserIdForRates);
-    if (!user) return showToast('Error saving: User not found.');
-    if (!user.customRates) user.customRates = {};
+const handleSaveProfileRates = async () => {
+    const profile = profiles.find(p => p.id === currentProfileId);
+    if (!profile) return showToast('Error saving: Profile not found.');
+    if (!profile.customRates) profile.customRates = {};
     let invalidInput = false;
-
-    document.querySelectorAll('.user-rate-input').forEach(input => {
+    document.querySelectorAll('.profile-rate-input').forEach(input => {
         if (invalidInput) return;
         const productId = input.dataset.productId;
         const rawValue = input.value.trim();
-
-        if (rawValue === '') {
-            delete user.customRates[productId];
-        } else {
+        if (rawValue === '') { delete profile.customRates[productId]; } 
+        else {
             const rate = parseFloat(rawValue);
-            if (isNaN(rate)) {
-                showToast('Invalid price entered. Changes not saved.');
-                invalidInput = true;
-            } else {
-                user.customRates[productId] = rate;
-            }
+            if (isNaN(rate)) { showToast('Invalid price entered. Changes not saved.'); invalidInput = true; } 
+            else { profile.customRates[productId] = rate; }
         }
     });
-
-    if (invalidInput) {
-        return; // Abort save if any input was invalid
-    }
-
-    await storage.saveItem('salespersons', user);
-    showToast(`Custom rates for ${user.name} saved.`);
-    switchScreen('manager');
+    if (invalidInput) return;
+    await storage.saveItem('profiles', profile);
+    showToast(`Custom rates for ${profile.name} saved.`);
+    switchScreen('profiles');
 };
 
-
-const handleAddSalesperson = async (e) => {
+const handleAddProfile = async (e) => {
 e.preventDefault();
 const form = e.target;
-const name = document.getElementById('salespersonName').value.trim();
-const whatsappNumber = document.getElementById('salespersonWhatsapp').value.trim();
-if (!name) return showToast('User name cannot be empty.');
-if (salespersons.some(s => s.name.toLowerCase() === name.toLowerCase())) return showToast('User name already exists.');
-const newUser = { id: generateUniqueId(), name, whatsappNumber, customRates: {} };
-await storage.saveItem('salespersons', newUser);
-salespersons.push(newUser);
-renderManagerScreen();
-initializeAppUI(); // Refresh user selector on dashboard
+const name = document.getElementById('profileName').value.trim();
+const whatsappNumber = document.getElementById('profileWhatsapp').value.trim();
+if (!name) return showToast('Profile name cannot be empty.');
+if (profiles.some(p => p.name.toLowerCase() === name.toLowerCase())) return showToast('Profile name already exists.');
+const newProfile = { id: generateUniqueId(), name, whatsappNumber, customRates: {} };
+await storage.saveItem('profiles', newProfile);
+profiles.push(newProfile);
+renderProfilesScreen();
+initializeAppUI();
 form.reset();
-showToast('User added successfully.');
+showToast('Profile added successfully.');
 };
 
-const handleDeleteSalesperson = (id) => {
-const user = salespersons.find(s => s.id === id);
-showConfirmationModal('Delete User', `Are you sure you want to delete <strong>${user.name}</strong>?`, async () => {
-await storage.deleteItem('salespersons', id);
-salespersons = salespersons.filter(s => s.id !== id);
-if (localStorage.getItem('selectedUserId') === id) localStorage.removeItem('selectedUserId');
-renderManagerScreen();
-initializeAppUI(); // Refresh user selector on dashboard
-showToast('User deleted.');
+const handleDeleteProfile = (id) => {
+const profile = profiles.find(p => p.id === id);
+showConfirmationModal('Delete Profile', `Delete <strong>${profile.name}</strong>? All their sales and expense data will also be deleted.`, async () => {
+await Promise.all([
+    ...salesHistory.filter(s => s.profileId === id).map(s => storage.deleteItem('salesHistory', s.id)),
+    ...expenses.filter(e => e.profileId === id).map(e => storage.deleteItem('expenses', e.id)),
+    storage.deleteItem('profiles', id)
+]);
+salesHistory = salesHistory.filter(s => s.profileId !== id);
+expenses = expenses.filter(e => e.profileId !== id);
+profiles = profiles.filter(p => p.id !== id);
+if (localStorage.getItem('selectedProfileId') === id) localStorage.removeItem('selectedProfileId');
+renderProfilesScreen();
+initializeAppUI();
+showToast('Profile and all associated data deleted.');
 });
 };
 
-// Category Management
-const renderCategoryManagerScreen = () => {
-    const listDiv = document.getElementById('category-list');
-    listDiv.innerHTML = categories.length === 0 ? `<p style="text-align:center; color: var(--text-secondary);">No categories added.</p>`
-    : categories.map(c => `<div class="card list-item"><div>${c.name}</div><div><button class="action-btn" onclick="openEditCategoryModal('${c.id}')">✏️</button><button class="action-btn" onclick="handleDeleteCategory('${c.id}')">🗑️</button></div></div>`).join('');
+// Expense Management
+const openAddExpenseModal = (profileId) => {
+    const profile = profiles.find(p => p.id === profileId);
+    if (!profile) return showToast("Profile not found.");
+    document.getElementById('add-expense-modal-title').textContent = `Add Expense for ${profile.name}`;
+    const form = document.getElementById('add-expense-form');
+    form.reset();
+    renderExpenseCategorySelect('expenseCategory');
+    document.getElementById('expenseProfileId').value = profileId;
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('expenseDate').value = today;
+    showModal('add-expense-modal');
 };
-const handleAddCategory = async (e) => {
+
+const handleAddExpense = async (e) => {
     e.preventDefault();
-    const name = document.getElementById('categoryName').value.trim();
+    const profileId = document.getElementById('expenseProfileId').value;
+    const amount = parseFloat(document.getElementById('expenseAmount').value);
+    if (!profileId || isNaN(amount) || amount <= 0) return showToast("Invalid amount.");
+    const dateValue = document.getElementById('expenseDate').value;
+    const timestamp = new Date(dateValue).getTime() + (12 * 60 * 60 * 1000);
+    const newExpense = {
+        id: generateUniqueId(), profileId, timestamp, amount,
+        category: document.getElementById('expenseCategory').value,
+        note: document.getElementById('expenseNote').value.trim()
+    };
+    await storage.saveItem('expenses', newExpense);
+    expenses.push(newExpense);
+    expenses.sort((a,b) => b.timestamp - a.timestamp);
+    closeModal();
+    showToast("Expense added successfully.");
+    if(document.getElementById('profile-summary-screen').classList.contains('active')) renderProfileSummary();
+};
+
+const handleAddExpenseFromTab = async (e) => {
+    e.preventDefault();
+    const profileId = document.getElementById('add-expense-profile-select').value;
+    if (!profileId) return showToast("Please select a profile.");
+    const amount = parseFloat(document.getElementById('add-expense-tab-amount').value);
+    if (isNaN(amount) || amount <= 0) return showToast("Invalid amount.");
+    
+    const newExpense = {
+        id: generateUniqueId(),
+        profileId,
+        timestamp: Date.now(),
+        amount,
+        category: document.getElementById('add-expense-tab-category').value,
+        note: document.getElementById('add-expense-tab-note').value.trim()
+    };
+    await storage.saveItem('expenses', newExpense);
+    expenses.push(newExpense);
+    expenses.sort((a,b) => b.timestamp - a.timestamp);
+    showToast(`Expense added for ${profiles.find(p=>p.id === profileId)?.name}.`);
+    e.target.reset();
+    renderAddScreen();
+};
+
+const renderExpenseBilling = () => {
+    const listDiv = document.getElementById('expense-list');
+    const selectedProfileId = localStorage.getItem('selectedProfileId');
+
+    if (!selectedProfileId) {
+        listDiv.innerHTML = `<div class="card" style="text-align:center; color: var(--text-secondary);">Please select a profile first to add an expense.</div>`;
+        return;
+    }
+    
+    listDiv.innerHTML = expenseCategories.length === 0 ? `<div class="card" style="text-align:center; color: var(--text-secondary);">No expense types defined. Add one in the 'Add' screen.</div>`
+    : expenseCategories.map(cat => {
+        const quantity = tempExpenseQuantities[cat.id] || 0;
+        const total = quantity * (cat.defaultAmount || 0);
+        return `<div class="card product-card" data-expense-id="${cat.id}">
+            <div class="product-card-main">
+                <div class="product-info">
+                    <h3>${cat.name}</h3>
+                    <div class="meta">Default: ${formatCurrency(cat.defaultAmount)}</div>
+                </div>
+                <div class="quantity-controls">
+                    <button class="quantity-btn minus-btn">-</button>
+                    <input type="number" class="quantity-input" value="${quantity}" min="0" pattern="[0-9]*">
+                    <button class="quantity-btn plus-btn">+</button>
+                </div>
+            </div>
+            <div class="product-calculation">
+                <div></div>
+                <div class="value total-price">${formatCurrency(total)}</div>
+            </div>
+        </div>`;
+    }).join('');
+};
+
+const updateExpenseTotal = () => {
+    let total = 0;
+    const itemsSummary = Object.keys(tempExpenseQuantities)
+        .filter(id => tempExpenseQuantities[id] > 0)
+        .map(id => {
+            const cat = expenseCategories.find(c => c.id === id);
+            if (cat) {
+                const quantity = tempExpenseQuantities[id];
+                const amount = quantity * (cat.defaultAmount || 0);
+                total += amount;
+                return `${cat.name.substring(0,3)}${quantity}`;
+            }
+            return '';
+        }).filter(Boolean).join(' + ');
+    
+    document.getElementById('sale-items-summary').textContent = `Expenses: ${itemsSummary || '-'}`;
+    document.getElementById('grand-total-amount').textContent = formatCurrency(total);
+    saveBar.classList.toggle('visible', total !== 0);
+};
+
+const saveExpenseSale = async () => {
+    const selectedProfileId = localStorage.getItem('selectedProfileId');
+    if (!selectedProfileId) return showToast("Please select a profile first.");
+
+    const expensesToSave = Object.keys(tempExpenseQuantities).filter(id => tempExpenseQuantities[id] > 0);
+    if (expensesToSave.length === 0) return showToast('No expenses selected.');
+
+    for (const id of expensesToSave) {
+        const cat = expenseCategories.find(c => c.id === id);
+        if (cat) {
+            const quantity = tempExpenseQuantities[id];
+            const amount = quantity * (cat.defaultAmount || 1); 
+            const newExpense = {
+                id: generateUniqueId(),
+                profileId: selectedProfileId,
+                timestamp: Date.now(),
+                amount,
+                category: cat.name,
+                note: `${quantity} x ${cat.name}`
+            };
+            await storage.saveItem('expenses', newExpense);
+            expenses.push(newExpense);
+        }
+    }
+    
+    expenses.sort((a,b) => b.timestamp - a.timestamp);
+    showToast(`${expensesToSave.length} expense(s) saved.`);
+    tempExpenseQuantities = {};
+    renderDashboard();
+};
+
+// Add Screen & Category Management
+const renderAddScreen = () => {
+    const profileSelect = document.getElementById('add-expense-profile-select');
+    profileSelect.innerHTML = profiles.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+    if(profiles.length === 0) profileSelect.innerHTML = `<option value="">No profiles available</option>`;
+    renderExpenseCategorySelect('add-expense-tab-category');
+    
+    renderItemCategoryManager();
+    renderExpenseTypeManager();
+    
+    document.getElementById('add-product-form').reset();
+    renderCategorySelect('productCategory');
+};
+
+const renderItemCategoryManager = () => {
+    const listDiv = document.getElementById('item-category-list');
+    listDiv.innerHTML = categories.length === 0 ? `<p style="text-align:center; color: var(--text-secondary);">No item categories added.</p>`
+    : categories.map(c => `<div class="card list-item" style="padding: 1rem;"><div style="font-weight: 500;">${c.name}</div><div><button class="action-btn" onclick="openEditItemCategoryModal('${c.id}')">✏️</button><button class="action-btn" onclick="handleDeleteItemCategory('${c.id}')">🗑️</button></div></div>`).join('');
+};
+const handleAddItemCategory = async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('itemCategoryName').value.trim();
     if(!name) return showToast('Category name is required.');
     const newCategory = { id: generateUniqueId(), name };
     await storage.saveItem('categories', newCategory);
     categories.push(newCategory);
-    renderCategoryManagerScreen();
+    renderItemCategoryManager();
     e.target.reset();
-    showToast('Category added.');
+    showToast('Item category added.');
 };
-const openEditCategoryModal = (id) => {
+const openEditItemCategoryModal = (id) => {
     const category = categories.find(c => c.id === id);
     if(category) {
-        document.getElementById('editCategoryId').value = id;
-        document.getElementById('editCategoryName').value = category.name;
-        showModal('edit-category-modal');
+        document.getElementById('editItemCategoryId').value = id;
+        document.getElementById('editItemCategoryName').value = category.name;
+        showModal('edit-item-category-modal');
     }
-}; window.openEditCategoryModal = openEditCategoryModal;
-const handleEditCategory = async (e) => {
+}; window.openEditItemCategoryModal = openEditItemCategoryModal;
+const handleEditItemCategory = async (e) => {
     e.preventDefault();
-    const id = document.getElementById('editCategoryId').value;
-    const name = document.getElementById('editCategoryName').value.trim();
+    const id = document.getElementById('editItemCategoryId').value;
+    const name = document.getElementById('editItemCategoryName').value.trim();
     const index = categories.findIndex(c => c.id === id);
     if(index > -1 && name) {
         categories[index].name = name;
         await storage.saveItem('categories', categories[index]);
         closeModal();
-        renderCategoryManagerScreen();
+        renderItemCategoryManager();
         showToast('Category updated.');
     }
 };
-const handleDeleteCategory = (id) => {
+const handleDeleteItemCategory = (id) => {
     const category = categories.find(c => c.id === id);
     if(!category) return;
-    showConfirmationModal('Delete Category', `Delete <strong>${category.name}</strong>? Products in this category will become uncategorized.`, async () => {
-        for (const p of products) {
-            if (p.categoryId === id) {
-                p.categoryId = null;
-                await storage.saveItem('products', p);
-            }
-        }
+    showConfirmationModal('Delete Category', `Delete <strong>${category.name}</strong>? Items in this category will become uncategorized.`, async () => {
+        for (const p of products) { if (p.categoryId === id) { p.categoryId = null; await storage.saveItem('products', p); } }
         await storage.deleteItem('categories', id);
         categories = categories.filter(c => c.id !== id);
-        renderCategoryManagerScreen();
+        renderItemCategoryManager();
         showToast('Category deleted.');
     });
-}; window.handleDeleteCategory = handleDeleteCategory;
+}; window.handleDeleteItemCategory = handleDeleteItemCategory;
+
+const renderExpenseTypeManager = () => {
+    const listDiv = document.getElementById('expense-type-list');
+    listDiv.innerHTML = expenseCategories.length === 0 ? `<p style="text-align:center; color: var(--text-secondary);">No expense categories added.</p>`
+    : expenseCategories.map(c => `<div class="card list-item" style="padding: 1rem;"><div style="font-weight: 500;">${c.name} ${c.defaultAmount ? `(${formatCurrency(c.defaultAmount)})` : ''}</div><div><button class="action-btn" onclick="openEditExpenseTypeModal('${c.id}')">✏️</button><button class="action-btn" onclick="handleDeleteExpenseType('${c.id}')">🗑️</button></div></div>`).join('');
+};
+const handleAddExpenseType = async(e) => {
+    e.preventDefault();
+    const name = document.getElementById('expenseTypeName').value.trim();
+    if(!name) return showToast('Category name required.');
+    const newExpenseType = { id: generateUniqueId(), name, defaultAmount: parseFloat(document.getElementById('expenseTypeDefaultAmount').value) || null };
+    await storage.saveItem('expenseCategories', newExpenseType);
+    expenseCategories.push(newExpenseType);
+    renderExpenseTypeManager();
+    e.target.reset();
+    showToast('Expense category added.');
+};
+const openEditExpenseTypeModal = (id) => {
+    const cat = expenseCategories.find(c => c.id === id);
+    if(cat) {
+        document.getElementById('editExpenseTypeId').value = id;
+        document.getElementById('editExpenseTypeName').value = cat.name;
+        document.getElementById('editExpenseTypeDefaultAmount').value = cat.defaultAmount || '';
+        showModal('edit-expense-type-modal');
+    }
+}; window.openEditExpenseTypeModal = openEditExpenseTypeModal;
+const handleEditExpenseType = async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('editExpenseTypeId').value;
+    const name = document.getElementById('editExpenseTypeName').value.trim();
+    const index = expenseCategories.findIndex(c => c.id === id);
+    if(index > -1 && name) {
+        expenseCategories[index].name = name;
+        expenseCategories[index].defaultAmount = parseFloat(document.getElementById('editExpenseTypeDefaultAmount').value) || null;
+        await storage.saveItem('expenseCategories', expenseCategories[index]);
+        closeModal();
+        renderExpenseTypeManager();
+        showToast('Expense category updated.');
+    }
+};
+const handleDeleteExpenseType = (id) => {
+    const cat = expenseCategories.find(c => c.id === id);
+    if(!cat) return;
+    showConfirmationModal('Delete Expense Category', `Delete <strong>${cat.name}</strong>? This cannot be undone.`, async () => {
+        await storage.deleteItem('expenseCategories', id);
+        expenseCategories = expenseCategories.filter(c => c.id !== id);
+        renderExpenseTypeManager();
+        showToast('Expense category deleted.');
+    });
+}; window.handleDeleteExpenseType = handleDeleteExpenseType;
 
 const openMoveCategoryModal = (productId) => {
     const product = products.find(p => p.id === productId);
     if (!product) return;
     productToMoveId = productId;
-    
     document.getElementById('move-product-name').textContent = product.productName;
     const listDiv = document.getElementById('move-category-list');
-    
-    let categoryButtonsHTML = `<button class="user-profile-menu-item" onclick="handleMoveCategory(null)">No Category</button>`;
-    categoryButtonsHTML += categories.map(c => `<button class="user-profile-menu-item" onclick="handleMoveCategory('${c.id}')">${c.name}</button>`).join('');
-    
+    let categoryButtonsHTML = `<button class="profile-menu-item" onclick="handleMoveCategory(null)">No Category</button>`;
+    categoryButtonsHTML += categories.map(c => `<button class="profile-menu-item" onclick="handleMoveCategory('${c.id}')">${c.name}</button>`).join('');
     listDiv.innerHTML = categoryButtonsHTML;
     showModal('move-category-modal');
 };
@@ -1281,11 +1569,11 @@ const handleMoveCategory = async (categoryId) => {
         await storage.saveItem('products', products[productIndex]);
         closeModal();
         renderDashboard();
-        showToast('Product category updated.');
+        showToast('Item category updated.');
     }
-    productToMoveId = null; // Reset
+    productToMoveId = null;
 };
-window.handleMoveCategory = handleMoveCategory; // Make it accessible from HTML onclick
+window.handleMoveCategory = handleMoveCategory;
 
 const renderCategorySelect = (selectId, selectedValue = 'none') => {
     const select = document.getElementById(selectId);
@@ -1297,35 +1585,29 @@ const renderCategorySelect = (selectId, selectedValue = 'none') => {
         select.value = selectedValue;
     }
 };
+const renderExpenseCategorySelect = (selectId) => {
+    const select = document.getElementById(selectId);
+    if (!select) return;
+    select.innerHTML = expenseCategories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+    if(expenseCategories.length === 0) select.innerHTML = `<option value="">No categories defined</option>`;
+};
 
 
 // Calculator Logic
 const calcExprEl = document.getElementById('calculator-expression'); const calcResEl = document.getElementById('calculator-result');
 const formatCalcExpression = (expr) => expr.replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−');
-const updateCalcDisplay = () => {
-    calcExprEl.textContent = formatCalcExpression(calcExpression) || '';
-    if (!isResultShown) {
-        calcResEl.classList.remove('visible');
-    }
-};
+const updateCalcDisplay = () => { calcExprEl.textContent = formatCalcExpression(calcExpression) || ''; if (!isResultShown) calcResEl.classList.remove('visible'); };
 const evaluateExpression = () => {
 if (!calcExpression || /[+\-*/.]$/.test(calcExpression)) return;
 try { 
     const finalExpression = calcExpression;
     const result = new Function('return ' + finalExpression.replace(/[^-()\d/*+.]/g, ''))();
     if (!isFinite(result)) throw new Error('Invalid calculation');
-    
-    if (String(finalExpression) !== String(result)) {
-        saveCalcHistory(finalExpression, result);
-    }
+    if (String(finalExpression) !== String(result)) saveCalcHistory(finalExpression, result);
     calcExprEl.textContent = formatCalcExpression(finalExpression);
-    calcResEl.textContent = result;
-    calcResEl.classList.add('visible');
-    calcExpression = String(result);
-    isResultShown = true;
-} catch (err) {
-    showToast('Invalid Expression');
-}
+    calcResEl.textContent = result; calcResEl.classList.add('visible');
+    calcExpression = String(result); isResultShown = true;
+} catch (err) { showToast('Invalid Expression'); }
 };
 const saveCalcHistory = (expression, result) => { let history = JSON.parse(localStorage.getItem('calculatorHistory') || '[]'); history.unshift({ expression, result, timestamp: Date.now() }); if (history.length > 50) history.pop(); localStorage.setItem('calculatorHistory', JSON.stringify(history)); };
 const renderCalculatorHistory = () => {
@@ -1336,33 +1618,17 @@ const renderCalculatorHistory = () => {
     showModal('calculator-history-modal');
 };
 const handleCalcInput = (key) => {
-    if (key === 'ac') {
-        calcExpression = '';
-        calcResEl.textContent = '';
-        isResultShown = false;
-    } else if (isResultShown) {
-        if (/[+\-*/]/.test(key)) {
-            isResultShown = false; // Continue calculation with the result
-        } else if (/[\d.(]/.test(key)) {
-            calcExpression = ''; // Start new calculation
-            isResultShown = false;
-        }
+    if (key === 'ac') { calcExpression = ''; calcResEl.textContent = ''; isResultShown = false; } 
+    else if (isResultShown) {
+        if (/[+\-*/]/.test(key)) isResultShown = false;
+        else if (/[\d.(]/.test(key)) { calcExpression = ''; isResultShown = false; }
     }
-
-    if (key === 'backspace') {
-        calcExpression = calcExpression.slice(0, -1);
-    } else if (key === '=') {
-        evaluateExpression();
-        return; // Don't update display again
-    } else if (/[+\-*/]/.test(key)) {
-        if (/[+\-*/]$/.test(calcExpression)) {
-            calcExpression = calcExpression.slice(0, -1) + key;
-        } else {
-            calcExpression += key;
-        }
-    } else if (key !== 'ac') {
-        calcExpression += key;
-    }
+    if (key === 'backspace') calcExpression = calcExpression.slice(0, -1);
+    else if (key === '=') { evaluateExpression(); return; } 
+    else if (/[+\-*/]/.test(key)) {
+        if (/[+\-*/]$/.test(calcExpression)) calcExpression = calcExpression.slice(0, -1) + key;
+        else calcExpression += key;
+    } else if (key !== 'ac') calcExpression += key;
     updateCalcDisplay();
 };
 
@@ -1370,20 +1636,20 @@ const handleCalcInput = (key) => {
 const handleExportData = async () => {
 showToast("Generating backup file...");
 try {
-const data = { products: await storage.getAll('products'), salespersons: await storage.getAll('salespersons'), salesHistory: await storage.getAll('salesHistory'), categories: await storage.getAll('categories'), settings: { theme: localStorage.getItem('theme'), userName: localStorage.getItem('userName'), appMode: localStorage.getItem('appMode'), calculatorHistory: localStorage.getItem('calculatorHistory') } };
+const data = { products: await storage.getAll('products'), profiles: await storage.getAll('profiles'), salesHistory: await storage.getAll('salesHistory'), categories: await storage.getAll('categories'), expenses: await storage.getAll('expenses'), expenseCategories: await storage.getAll('expenseCategories'), settings: { theme: localStorage.getItem('theme'), userName: localStorage.getItem('userName') } };
 const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
 const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `billing-app-backup-${new Date().toISOString().slice(0,10)}.json`;
 document.body.appendChild(a); a.click(); document.body.removeChild(a);
 URL.revokeObjectURL(a.href); showToast("Backup file downloaded!");
-} catch (error) { showToast('Export failed. See console for details.'); }
+} catch (error) { showToast('Export failed.'); }
 };
 
-const handleImportData = () => { showConfirmationModal('Import Data', 'This will <strong>overwrite all current data</strong>. This action cannot be undone. Are you sure?', () => { document.getElementById('import-file-input').click(); }); };
+const handleImportData = () => { showConfirmationModal('Import Data', 'This will <strong>overwrite all current data</strong>. This cannot be undone. Are you sure?', () => { document.getElementById('import-file-input').click(); }); };
 const processImportFile = (e) => {
 const file = e.target.files[0]; if (!file) return;
 const reader = new FileReader();
 reader.onload = async (event) => {
-try { const data = JSON.parse(event.target.result); if (!data.products || !data.salespersons || !data.salesHistory || !data.settings) throw new Error("Invalid file format");
+try { const data = JSON.parse(event.target.result); if (!data.products || !data.profiles || !data.salesHistory || !data.settings) throw new Error("Invalid file format");
 await storage.importData(data);
 for (const key in data.settings) { if (data.settings[key] !== null && data.settings[key] !== undefined && typeof data.settings[key] === 'string') { localStorage.setItem(key, data.settings[key]); } }
 showToast('Import successful! App will now reload.'); setTimeout(() => window.location.reload(), 2000);
@@ -1398,97 +1664,137 @@ try { await storage.initDB(); } catch (error) { alert(error); return; }
 
 products = (await storage.getAll('products')).sort((a,b) => b.createdAt - a.createdAt);
 salesHistory = (await storage.getAll('salesHistory')).sort((a,b) => b.timestamp - a.timestamp);
-salespersons = await storage.getAll('salespersons');
+profiles = await storage.getAll('profiles');
 categories = await storage.getAll('categories');
+expenses = (await storage.getAll('expenses')).sort((a,b) => b.timestamp - a.timestamp);
+expenseCategories = await storage.getAll('expenseCategories');
 applyTheme(localStorage.getItem('theme') || 'light');
 
 // Event Listeners
 themeToggle.addEventListener('click', () => applyTheme(document.body.classList.contains('dark-mode') ? 'light' : 'dark'));
 navItems.forEach(item => item.addEventListener('click', () => switchScreen(item.dataset.screen)));
 searchInput.addEventListener('input', () => renderDashboard());
+document.getElementById('setup-form').addEventListener('submit', (e) => { e.preventDefault(); localStorage.setItem('userName', document.getElementById('profileNameSetup').value.trim()); initializeAppUI(); });
+
+// ADD SCREEN
+document.querySelectorAll('#add-screen .tab-btn').forEach(btn => btn.addEventListener('click', (e) => {
+    document.querySelector('#add-screen .tab-btn.active').classList.remove('active');
+    document.querySelector('#add-screen .tab-content.active').classList.remove('active');
+    e.currentTarget.classList.add('active');
+    document.getElementById(e.currentTarget.dataset.tab).classList.add('active');
+    renderAddScreen();
+}));
+document.getElementById('add-product-form').addEventListener('submit', handleAddProduct);
+document.getElementById('add-item-category-form').addEventListener('submit', handleAddItemCategory);
+document.getElementById('edit-item-category-form').addEventListener('submit', handleEditItemCategory);
+document.getElementById('add-expense-type-form').addEventListener('submit', handleAddExpenseType);
+document.getElementById('edit-expense-type-form').addEventListener('submit', handleEditExpenseType);
+document.getElementById('add-expense-tab-form').addEventListener('submit', handleAddExpenseFromTab);
+
+
+// BILLING SCREEN
+document.querySelectorAll('#dashboard-screen .tab-btn').forEach(btn => btn.addEventListener('click', (e) => {
+    document.querySelector('#dashboard-screen .tab-btn.active').classList.remove('active');
+    e.currentTarget.classList.add('active');
+    renderDashboard();
+}));
 
 const productList = document.getElementById('product-list');
 productList.addEventListener('click', (e) => {
-    const target = e.target;
-    const productCard = target.closest('.product-card');
-    if (!productCard) return;
-
+    const productCard = e.target.closest('.product-card'); if (!productCard) return;
     const id = productCard.dataset.productId;
-    const input = productCard.querySelector('.quantity-input');
-
-    if (target.closest('.plus-btn') || target.closest('.minus-btn')) {
-        const isUserRequired = salespersons.length > 0;
-        const isUserSelected = !!localStorage.getItem('selectedUserId');
-        if (isUserRequired && !isUserSelected) return showToast('Please select a user first');
-        
-        if (target.closest('.plus-btn')) {
-            input.value = parseInt(input.value || 0) + 1;
-        } else if (input.value > 0) {
-            input.value--;
-        }
+    if (e.target.closest('.plus-btn') || e.target.closest('.minus-btn')) {
+        if (profiles.length > 0 && !localStorage.getItem('selectedProfileId')) return showToast('Please select a profile first');
+        const input = productCard.querySelector('.quantity-input');
+        if (e.target.closest('.plus-btn')) input.value = parseInt(input.value || 0) + 1;
+        else if (input.value > 0) input.value--;
         updateProductCardQuantity(productCard);
-    } else if (target.closest('.edit-btn')) {
-        openEditModal(id);
-    } else if (target.closest('.delete-btn')) {
-        handleDeleteProduct(id);
-    } else if (target.closest('.favorite-btn')) {
-        handleToggleFavorite(id);
-    } else if (target.closest('.move-btn')) {
-        openMoveCategoryModal(id);
-    }
+    } 
+    else if (e.target.closest('.edit-btn')) openEditProductModal(id);
+    else if (e.target.closest('.delete-btn')) handleDeleteProduct(id);
+    else if (e.target.closest('.favorite-btn')) handleToggleFavorite(id);
+    else if (e.target.closest('.move-btn')) openMoveCategoryModal(id);
 });
-
 productList.addEventListener('input', (e) => {
-    const input = e.target.closest('.quantity-input');
-    if (!input) return;
-    const productCard = e.target.closest('.product-card');
-
-    const isUserRequired = salespersons.length > 0;
-    const isUserSelected = !!localStorage.getItem('selectedUserId');
-    if (isUserRequired && !isUserSelected) {
+    const input = e.target.closest('.quantity-input'); if (!input) return;
+    if (profiles.length > 0 && !localStorage.getItem('selectedProfileId')) {
         input.value = 0;
-        updateProductCardQuantity(productCard);
-        return showToast('Please select a user first');
+        updateProductCardQuantity(e.target.closest('.product-card'));
+        return showToast('Please select a profile first');
     }
-    updateProductCardQuantity(productCard);
+    updateProductCardQuantity(e.target.closest('.product-card'));
 });
-
 const updateProductCardQuantity = (card) => {
-    const id = card.dataset.productId;
-    const input = card.querySelector('.quantity-input');
-    const product = products.find(p => p.id === id);
-    if (!product) return;
-
+    const id = card.dataset.productId; const input = card.querySelector('.quantity-input');
+    const product = products.find(p => p.id === id); if (!product) return;
     const quantity = Math.max(0, parseInt(input.value) || 0);
-    const selectedUserId = localStorage.getItem('selectedUserId');
-    const appliedPrice = getAppliedSellPrice(product, selectedUserId);
-    tempQuantities[id] = quantity;
-    input.value = quantity;
-    card.querySelector('.total-price').textContent = formatCurrency(quantity * appliedPrice);
-    updateGrandTotal();
+    tempQuantities[id] = quantity; input.value = quantity;
+    updateItemTotal();
 };
 
-document.getElementById('setup-form').addEventListener('submit', (e) => { e.preventDefault(); localStorage.setItem('userName', document.getElementById('userName').value.trim()); localStorage.setItem('appMode', 'manager'); initializeAppUI(); });
-document.getElementById('add-product-form').addEventListener('submit', handleAddProduct);
+document.getElementById('expense-list').addEventListener('click', (e) => {
+    const card = e.target.closest('.product-card'); if (!card) return;
+    const id = card.dataset.expenseId;
+    if (e.target.closest('.plus-btn') || e.target.closest('.minus-btn')) {
+        const input = card.querySelector('.quantity-input');
+        if (e.target.closest('.plus-btn')) input.value = parseInt(input.value || 0) + 1;
+        else if (input.value > 0) input.value--;
+        tempExpenseQuantities[id] = parseInt(input.value);
+        updateExpenseTotal();
+        renderExpenseBilling();
+    }
+});
+
+
 document.getElementById('edit-product-form').addEventListener('submit', handleEditProduct);
 document.getElementById('edit-sale-form').addEventListener('submit', handleEditSale);
 document.getElementById('save-sale-btn').addEventListener('click', handleSaveSale);
-document.getElementById('reset-quantities-btn').addEventListener('click', () => { tempQuantities = {}; renderDashboard(); updateGrandTotal(); });
-document.getElementById('view-profit-btn').addEventListener('click', () => switchScreen('profit'));
-document.getElementById('back-to-history-btn').addEventListener('click', () => switchScreen('history'));
-document.querySelectorAll('#history-screen .filter-btn').forEach(btn => btn.addEventListener('click', (e) => {
-    document.querySelector('#history-screen .filter-btn.active')?.classList.remove('active');
-    e.currentTarget.classList.add('active');
-    if(e.currentTarget.dataset.filter !== 'custom') { document.getElementById('start-date').value = ''; document.getElementById('end-date').value = ''; }
-    renderHistory();
-}));
-const dateChangeHandler = () => { document.querySelector('#history-screen .filter-btn.active')?.classList.remove('active'); renderHistory(); };
-document.getElementById('start-date').addEventListener('change', dateChangeHandler);
-document.getElementById('end-date').addEventListener('change', dateChangeHandler);
-document.querySelectorAll('#profit-filters .filter-btn').forEach(btn => btn.addEventListener('click', (e) => { document.querySelector('#profit-filters .filter-btn.active')?.classList.remove('active'); e.currentTarget.classList.add('active'); renderProfitHistory(); }));
+document.getElementById('reset-quantities-btn').addEventListener('click', () => { 
+    const activeTab = document.querySelector('#dashboard-screen .tab-btn.active').dataset.tab;
+    if (activeTab === 'billing-items-tab') {
+        tempQuantities = {};
+    } else {
+        tempExpenseQuantities = {};
+    }
+    renderDashboard();
+});
 
-document.getElementById('add-salesperson-form').addEventListener('submit', handleAddSalesperson);
-document.getElementById('edit-user-form').addEventListener('submit', handleEditUser);
+// HISTORY SCREEN
+const unifiedHistoryFilterHandler = () => { 
+    currentProfileId = null; // Ensure we are not stuck in single-profile view
+    renderHistory();
+};
+document.querySelectorAll('#history-unified-filters .filter-btn').forEach(btn => btn.addEventListener('click', (e) => {
+    document.querySelector('#history-unified-filters .filter-btn.active')?.classList.remove('active');
+    e.currentTarget.classList.add('active');
+    document.getElementById('history-start-date').value = ''; 
+    document.getElementById('history-end-date').value = '';
+    unifiedHistoryFilterHandler();
+}));
+const historyDateChangeHandler = () => { 
+    document.querySelector('#history-unified-filters .filter-btn.active')?.classList.remove('active'); 
+    unifiedHistoryFilterHandler(); 
+};
+document.getElementById('history-start-date').addEventListener('change', historyDateChangeHandler);
+document.getElementById('history-end-date').addEventListener('change', historyDateChangeHandler);
+document.getElementById('history-profile-filter').addEventListener('change', unifiedHistoryFilterHandler);
+
+
+// PROFILE & SUMMARY SCREENS
+document.getElementById('add-profile-form').addEventListener('submit', handleAddProfile);
+document.getElementById('edit-profile-form').addEventListener('submit', handleEditProfile);
+document.getElementById('profile-options-menu').addEventListener('click', e => { const action = e.target.closest('.profile-menu-item')?.dataset.action; if(action) handleProfileOptionsMenu(action); });
+document.querySelectorAll('.back-to-profiles-btn, #back-to-profiles-btn-from-summary').forEach(btn => btn.addEventListener('click', () => switchScreen('profiles')));
+document.getElementById('save-profile-rates-btn').addEventListener('click', handleSaveProfileRates);
+document.getElementById('profile-summary-add-expense-btn').addEventListener('click', () => openAddExpenseModal(currentProfileId));
+const summaryDateChangeHandler = () => { document.querySelector('#profile-summary-filters .filter-btn.active')?.classList.remove('active'); renderProfileSummary(); };
+document.getElementById('summary-start-date').addEventListener('change', summaryDateChangeHandler);
+document.getElementById('summary-end-date').addEventListener('change', summaryDateChangeHandler);
+document.querySelectorAll('#profile-summary-filters .filter-btn').forEach(btn => btn.addEventListener('click', (e) => { document.querySelector('#profile-summary-filters .filter-btn.active')?.classList.remove('active'); e.currentTarget.classList.add('active'); document.getElementById('summary-start-date').value = ''; document.getElementById('summary-end-date').value = ''; renderProfileSummary(); }));
+
+
+// GENERIC
+document.getElementById('add-expense-form').addEventListener('submit', handleAddExpense);
 document.getElementById('export-data-btn').addEventListener('click', handleExportData);
 document.getElementById('import-data-btn').addEventListener('click', handleImportData);
 document.getElementById('import-file-input').addEventListener('change', processImportFile);
@@ -1497,47 +1803,26 @@ document.querySelectorAll('.modal-close-btn').forEach(btn => btn.addEventListene
 document.getElementById('calculator-keypad').addEventListener('click', (e) => { const button = e.target.closest('.calc-btn'); if (button) handleCalcInput(button.dataset.key); });
 document.getElementById('calc-back-btn').addEventListener('click', () => switchScreen('dashboard'));
 document.getElementById('calc-history-btn').addEventListener('click', renderCalculatorHistory);
-
-document.getElementById('salesperson-selector').addEventListener('change', (e) => { const userId = e.target.value; if(userId) localStorage.setItem('selectedUserId', userId); else localStorage.removeItem('selectedUserId'); tempQuantities = {}; renderDashboard(); updateGrandTotal(); });
-document.querySelectorAll('.back-to-manager-btn').forEach(btn => btn.addEventListener('click', () => switchScreen('manager')));
-document.getElementById('save-user-rates-btn').addEventListener('click', handleSaveUserRates);
-document.getElementById('user-profile-menu').addEventListener('click', e => { const action = e.target.closest('.user-profile-menu-item')?.dataset.action; if(action) handleUserProfileMenu(action); });
-document.getElementById('manage-categories-btn').addEventListener('click', () => switchScreen('category-manager'));
-document.getElementById('back-to-manager-btn-cat').addEventListener('click', () => switchScreen('manager'));
-document.getElementById('add-category-form').addEventListener('submit', handleAddCategory);
-document.getElementById('edit-category-form').addEventListener('submit', handleEditCategory);
+document.getElementById('profile-selector').addEventListener('change', (e) => { const profileId = e.target.value; if(profileId) localStorage.setItem('selectedProfileId', profileId); else localStorage.removeItem('selectedProfileId'); tempQuantities = {}; renderDashboard(); });
 
 // App Start Logic
-if (!localStorage.getItem('userName')) {
-    switchScreen('setup');
-} else {
-    if (!localStorage.getItem('appMode')) {
-        localStorage.setItem('appMode', 'manager');
-    }
-    initializeAppUI();
-}
+if (!localStorage.getItem('userName')) switchScreen('setup');
+else initializeAppUI();
 document.body.classList.add('app-loaded');
 };
 
 const initializeAppUI = () => {
-    const mode = localStorage.getItem('appMode');
-    document.getElementById('manager-nav-item').classList.toggle('hidden', mode !== 'manager');
-
-    const userSelectorContainer = document.getElementById('salesperson-selector-container');
-    const selector = document.getElementById('salesperson-selector');
-    
-    if (salespersons.length > 0) {
-        selector.innerHTML = `<option value="">Select User</option>` + salespersons.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
-        const selectedUserId = localStorage.getItem('selectedUserId');
-        if (selectedUserId && salespersons.some(s => s.id === selectedUserId)) {
-            selector.value = selectedUserId;
-        }
-        userSelectorContainer.classList.remove('hidden');
+    const profileSelectorContainer = document.getElementById('profile-selector-container');
+    const selector = document.getElementById('profile-selector');
+    if (profiles.length > 0) {
+        selector.innerHTML = `<option value="">Select Profile</option>` + profiles.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+        const selectedProfileId = localStorage.getItem('selectedProfileId');
+        if (selectedProfileId && profiles.some(p => p.id === selectedProfileId)) selector.value = selectedProfileId;
+        profileSelectorContainer.classList.remove('hidden');
     } else {
-        userSelectorContainer.classList.add('hidden');
-        localStorage.removeItem('selectedUserId');
+        profileSelectorContainer.classList.add('hidden');
+        localStorage.removeItem('selectedProfileId');
     }
-
     switchScreen('dashboard');
 };
 
