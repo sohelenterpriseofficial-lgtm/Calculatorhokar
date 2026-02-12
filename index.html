@@ -743,10 +743,16 @@ document.addEventListener('backbutton', handleBackButton, false);
 
 // Price Logic
 const getAppliedSellPrice = (product, profileId) => {
-    if (!profileId || profileId === 'direct_sale' || !product) { return product?.sellPrice || 0; }
+    if (!product) return 0;
+    if (!profileId || profileId === 'direct_sale') {
+        return product.sellPrice || 0;
+    }
     const profile = profiles.find(p => p.id === profileId);
-    if (profile && profile.customRates && profile.customRates[product.id] != null) return parseFloat(profile.customRates[product.id]);
-    return product.sellPrice;
+    if (profile && profile.customRates && profile.customRates[product.id] != null) {
+        const customPrice = parseFloat(profile.customRates[product.id]);
+        return isNaN(customPrice) ? (product.sellPrice || 0) : customPrice;
+    }
+    return product.sellPrice || 0;
 };
 
 
@@ -769,7 +775,7 @@ const renderDashboard = () => {
 const renderItemBilling = () => {
     const listDiv = document.getElementById('product-list');
     const catContainer = document.getElementById('category-filter-container');
-    const selectedProfileId = localStorage.getItem('selectedProfileId');
+    const selectedProfileId = localStorage.getItem('selectedProfileId') || null;
     const activeCatId = catContainer.querySelector('.filter-btn.active')?.dataset.categoryId;
     const searchTerm = searchInput.value.toLowerCase();
 
@@ -791,21 +797,22 @@ const renderItemBilling = () => {
     const sortedProducts = [...filteredProducts].sort((a, b) => (b.isFavorite ? 1 : 0) - (a.isFavorite ? 1 : 0) || b.createdAt - a.createdAt);
     listDiv.innerHTML = sortedProducts.length === 0 ? `<div class="card" style="text-align:center; color: var(--text-secondary);">No items to show.</div>`
     : sortedProducts.map(p => {
+    const quantity = tempQuantities[p.id] || 0;
     const appliedPrice = getAppliedSellPrice(p, selectedProfileId);
     return `<div class="card product-card" data-product-id="${p.id}">
     <div class="product-card-main"><div class="product-info"><h3>${p.productName}</h3><div class="meta">Code: ${p.sourceCode} | Sell: ${formatCurrency(appliedPrice)}</div></div>
-    <div class="quantity-controls"><button class="quantity-btn minus-btn">-</button><input type="number" class="quantity-input" value="${tempQuantities[p.id] || 0}" min="0" pattern="[0-9]*"><button class="quantity-btn plus-btn">+</button></div></div>
+    <div class="quantity-controls"><button class="quantity-btn minus-btn">-</button><input type="number" class="quantity-input" value="${quantity}" min="0" pattern="[0-9]*"><button class="quantity-btn plus-btn">+</button></div></div>
     <div class="product-calculation"><div class="product-actions">
     <button class="action-btn edit-btn" title="Edit">✏️</button>
     <button class="action-btn favorite-btn ${p.isFavorite ? 'is-favorite' : ''}" title="Favorite">${p.isFavorite ? '♥️' : '⭐'}</button>
     <button class="action-btn delete-btn" title="Delete">🗑️</button>
     <button class="action-btn move-btn" title="Move Category">⋮</button>
-    </div><div class="value total-price">${formatCurrency((tempQuantities[p.id] || 0) * appliedPrice)}</div></div>
+    </div><div class="value total-price">${formatCurrency(quantity * appliedPrice)}</div></div>
     </div>`}).join('');
 };
 
 const updateItemTotal = () => {
-    const selectedProfileId = localStorage.getItem('selectedProfileId');
+    const selectedProfileId = localStorage.getItem('selectedProfileId') || null;
     let total = 0;
     const itemsSummary = Object.keys(tempQuantities)
         .filter(id => tempQuantities[id] > 0)
@@ -821,7 +828,7 @@ const updateItemTotal = () => {
 
     document.getElementById('sale-items-summary').textContent = `Items: ${itemsSummary || '-'}`;
     document.getElementById('grand-total-amount').textContent = formatCurrency(total);
-    saveBar.classList.toggle('visible', total !== 0);
+    saveBar.classList.toggle('visible', total > 0);
 };
 
 // Data Handlers
@@ -927,13 +934,13 @@ const handleSaveSale = async () => {
 };
 
 const saveItemSale = async () => {
-    const items = Object.keys(tempQuantities).filter(id => tempQuantities[id] !== 0);
+    const items = Object.keys(tempQuantities).filter(id => tempQuantities[id] > 0);
     if (items.length === 0) return showToast('No items selected to save.');
 
-    if (profiles.length > 0 && !localStorage.getItem('selectedProfileId')) {
+    const selectedProfileId = localStorage.getItem('selectedProfileId');
+    if (profiles.length > 0 && !selectedProfileId) {
         return showToast("Please select a profile to save the sale.");
     }
-    const selectedProfileId = localStorage.getItem('selectedProfileId') || 'direct_sale';
     
     let totalAmount = 0, totalProfit = 0;
     const saleQuantities = {};
@@ -942,23 +949,28 @@ const saveItemSale = async () => {
         const product = products.find(p => p.id === id);
         if(product) {
             const quantity = tempQuantities[id];
-            const appliedPrice = getAppliedSellPrice(product, selectedProfileId);
+            const appliedPrice = getAppliedSellPrice(product, selectedProfileId || 'direct_sale');
             totalAmount += quantity * appliedPrice;
             totalProfit += quantity * (appliedPrice - (product.buyPrice || 0));
             saleQuantities[id] = quantity;
         }
     });
 
-    const sale = { id: generateUniqueId(), timestamp: Date.now(), totalAmount, totalProfit, quantities: saleQuantities, profileId: selectedProfileId };
+    const sale = { id: generateUniqueId(), timestamp: Date.now(), totalAmount, totalProfit, quantities: saleQuantities, profileId: selectedProfileId || 'direct_sale' };
 
     await storage.saveItem('salesHistory', sale);
     salesHistory.unshift(sale);
 
     showToast('Bill saved successfully');
 
+    // --- STATE RESET LOGIC ---
     tempQuantities = {};
-    renderDashboard();
-    updateItemTotal();
+    localStorage.removeItem('selectedProfileId');
+    const profileSelector = document.getElementById('profile-selector');
+    if (profileSelector) profileSelector.value = '';
+    
+    renderDashboard(); // Re-renders UI with cleared quantities and prices
+    // updateItemTotal() is called inside renderDashboard, so it's not needed here
 
     showConfirmationModal('Share Bill', 'Bill saved. Do you want to send this bill on WhatsApp?', () => { 
         const profile = profiles.find(p => p.id === selectedProfileId);
@@ -1433,7 +1445,7 @@ const updateExpenseTotal = () => {
     
     document.getElementById('sale-items-summary').textContent = `Expenses: ${itemsSummary || '-'}`;
     document.getElementById('grand-total-amount').textContent = formatCurrency(total);
-    saveBar.classList.toggle('visible', total !== 0);
+    saveBar.classList.toggle('visible', total > 0);
 };
 
 const saveExpenseSale = async () => {
@@ -1731,37 +1743,59 @@ document.querySelectorAll('#dashboard-screen .tab-btn').forEach(btn => btn.addEv
 }));
 
 const productList = document.getElementById('product-list');
+
+const updateProductCardUI = (card) => {
+    const id = card.dataset.productId;
+    const input = card.querySelector('.quantity-input');
+    const product = products.find(p => p.id === id);
+    if (!product) return;
+
+    const selectedProfileId = localStorage.getItem('selectedProfileId') || null;
+    const quantity = Math.max(0, parseInt(input.value) || 0);
+    
+    tempQuantities[id] = quantity;
+    if (input.value !== quantity.toString()) input.value = quantity;
+
+    const appliedPrice = getAppliedSellPrice(product, selectedProfileId);
+    const lineTotal = quantity * appliedPrice;
+    card.querySelector('.total-price').textContent = formatCurrency(lineTotal);
+    
+    const metaDiv = card.querySelector('.product-info .meta');
+    if(metaDiv) metaDiv.textContent = `Code: ${product.sourceCode} | Sell: ${formatCurrency(appliedPrice)}`;
+
+    updateItemTotal();
+};
+
 productList.addEventListener('click', (e) => {
     const productCard = e.target.closest('.product-card'); if (!productCard) return;
     const id = productCard.dataset.productId;
     if (e.target.closest('.plus-btn') || e.target.closest('.minus-btn')) {
         if (profiles.length > 0 && !localStorage.getItem('selectedProfileId')) return showToast('Please select a profile first');
         const input = productCard.querySelector('.quantity-input');
-        if (e.target.closest('.plus-btn')) input.value = parseInt(input.value || 0) + 1;
-        else if (input.value > 0) input.value--;
-        updateProductCardQuantity(productCard);
+        let currentVal = parseInt(input.value) || 0;
+        if (e.target.closest('.plus-btn')) currentVal++;
+        else if (currentVal > 0) currentVal--;
+        input.value = currentVal;
+        updateProductCardUI(productCard);
     } 
     else if (e.target.closest('.edit-btn')) openEditProductModal(id);
     else if (e.target.closest('.delete-btn')) handleDeleteProduct(id);
     else if (e.target.closest('.favorite-btn')) handleToggleFavorite(id);
     else if (e.target.closest('.move-btn')) openMoveCategoryModal(id);
 });
+
 productList.addEventListener('input', (e) => {
     const input = e.target.closest('.quantity-input'); if (!input) return;
+    const productCard = e.target.closest('.product-card'); if (!productCard) return;
+
     if (profiles.length > 0 && !localStorage.getItem('selectedProfileId')) {
         input.value = 0;
-        updateProductCardQuantity(e.target.closest('.product-card'));
+        updateProductCardUI(productCard);
         return showToast('Please select a profile first');
     }
-    updateProductCardQuantity(e.target.closest('.product-card'));
+    input.value = input.value.replace(/[^0-9]/g, '');
+    updateProductCardUI(productCard);
 });
-const updateProductCardQuantity = (card) => {
-    const id = card.dataset.productId; const input = card.querySelector('.quantity-input');
-    const product = products.find(p => p.id === id); if (!product) return;
-    const quantity = Math.max(0, parseInt(input.value) || 0);
-    tempQuantities[id] = quantity; input.value = quantity;
-    updateItemTotal();
-};
 
 document.getElementById('expense-list').addEventListener('click', (e) => {
     const card = e.target.closest('.product-card'); if (!card) return;
@@ -1772,7 +1806,7 @@ document.getElementById('expense-list').addEventListener('click', (e) => {
         else if (input.value > 0) input.value--;
         tempExpenseQuantities[id] = parseInt(input.value);
         updateExpenseTotal();
-        renderExpenseBilling();
+        renderExpenseBilling(); // Re-render to update total on card
     }
 });
 
@@ -1844,7 +1878,13 @@ document.querySelectorAll('.modal-close-btn').forEach(btn => btn.addEventListene
 document.getElementById('calculator-keypad').addEventListener('click', (e) => { const button = e.target.closest('.calc-btn'); if (button) handleCalcInput(button.dataset.key); });
 document.getElementById('calc-back-btn').addEventListener('click', () => switchScreen('dashboard'));
 document.getElementById('calc-history-btn').addEventListener('click', renderCalculatorHistory);
-document.getElementById('profile-selector').addEventListener('change', (e) => { const profileId = e.target.value; if(profileId) localStorage.setItem('selectedProfileId', profileId); else localStorage.removeItem('selectedProfileId'); tempQuantities = {}; renderDashboard(); });
+document.getElementById('profile-selector').addEventListener('change', (e) => { 
+    const profileId = e.target.value; 
+    if(profileId) localStorage.setItem('selectedProfileId', profileId); 
+    else localStorage.removeItem('selectedProfileId'); 
+    tempQuantities = {}; 
+    renderDashboard(); 
+});
 
 // App Start Logic
 if (!localStorage.getItem('userName')) switchScreen('setup');
@@ -1859,6 +1899,7 @@ const initializeAppUI = () => {
         selector.innerHTML = `<option value="">Select Profile</option>` + profiles.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
         const selectedProfileId = localStorage.getItem('selectedProfileId');
         if (selectedProfileId && profiles.some(p => p.id === selectedProfileId)) selector.value = selectedProfileId;
+        else selector.value = ''; // Ensure it's reset if the stored profile doesn't exist
         profileSelectorContainer.classList.remove('hidden');
     } else {
         profileSelectorContainer.classList.add('hidden');
