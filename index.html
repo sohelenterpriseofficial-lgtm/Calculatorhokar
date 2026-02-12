@@ -308,9 +308,13 @@
 
 <!-- Screen: History -->
 <section id="history-screen" class="screen">
-    <div class="card">
-        <h3>Overall Summary</h3>
-        <div id="history-unified-filters" class="filters" style="margin-top: 1rem;">
+    <div class="tab-container" style="margin-bottom:1rem;">
+        <button class="tab-btn active" data-history-tab="sales">Sales History</button>
+        <button class="tab-btn" data-history-tab="summary">Summary</button>
+    </div>
+
+    <div class="card" id="history-filters-card">
+        <div id="history-unified-filters" class="filters">
              <button class="filter-btn active" data-filter="1">1 Day</button>
              <button class="filter-btn" data-filter="7">7 Days</button>
              <button class="filter-btn" data-filter="15">15 Days</button>
@@ -322,13 +326,23 @@
             <label for="history-profile-filter">Filter by Profile</label>
             <div class="input-wrapper"><select id="history-profile-filter"></select></div>
         </div>
-        <div id="overall-summary-grid" class="financial-summary-grid" style="margin-top: 1.5rem;"></div>
     </div>
-    <div class="card">
-        <h3>Sales History</h3>
-        <div id="history-list"></div>
+
+    <div id="history-summary-content" class="tab-content">
+        <div class="card">
+            <h3>Overall Summary</h3>
+            <div id="overall-summary-grid" class="financial-summary-grid" style="margin-top: 1.5rem;"></div>
+        </div>
+    </div>
+
+    <div id="history-sales-content" class="tab-content active">
+         <div class="card">
+            <h3>Sales History</h3>
+            <div id="history-list"></div>
+        </div>
     </div>
 </section>
+
 
 <!-- Screen: Profiles -->
 <section id="profiles-screen" class="screen">
@@ -664,7 +678,12 @@ localStorage.setItem('theme', theme);
 
 // Navigation
 const switchScreen = (screenId, isBack = false, options = {}) => {
-currentProfileId = options.profileId || null;
+if (!isBack && screenId !== 'history') { // Do not reset profileId when just switching history tabs
+    currentProfileId = options.profileId || null;
+} else if (options.profileId) {
+    currentProfileId = options.profileId;
+}
+
 document.body.classList.toggle('calculator-active', screenId === 'calculator');
 const titles = { 'dashboard': 'Billing', 'add': 'Add', 'history': 'History', 'profiles': 'Profiles', 'calculator': 'Calculator', 'profile-rates': 'Custom Rates', 'profile-summary': 'Profile Summary' };
 headerTitle.textContent = titles[screenId] || 'App';
@@ -971,22 +990,35 @@ const renderHistory = () => {
         profileFilter.value = selectedProfileId || 'all';
     }
 
-    renderOverallSummary();
+    // Toggle content based on active tab
+    const activeHistoryTab = document.querySelector('#history-screen .tab-btn.active').dataset.historyTab;
+    document.getElementById('history-sales-content').style.display = activeHistoryTab === 'sales' ? 'block' : 'none';
+    document.getElementById('history-summary-content').style.display = activeHistoryTab === 'summary' ? 'block' : 'none';
+    
+    // Hide filter card if viewing a single profile's sales history from their options
+    document.getElementById('history-filters-card').style.display = currentProfileId ? 'none' : 'block';
 
+    if (activeHistoryTab === 'summary') {
+        renderOverallSummary();
+    } else {
+        renderSalesHistoryList();
+    }
+};
+
+const renderSalesHistoryList = () => {
     const listDiv = document.getElementById('history-list');
     let dataToFilter = salesHistory;
 
     // Filter by profile if one is selected
-    if (profileFilter.value !== 'all') {
-        dataToFilter = salesHistory.filter(s => s.profileId === profileFilter.value);
+    const profileFilterValue = document.getElementById('history-profile-filter').value;
+    if (profileFilterValue !== 'all') {
+        dataToFilter = salesHistory.filter(s => s.profileId === profileFilterValue);
     }
-    
-    // Hide summary if viewing a single profile's history from their options
-    document.querySelector('#history-screen .card:first-child').style.display = currentProfileId ? 'none' : 'block';
     
     if (currentProfileId) {
         const profile = profiles.find(p => p.id === currentProfileId);
         headerTitle.textContent = `Sales for ${profile?.name || 'Profile'}`;
+        dataToFilter = salesHistory.filter(s => s.profileId === currentProfileId);
     } else {
         headerTitle.textContent = 'History';
     }
@@ -998,7 +1030,7 @@ const renderHistory = () => {
     const filtered = dataToFilter.filter(s => s.timestamp >= start && s.timestamp <= end);
     
     listDiv.innerHTML = filtered.length === 0
-        ? `<div class="card" style="text-align:center; color: var(--text-secondary); padding: 2rem;">No sales history for this period.</div>`
+        ? `<div style="text-align:center; color: var(--text-secondary); padding: 2rem;">No sales history for this period.</div>`
         : filtered.map(sale => {
             const saleItems = Object.keys(sale.quantities).map(pid => { const p = products.find(prod => prod.id === pid); return p ? `${p.sourceCode}${sale.quantities[pid]}`:''; }).filter(Boolean).join(' + ');
             let profileName = 'Direct Sale';
@@ -1262,19 +1294,18 @@ const handleSaveProfileRates = async () => {
 };
 
 const handleAddProfile = async (e) => {
-e.preventDefault();
-const form = e.target;
-const name = document.getElementById('profileName').value.trim();
-const whatsappNumber = document.getElementById('profileWhatsapp').value.trim();
-if (!name) return showToast('Profile name cannot be empty.');
-if (profiles.some(p => p.name.toLowerCase() === name.toLowerCase())) return showToast('Profile name already exists.');
-const newProfile = { id: generateUniqueId(), name, whatsappNumber, customRates: {} };
-await storage.saveItem('profiles', newProfile);
-profiles.push(newProfile);
-renderProfilesScreen();
-initializeAppUI();
-form.reset();
-showToast('Profile added successfully.');
+    e.preventDefault();
+    const form = e.target;
+    const name = document.getElementById('profileName').value.trim();
+    const whatsappNumber = document.getElementById('profileWhatsapp').value.trim();
+    if (!name) return showToast('Profile name cannot be empty.');
+    if (profiles.some(p => p.name.toLowerCase() === name.toLowerCase())) return showToast('Profile name already exists.');
+    const newProfile = { id: generateUniqueId(), name, whatsappNumber, customRates: {} };
+    await storage.saveItem('profiles', newProfile);
+    profiles.push(newProfile);
+    renderProfilesScreen();
+    form.reset();
+    showToast('Profile added successfully.');
 };
 
 const handleDeleteProfile = (id) => {
@@ -1760,10 +1791,20 @@ document.getElementById('reset-quantities-btn').addEventListener('click', () => 
 });
 
 // HISTORY SCREEN
-const unifiedHistoryFilterHandler = () => { 
-    currentProfileId = null; // Ensure we are not stuck in single-profile view
+const unifiedHistoryFilterHandler = () => {
+    if (!document.getElementById('history-screen').classList.contains('active')) return;
     renderHistory();
 };
+
+document.querySelectorAll('#history-screen .tab-btn').forEach(btn => btn.addEventListener('click', (e) => {
+    document.querySelector('#history-screen .tab-btn.active').classList.remove('active');
+    e.currentTarget.classList.add('active');
+    const tabName = e.currentTarget.dataset.historyTab;
+    document.querySelector('#history-screen .tab-content.active').classList.remove('active');
+    document.getElementById(tabName === 'sales' ? 'history-sales-content' : 'history-summary-content').classList.add('active');
+    renderHistory();
+}));
+
 document.querySelectorAll('#history-unified-filters .filter-btn').forEach(btn => btn.addEventListener('click', (e) => {
     document.querySelector('#history-unified-filters .filter-btn.active')?.classList.remove('active');
     e.currentTarget.classList.add('active');
@@ -1784,7 +1825,7 @@ document.getElementById('history-profile-filter').addEventListener('change', uni
 document.getElementById('add-profile-form').addEventListener('submit', handleAddProfile);
 document.getElementById('edit-profile-form').addEventListener('submit', handleEditProfile);
 document.getElementById('profile-options-menu').addEventListener('click', e => { const action = e.target.closest('.profile-menu-item')?.dataset.action; if(action) handleProfileOptionsMenu(action); });
-document.querySelectorAll('.back-to-profiles-btn, #back-to-profiles-btn-from-summary').forEach(btn => btn.addEventListener('click', () => switchScreen('profiles')));
+document.querySelectorAll('.back-to-profiles-btn, #back-to-profiles-btn-from-summary').forEach(btn => btn.addEventListener('click', () => { currentProfileId = null; switchScreen('profiles'); }));
 document.getElementById('save-profile-rates-btn').addEventListener('click', handleSaveProfileRates);
 document.getElementById('profile-summary-add-expense-btn').addEventListener('click', () => openAddExpenseModal(currentProfileId));
 const summaryDateChangeHandler = () => { document.querySelector('#profile-summary-filters .filter-btn.active')?.classList.remove('active'); renderProfileSummary(); };
