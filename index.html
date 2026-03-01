@@ -1,1915 +1,781 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>Offline Billing & Profit</title>
-<meta name="theme-color" content="#5B7CFF"/>
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Billing App">
-<!-- Embedded CSS -->
-<style>
-    :root {
-        --safe-area-inset-top: env(safe-area-inset-top, 0px);
-        --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
-        --primary-gradient: linear-gradient(135deg, #5B7CFF 0%, #8FA8FF 100%);
-        --primary-color: #5B7CFF;
-        --accent-green: #28a745;
-        --accent-red: #dc3545;
-        --accent-grey: #6c757d;
-        --bg-color-light: #F5F7FB;
-        --card-bg-light: #ffffff;
-        --header-bg-light: rgba(255, 255, 255, 0.85);
-        --text-primary-light: #1a1f36;
-        --text-secondary-light: #6c757d;
-        --border-color-light: #e9ecef;
-        --bg-color-dark: #0d1117;
-        --card-bg-dark: #161b22;
-        --header-bg-dark: rgba(22, 27, 34, 0.85);
-        --text-primary-dark: #c9d1d9;
-        --text-secondary-dark: #8b949e;
-        --border-color-dark: #30363d;
-        --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        --border-radius-lg: 20px;
-        --border-radius-md: 12px;
-        --shadow-sm: 0 4px 15px rgba(0, 0, 0, 0.05);
-        --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.08);
-        --transition-speed: 0.3s;
-    }
-    body {
-        --bg-color: var(--bg-color-light);
-        --card-bg: var(--card-bg-light);
-        --header-bg: var(--header-bg-light);
-        --text-primary: var(--text-primary-light);
-        --text-secondary: var(--text-secondary-light);
-        --border-color: var(--border-color-light);
-    }
-    body.dark-mode {
-        --bg-color: var(--bg-color-dark);
-        --card-bg: var(--card-bg-dark);
-        --header-bg: var(--header-bg-dark);
-        --text-primary: var(--text-primary-dark);
-        --text-secondary: var(--text-secondary-dark);
-        --border-color: var(--border-color-dark);
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
-    body {
-        font-family: var(--font-family);
-        background-color: var(--bg-color);
-        color: var(--text-primary);
-        padding-top: calc(65px + var(--safe-area-inset-top));
-        padding-bottom: calc(80px + var(--safe-area-inset-bottom));
-        transition: background-color var(--transition-speed), color var(--transition-speed);
-        -webkit-tap-highlight-color: transparent;
-    }
-    body.calculator-active {
-         padding-top: var(--safe-area-inset-top);
-    }
-    body:not(.app-loaded) .app-header, body:not(.app-loaded) .bottom-nav { display: none; }
-    .app-container { max-width: 800px; margin: 0 auto; padding: 1rem; }
-    .app-header {
-        position: fixed; top: 0; left: 0; right: 0; display: flex; justify-content: space-between;
-        align-items: center; padding: 1rem 1.5rem; padding-top: calc(1rem + var(--safe-area-inset-top));
-        background-color: var(--header-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-        border-bottom: 1px solid var(--border-color); z-index: 1000;
-        transition: background-color var(--transition-speed), border-color var(--transition-speed), opacity 0.3s;
-        height: calc(65px + var(--safe-area-inset-top));
-    }
-    body.calculator-active .app-header {
-        opacity: 0;
-        pointer-events: none;
-    }
-    .app-header h1 { font-size: 1.5rem; font-weight: 600; margin: 0; }
-    .theme-toggle { background: none; border: none; cursor: pointer; font-size: 1.5rem; color: var(--text-secondary); }
-    .screen { display: none; animation: fadeIn 0.4s ease-out; }
-    .screen.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    .card {
-        background-color: var(--card-bg); border-radius: var(--border-radius-lg); padding: 1.5rem;
-        margin-bottom: 1rem; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color);
-    }
-    .form-group { margin-bottom: 1.25rem; }
-    .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: var(--text-secondary); }
-    .form-group .input-wrapper { background-color: var(--bg-color); border-radius: var(--border-radius-md); border: 1px solid var(--border-color); transition: border-color var(--transition-speed), box-shadow var(--transition-speed); display: flex; align-items: center; }
-    .form-group .input-wrapper:focus-within { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(91, 124, 255, 0.2); }
-    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 0.9rem; border: none; background: none; color: var(--text-primary); font-size: 1rem; outline: none; }
-    .form-group textarea { resize: vertical; }
-    .btn { display: inline-block; width: 100%; padding: 1rem 1.5rem; border: none; border-radius: var(--border-radius-md); background: var(--primary-gradient); color: white; font-size: 1.1rem; font-weight: 600; cursor: pointer; text-align: center; user-select: none; transition: transform 0.2s ease-out; }
-    .btn:active { transform: scale(0.98); }
-    .btn-danger { background: var(--accent-red); }
-    .btn-secondary { background: var(--accent-grey); }
-    .bottom-nav {
-        position: fixed; bottom: 0; left: 0; right: 0; max-width: 800px; margin: 0 auto;
-        display: flex; justify-content: space-around; background-color: var(--card-bg);
-        border-top: 1px solid var(--border-color); border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
-        box-shadow: 0 -5px 20px rgba(0,0,0,0.05); z-index: 1000; padding-bottom: var(--safe-area-inset-bottom);
-    }
-     body.calculator-active .bottom-nav { display: none; }
-    .nav-item { flex-grow: 1; text-align: center; padding: 0.75rem 0; color: var(--text-secondary); cursor: pointer; border-top: 3px solid transparent; transition: color 0.2s; }
-    .nav-item.active { color: var(--primary-color); border-top-color: var(--primary-color); }
-    .nav-item .icon { font-size: 1.5rem; display: block; margin: 0 auto 0.25rem; }
-    .nav-item .label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
-    .nav-item.hidden { display: none; }
-    .product-card-main { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
-    .product-info h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.25rem; word-break: break-word; }
-    .product-info .meta { font-size: 0.8rem; color: var(--text-secondary); }
-    .quantity-controls { display: flex; align-items: center; flex-shrink: 0; }
-    .quantity-btn { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--border-color); background-color: transparent; color: var(--primary-color); font-size: 1.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-    .quantity-input { width: 50px; text-align: center; font-size: 1.6rem; font-weight: 700; border: none; background: transparent; margin: 0 0.5rem; color: var(--text-primary); }
-    input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-    input[type=number] { -moz-appearance: textfield; }
-    .product-calculation { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
-    .product-calculation .value { font-size: 1.2rem; font-weight: 700; }
-    .product-actions { display: flex; gap: 0.5rem; }
-    .action-btn { background: var(--bg-color); border: 1px solid var(--border-color); font-size: 1.2rem; cursor: pointer; color: var(--text-secondary); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;}
-    .action-btn.is-favorite { color: var(--accent-red); }
-    .save-bar {
-        position: fixed; bottom: calc(70px + var(--safe-area-inset-bottom)); left: 1rem; right: 1rem;
-        max-width: 768px; margin: 0 auto; background: var(--card-bg); border: 1px solid var(--border-color);
-        padding: 0.75rem 1rem; z-index: 999; display: grid; grid-template-columns: 1fr auto auto; align-items: center;
-        gap: 0.75rem; border-radius: var(--border-radius-lg); box-shadow: var(--shadow-md); transform: translateY(200%);
-        opacity: 0; transition: transform 0.4s ease-out, opacity 0.4s ease-out; pointer-events: none;
-    }
-    .save-bar.visible { transform: translateY(0); opacity: 1; pointer-events: auto; }
-    .save-bar-info { display: flex; flex-direction: column; line-height: 1.3; overflow: hidden; }
-    #sale-items-summary { font-size: 0.9rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    #grand-total-amount { font-size: 1.5rem; font-weight: 700; }
-    .save-bar-actions button { border: none; border-radius: 50%; width: 50px; height: 50px; font-size: 1.5rem; font-weight: 600; cursor: pointer; display: flex; justify-content: center; align-items: center; }
-    .save-bar .ac-btn { background: var(--accent-grey); color: white; }
-    .save-bar .save-btn { background: var(--primary-gradient); color: white; }
-    
-    .summary-display { text-align: center; margin-bottom: 2rem; }
-    .summary-display .value { font-size: 2.5rem; font-weight: 700; color: var(--primary-color);}
-    .summary-display .label { color: var(--text-secondary); }
-    .filters { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; align-items: center; }
-    .filter-btn { padding: 0.5rem 1rem; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-secondary); border-radius: 50px; cursor: pointer; font-size: 0.9rem; }
-    .filter-btn.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
-    .date-filter { display: flex; gap: 0.5rem; border: 1px solid var(--border-color); padding: 0.5rem; border-radius: var(--border-radius-md); }
-    .date-filter input { border: none; background: var(--bg-color); color: var(--text-primary); border-radius: 6px; padding: 0.25rem; }
-    .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background-color: rgba(22, 27, 34, 0.9); backdrop-filter: blur(5px); color: white; padding: 0.75rem 1.5rem; border-radius: 50px; z-index: 2000; opacity: 0; visibility: hidden; transition: all 0.5s ease; transform: translate(-50%, 20px); }
-    .toast.show { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); z-index: 3000; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; }
-    .modal-overlay.show { display: flex; opacity: 1; }
-    .modal-content { background: var(--card-bg); border-radius: var(--border-radius-lg); padding: 2rem; width: 90%; max-width: 500px; transform: scale(0.95); transition: transform 0.3s ease; }
-    .modal-overlay.show .modal-content { transform: scale(1); }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-    .modal-close-btn { background: none; border: none; font-size: 1.8rem; cursor: pointer; color: var(--text-secondary); }
-    
-    .history-list-container { max-height: 60vh; overflow-y: auto; padding-right: 0.5rem; }
-    .list-item { display:flex; justify-content:space-between; align-items:center; padding: 1rem 1.5rem; }
-    .list-item > div { display: flex; align-items: center; gap: 1rem; }
-    
-    .tab-container { display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 1.5rem; }
-    .tab-btn { flex: 1; padding: 1rem; background: none; border: none; font-size: 1rem; font-weight: 600; color: var(--text-secondary); cursor: pointer; border-bottom: 3px solid transparent; }
-    .tab-btn.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered Unlimited E-commerce Image Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --primary-color: #1a1a1a;
+            --secondary-color: #2a2a2a;
+            --accent-color: #007bff;
+            --text-color: #e0e0e0;
+            --border-color: #444;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+        }
 
-    .category-filter-tabs { display: flex; overflow-x: auto; padding-bottom: 10px; margin-bottom: 1rem; scrollbar-width: none; }
-    .category-filter-tabs::-webkit-scrollbar { display: none; }
-    .category-filter-tabs .filter-btn { flex-shrink: 0; }
-    .profile-menu-item { display: block; width: 100%; padding: 1rem; margin-bottom: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); text-align: left; font-size: 1.1rem; background: var(--bg-color); color: var(--text-primary); cursor: pointer; }
-    
-    .financial-summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
-    .summary-card { background-color: var(--bg-color); padding: 1rem; border-radius: var(--border-radius-md); text-align: center; }
-    .summary-card .label { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem; }
-    .summary-card .value { font-size: 1.2rem; font-weight: 700; word-break: break-word;}
-    .value.total-sales { color: var(--text-primary); }
-    .value.gross-profit { color: var(--primary-color); }
-    .value.total-expense { color: var(--accent-red); }
-    .value.net-profit { color: var(--accent-green); }
-    .summary-date-group { margin-bottom: 1rem; }
-    .summary-date-header { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; padding-left: 0.5rem; border-left: 3px solid var(--primary-color); }
-    .summary-item-row { display: grid; grid-template-columns: 1fr auto; gap: 1rem; text-align: right; padding: 0.5rem 0; align-items: center; }
-    .summary-item-row > div:first-child { text-align: left; font-weight: 500;}
-    
-    .bottom-total {
-        position: sticky; bottom: calc(80px + var(--safe-area-inset-bottom)); background-color: var(--card-bg);
-        border-top: 2px solid var(--primary-color); padding: 1.5rem; margin-top: 1rem;
-        border-radius: var(--border-radius-lg); box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.1);
-    }
-    .bottom-total h3 { text-align: center; margin-bottom: 1rem; }
-    .total-row { display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-    #calculator-screen { padding: 0; background-color: var(--bg-color-light); position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 5000; }
-    .calculator-container { display: flex; flex-direction: column; height: 100vh; height: -webkit-fill-available; background-color: var(--bg-color-light); color: var(--text-primary-light); }
-    .calculator-header { padding: 1rem 1.5rem; padding-top: calc(1rem + var(--safe-area-inset-top)); display: flex; justify-content: space-between; }
-    .calculator-header .btn-secondary { width: auto; padding: 0.5rem 1rem; }
-    .calculator-display-area { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; padding: 1.5rem; overflow: hidden; min-height: 0; }
-    .calculator-current-view { text-align: right; }
-    .calculator-expression { font-size: 2rem; color: var(--text-secondary-light); min-height: 2.5rem; word-break: break-all; font-weight: 400; margin-bottom: 0.5rem; }
-    .calculator-result { font-size: 3.5rem; font-weight: 400; min-height: 4rem; word-break: break-all; color: var(--text-primary-light); display: none; }
-    .calculator-result.visible { display: block; }
-    .calculator-keypad { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.8rem; padding: 1.5rem; padding-bottom: calc(1.5rem + var(--safe-area-inset-bottom)); }
-    .calc-btn { height: 70px; border-radius: 35px; border: none; font-size: 2rem; font-weight: 400; cursor: pointer; user-select: none; background-color: #ffffff; color: var(--text-primary-light); transition: background-color 0.2s; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
-    .calc-btn > span { display: flex; align-items: center; justify-content: center; height: 100%; }
-    .calc-btn:active { background-color: #f0f0f0; }
-    .calc-btn.operator, .calc-btn.equals { background-color: var(--primary-color); color: white; }
-    .calc-btn.operator:active, .calc-btn.equals:active { background: #4a6ae6; }
-    .calc-btn.special { background-color: #e9ecef; color: var(--text-primary-light); }
-    .calc-btn.special:active { background-color: #d8dde3; }
-</style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        #notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: white;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            pointer-events: none;
+        }
+
+        #notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        #notification.error { background-color: var(--error-color); }
+        #notification.success { background-color: var(--success-color); }
+        #notification.info { background-color: var(--accent-color); }
+
+        .container {
+            max-width: 1500px;
+            margin: auto;
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 20px;
+        }
+
+        .controls, .main-content {
+            background-color: var(--primary-color);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1, h2, h3 {
+            margin-bottom: 20px;
+            color: var(--accent-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        h1 { font-size: 1.8em; }
+        h2 { font-size: 1.4em; }
+        h3 { font-size: 1.1em; }
+
+        .card {
+            background-color: var(--secondary-color);
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="password"],
+        .form-group input[type="number"],
+        .form-group select,
+        .custom-file-upload {
+            width: 100%;
+            padding: 10px;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-color);
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 5px var(--accent-color);
+        }
+
+        .custom-file-upload {
+            display: inline-block;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        #imageUpload { display: none; }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            background: var(--bg-color);
+            padding: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-size: 0.9em;
+        }
+
+        .checkbox-group label:hover { background: #333; }
+        .checkbox-group input { margin-right: 10px; }
+
+        .btn {
+            display: inline-block;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            text-align: center;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+
+        .btn:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .btn:active:not(:disabled) { transform: translateY(1px); }
+
+        .btn-primary { background-color: var(--accent-color); color: white; }
+        .btn-primary:hover:not(:disabled) { background-color: #0056b3; }
+
+        .btn-secondary { background-color: var(--success-color); color: white; }
+        .btn-secondary:hover:not(:disabled) { background-color: #218838; }
+        
+        .btn-small { width: auto; padding: 5px 10px; font-size: 0.8em; margin-top: 10px; }
+
+        .progress-bar {
+            width: 100%;
+            background-color: var(--secondary-color);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 20px;
+            height: 20px;
+            border: 1px solid var(--border-color);
+            display: none;
+        }
+
+        .progress-bar-inner {
+            height: 100%;
+            width: 0%;
+            background-color: var(--success-color);
+            transition: width 0.4s ease;
+            text-align: center;
+            line-height: 20px;
+            color: white;
+            font-size: 0.9em;
+        }
+        
+        #imagePreview {
+            flex-grow: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+            padding-top: 15px;
+            overflow-y: auto;
+            min-height: 200px;
+        }
+
+        .preview-card {
+            background-color: var(--secondary-color);
+            border-radius: 6px;
+            padding: 10px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .preview-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .preview-card img {
+            max-width: 100%;
+            height: 150px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            object-fit: contain;
+            background-color: transparent;
+        }
+        
+        .preview-card .label { 
+            font-size: 0.9em; 
+            margin-bottom: 10px;
+        }
+        .preview-card .label strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .preview-card .label small {
+            display: block;
+            line-height: 1.4;
+            color: #aaa;
+        }
+
+        #geminiSuggestions {
+            background-color: var(--bg-color);
+            padding: 15px;
+            border-radius: 6px;
+            font-size: 0.9em;
+        }
+
+        #geminiSuggestions p { margin-bottom: 10px; }
+        #geminiSuggestions strong { color: var(--accent-color); }
+
+        .loader {
+            border: 4px solid var(--secondary-color);
+            border-top: 4px solid var(--accent-color);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+        
+        .placeholder {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            width: 100%;
+            color: #666;
+            font-size: 1.1em;
+            grid-column: 1 / -1;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .output-format-toggle { display: flex; align-items: center; justify-content: center; margin-top: 15px; }
+        .output-format-toggle label { margin: 0 10px; }
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #555; transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent-color); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        @media (max-width: 900px) {
+            .container { grid-template-columns: 1fr; }
+            #imagePreview { max-height: 50vh; }
+        }
+    </style>
 </head>
 <body>
-<header class="app-header">
-<h1 id="header-title">Billing</h1>
-<div style="display: flex; align-items: center; gap: 1rem;">
-<button id="theme-toggle" class="theme-toggle" title="Toggle Theme">🌙</button>
-</div>
-</header>
-<main class="app-container">
-<!-- Screen: Setup -->
-<section id="setup-screen" class="screen">
-<div class="card" style="margin-top: 20vh; text-align: center;">
-<h2>Welcome!</h2>
-<p style="color: var(--text-secondary); margin-bottom: 2rem;">Let's get started by setting up your name.</p>
-<form id="setup-form">
-<div class="form-group"><div class="input-wrapper"><input type="text" id="profileNameSetup" placeholder="Enter Your Name" required></div></div>
-<button type="submit" class="btn">Save & Continue</button>
-</form>
-</div>
-</section>
+    <div id="notification"></div>
+    <div class="container">
+        <aside class="controls">
+            <h1>AI Image Generator</h1>
 
-<!-- Screen: Add -->
-<section id="add-screen" class="screen">
-    <div class="tab-container">
-        <button class="tab-btn active" data-tab="add-item-tab">Add Item</button>
-        <button class="tab-btn" data-tab="add-expense-tab">Add Expense</button>
-        <button class="tab-btn" data-tab="categories-tab">Categories</button>
-    </div>
-    
-    <div id="add-item-tab" class="tab-content active">
-        <div class="card">
-            <form id="add-product-form">
-                <div class="form-group"><label for="sourceCode">Item Code (Unique)</label><div class="input-wrapper"><input type="text" id="sourceCode" required></div></div>
-                <div class="form-group"><label for="productName">Item Name</label><div class="input-wrapper"><input type="text" id="productName" required></div></div>
-                <div class="form-group hidden" id="category-select-group"><label for="productCategory">Category (Optional)</label><div class="input-wrapper"><select id="productCategory"></select></div></div>
-                <div class="form-group"><label for="buyPrice">Buy Price</label><div class="input-wrapper"><input type="number" id="buyPrice" step="0.01" placeholder="0.00"></div></div>
-                <div class="form-group"><label for="sellPrice">Sell Price</label><div class="input-wrapper"><input type="number" id="sellPrice" step="0.01" placeholder="0.00"></div></div>
-                <button type="submit" class="btn">Save Item</button>
-            </form>
-        </div>
-    </div>
+            <div class="card">
+                <h3>1. API Keys</h3>
+                <div class="form-group">
+                    <label for="removeBgApiKey">Remove.bg API Key</label>
+                    <input type="password" id="removeBgApiKey" placeholder="Required for background removal">
+                </div>
+                <div class="form-group">
+                    <label for="geminiApiKey">Gemini API Key</label>
+                    <input type="password" id="geminiApiKey" placeholder="Optional for AI suggestions">
+                </div>
+            </div>
 
-    <div id="add-expense-tab" class="tab-content">
-        <div class="card">
-            <form id="add-expense-tab-form">
-                <div class="form-group"><label for="add-expense-profile-select">Select Profile</label><div class="input-wrapper"><select id="add-expense-profile-select" required></select></div></div>
-                <div class="form-group"><label for="add-expense-tab-amount">Amount</label><div class="input-wrapper"><input type="number" id="add-expense-tab-amount" step="0.01" placeholder="0.00" required></div></div>
-                <div class="form-group"><label for="add-expense-tab-category">Expense Type</label><div class="input-wrapper"><select id="add-expense-tab-category" required></select></div></div>
-                 <div class="form-group"><label for="add-expense-tab-note">Note (Optional)</label><div class="input-wrapper"><textarea id="add-expense-tab-note" rows="3" placeholder="Expense Name/Note"></textarea></div></div>
-                <button type="submit" class="btn">Save Expense</button>
-            </form>
-        </div>
-    </div>
+            <div class="card">
+                <h3>2. Upload Product</h3>
+                <div class="form-group">
+                    <input type="file" id="imageUpload" accept="image/*">
+                    <label for="imageUpload" class="custom-file-upload" id="uploadLabel">Select Product Image</label>
+                </div>
+            </div>
 
-    <div id="categories-tab" class="tab-content">
-        <div class="card">
-             <h2>Item Categories</h2>
-             <div id="item-category-list" style="margin-top: 1rem;"></div>
-             <form id="add-item-category-form" style="margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
-                 <div class="form-group"><label for="itemCategoryName">New Item Category</label><div class="input-wrapper"><input type="text" id="itemCategoryName" required></div></div>
-                 <button type="submit" class="btn btn-secondary">Add Item Category</button>
-             </form>
-        </div>
-        <div class="card">
-             <h2>Expense Categories</h2>
-             <div id="expense-type-list" style="margin-top: 1rem;"></div>
-             <form id="add-expense-type-form" style="margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
-                 <div class="form-group"><label for="expenseTypeName">New Expense Category</label><div class="input-wrapper"><input type="text" id="expenseTypeName" required></div></div>
-                 <div class="form-group"><label for="expenseTypeDefaultAmount">Default Amount (Optional)</label><div class="input-wrapper"><input type="number" step="0.01" id="expenseTypeDefaultAmount" placeholder="0.00"></div></div>
-                 <button type="submit" class="btn btn-secondary">Add Expense Category</button>
-             </form>
-        </div>
-    </div>
-</section>
+            <div class="card">
+                <h3>3. E-commerce Sizes</h3>
+                <div class="checkbox-group">
+                    <label><input type="checkbox" class="size-preset" value="2000x2000"> 2000x2000</label>
+                    <label><input type="checkbox" class="size-preset" value="1080x1080" checked> 1080x1080</label>
+                    <label><input type="checkbox" class="size-preset" value="1000x1000"> 1000x1000</label>
+                    <label><input type="checkbox" class="size-preset" value="1080x1350"> 1080x1350</label>
+                    <label><input type="checkbox" class="size-preset" value="1600x900"> 1600x900</label>
+                    <label><input type="checkbox" id="autoMixSize"> Auto Mix</label>
+                </div>
+            </div>
 
-<!-- Screen: Billing -->
-<section id="dashboard-screen" class="screen">
-    <div id="profile-selector-container" class="card hidden"><div class="form-group" style="margin-bottom: 0;"><label for="profile-selector">Select Profile</label><div class="input-wrapper"><select id="profile-selector"></select></div></div></div>
-    
-    <div class="tab-container">
-        <button class="tab-btn active" data-tab="billing-items-tab">Items</button>
-        <button class="tab-btn" data-tab="billing-expenses-tab">Expenses</button>
-    </div>
+            <div class="card">
+                <h3>4. Variations</h3>
+                <div class="form-group">
+                    <label for="quantity">Number of Images</label>
+                    <input type="number" id="quantity" value="10" min="1">
+                </div>
+                <div class="form-group">
+                    <label for="generationMode">Generation Mode</label>
+                    <select id="generationMode">
+                        <option value="marketplace">Marketplace Safe</option>
+                        <option value="creative">Creative Mix</option>
+                        <option value="auto">Full Auto Mix</option>
+                    </select>
+                </div>
+            </div>
+        </aside>
 
-    <div id="billing-items-tab" class="tab-content active">
-        <div class="form-group"><div class="input-wrapper" style="padding-left: 1rem;"><span style="color: var(--text-secondary);">🔍</span><input type="search" id="product-search" placeholder="Search by name or code..." style="padding-left: 0.5rem;"></div></div>
-        <div id="category-filter-container" class="hidden"></div>
-        <div id="product-list"></div>
-    </div>
-    
-    <div id="billing-expenses-tab" class="tab-content">
-        <div id="expense-list"></div>
-    </div>
-</section>
-
-<!-- Screen: History -->
-<section id="history-screen" class="screen">
-    <div class="tab-container" style="margin-bottom:1rem;">
-        <button class="tab-btn active" data-history-tab="sales">Sales History</button>
-        <button class="tab-btn" data-history-tab="summary">Summary</button>
+        <main class="main-content">
+            <div class="card">
+                <h2>AI Suggestions (Gemini)</h2>
+                <div id="geminiLoader" class="loader"></div>
+                <div id="geminiSuggestions"><p>Upload an image and provide a Gemini API key to receive suggestions.</p></div>
+            </div>
+            
+            <div class="generation-controls" style="padding: 20px; background: var(--secondary-color); border-radius: 8px;">
+                <button id="generateBtn" class="btn btn-primary" disabled>Generate Images</button>
+                <div class="progress-bar">
+                    <div id="progressBarInner" class="progress-bar-inner">0%</div>
+                </div>
+                 <div class="output-format-toggle">
+                    <label>JPG</label>
+                    <label class="switch">
+                      <input type="checkbox" id="formatToggle">
+                      <span class="slider"></span>
+                    </label>
+                    <label>PNG</label>
+                </div>
+            </div>
+            
+            <div class="preview-area" style="margin-top: 20px; flex-grow: 1; display: flex; flex-direction: column;">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+                    <h2>Generated Images</h2>
+                    <button id="downloadAllBtn" class="btn btn-secondary" style="width: auto;" disabled>Download All as ZIP</button>
+                </div>
+                <div id="imagePreview">
+                    <div class="placeholder">Your generated images will appear here.</div>
+                </div>
+            </div>
+        </main>
     </div>
 
-    <div class="card" id="history-filters-card">
-        <div id="history-unified-filters" class="filters">
-             <button class="filter-btn active" data-filter="1">1 Day</button>
-             <button class="filter-btn" data-filter="7">7 Days</button>
-             <button class="filter-btn" data-filter="15">15 Days</button>
-             <button class="filter-btn" data-filter="30">1 Month</button>
-             <button class="filter-btn" data-filter="lifetime">Lifetime</button>
-             <div class="date-filter"><input type="date" id="history-start-date"><input type="date" id="history-end-date"></div>
-        </div>
-        <div class="form-group" style="margin-top: 1rem; margin-bottom: 0;">
-            <label for="history-profile-filter">Filter by Profile</label>
-            <div class="input-wrapper"><select id="history-profile-filter"></select></div>
-        </div>
-    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const removeBgApiKeyInput = document.getElementById('removeBgApiKey');
+            const geminiApiKeyInput = document.getElementById('geminiApiKey');
+            const imageUploadInput = document.getElementById('imageUpload');
+            const uploadLabel = document.getElementById('uploadLabel');
+            const sizePresets = document.querySelectorAll('.size-preset');
+            const autoMixSizeCheckbox = document.getElementById('autoMixSize');
+            const quantityInput = document.getElementById('quantity');
+            const generationModeSelect = document.getElementById('generationMode');
+            const generateBtn = document.getElementById('generateBtn');
+            const downloadAllBtn = document.getElementById('downloadAllBtn');
+            const imagePreview = document.getElementById('imagePreview');
+            const progressBar = document.querySelector('.progress-bar');
+            const progressBarInner = document.getElementById('progressBarInner');
+            const geminiLoader = document.getElementById('geminiLoader');
+            const geminiSuggestionsDiv = document.getElementById('geminiSuggestions');
+            const formatToggle = document.getElementById('formatToggle');
+            const notification = document.getElementById('notification');
 
-    <div id="history-summary-content" class="tab-content">
-        <div class="card">
-            <h3>Overall Summary</h3>
-            <div id="overall-summary-grid" class="financial-summary-grid" style="margin-top: 1.5rem;"></div>
-        </div>
-    </div>
+            let transparentImageBlob = null;
+            let generatedCanvases = [];
+            let accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim();
+            const EMOJIS = ['✨', '💖', '🔥', '⭐', '🚀', '💎', '💯', '👍'];
 
-    <div id="history-sales-content" class="tab-content active">
-         <div class="card">
-            <h3>Sales History</h3>
-            <div id="history-list"></div>
-        </div>
-    </div>
-</section>
+            function showNotification(message, type = 'error') {
+                notification.textContent = message;
+                notification.className = `show ${type}`;
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
 
+            function resetAppState() {
+                transparentImageBlob = null;
+                generatedCanvases = [];
+                imagePreview.innerHTML = '<div class="placeholder">Your generated images will appear here.</div>';
+                generateBtn.disabled = true;
+                downloadAllBtn.disabled = true;
+                uploadLabel.textContent = "Select Product Image";
+                imageUploadInput.value = '';
+                geminiSuggestionsDiv.innerHTML = '<p>Upload an image and provide a Gemini API key to receive suggestions.</p>';
+            }
 
-<!-- Screen: Profiles -->
-<section id="profiles-screen" class="screen">
-    <div class="card">
-        <h2>Add New Profile</h2>
-        <form id="add-profile-form">
-            <div class="form-group"><label for="profileName">Profile Name</label><div class="input-wrapper"><input type="text" id="profileName" required></div></div>
-            <div class="form-group"><label for="profileWhatsapp">WhatsApp Number (Optional)</label><div class="input-wrapper"><input type="tel" id="profileWhatsapp" placeholder="e.g., 919876543210"></div></div>
-            <button type="submit" class="btn">Add Profile</button>
-        </form>
-    </div>
-    <div class="card">
-        <h2>Saved Profiles</h2>
-        <div id="profile-list"></div>
-    </div>
-    <div class="card">
-        <h2>Data Management</h2>
-        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">Backup all app data to a file, or restore from a backup.</p>
-        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-            <button id="export-data-btn" class="btn btn-secondary" style="flex: 1;">Export Data</button>
-            <button id="import-data-btn" class="btn" style="flex: 1;">Import Data</button>
-            <input type="file" id="import-file-input" accept=".json" style="display: none;">
-        </div>
-        <div style="margin-top: 1rem;">
-             <button id="load-production-data-btn" class="btn" style="background: var(--accent-green);">Add Sample Items</button>
-        </div>
-    </div>
-</section>
+            imageUploadInput.addEventListener('change', async (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
 
-<!-- Screen: User Rates -->
-<section id="profile-rates-screen" class="screen">
-    <button class="back-to-profiles-btn btn btn-secondary" style="margin-bottom: 1rem; width: auto; padding: 0.5rem 1rem;">← Back</button>
-    <div class="card">
-        <h2 id="profile-rates-header">Custom Rates</h2>
-        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">Set custom selling prices for this profile. Leave blank to use the default price.</p>
-        <div id="profile-rates-product-list" style="max-height: 50vh; overflow-y: auto;"></div>
-        <button id="save-profile-rates-btn" class="btn" style="margin-top: 1.5rem;">Save Rates</button>
-    </div>
-</section>
+                resetAppState();
+                const removeBgApiKey = "CAh2D2wwVu9vbnmNEPvbE1Ya";
+                if (!removeBgApiKey) {
+                    showNotification('Please enter your Remove.bg API key.', 'error');
+                    imageUploadInput.value = '';
+                    return;
+                }
+                
+                uploadLabel.textContent = 'Processing...';
+                geminiSuggestionsDiv.style.display = 'none';
+                geminiLoader.style.display = 'block';
 
-<!-- Screen: Profile Summary -->
-<section id="profile-summary-screen" class="screen">
-    <button id="back-to-profiles-btn-from-summary" class="btn btn-secondary" style="margin-bottom: 1rem; width: auto; padding: 0.5rem 1rem;">← Back to Profiles</button>
-    <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-            <h2 id="profile-summary-title">Profile Summary</h2>
-            <button id="profile-summary-add-expense-btn" class="btn" style="width:auto; padding: 0.5rem 1rem;">Add Expense</button>
-        </div>
-        <div id="profile-summary-filters" class="filters">
-            <button class="filter-btn active" data-filter="1">1 Day</button>
-            <button class="filter-btn" data-filter="7">7 Days</button>
-            <button class="filter-btn" data-filter="15">15 Days</button>
-            <button class="filter-btn" data-filter="30">1 Month</button>
-            <button class="filter-btn" data-filter="lifetime">Lifetime</button>
-            <div class="date-filter"><input type="date" id="summary-start-date"><input type="date" id="summary-end-date"></div>
-        </div>
-    </div>
-    <div id="profile-summary-cards" class="financial-summary-grid"></div>
-    <div id="profile-summary-list"></div>
-</section>
+                try {
+                    const formData = new FormData();
+                    formData.append('image_file', file);
+                    formData.append('size', 'auto');
+                    const response = await fetch('https://api.remove.bg/v1.0/removebg', {
+                        method: 'POST',
+                        headers: { 'X-Api-Key': removeBgApiKey },
+                        body: formData,
+                    });
 
-</main>
+                    if (!response.ok) throw new Error(`Remove.bg API Error: ${response.statusText}`);
+                    
+                    transparentImageBlob = await response.blob();
+                    showNotification('Background removed successfully!', 'success');
+                    generateBtn.disabled = false;
+                    uploadLabel.textContent = file.name;
 
-<!-- Full Screen Calculator -->
-<section id="calculator-screen" class="screen">
-    <div class="calculator-container">
-        <div class="calculator-header">
-             <button id="calc-history-btn" class="btn btn-secondary">History</button>
-             <button id="calc-back-btn" class="btn btn-secondary">← Back to Billing</button>
-        </div>
-        <div class="calculator-display-area">
-             <div class="calculator-current-view">
-                <div id="calculator-expression" class="calculator-expression"></div>
-                <div id="calculator-result" class="calculator-result"></div>
-             </div>
-        </div>
-        <div id="calculator-keypad" class="calculator-keypad">
-            <button class="calc-btn special" data-key="ac"><span>AC</span></button>
-            <button class="calc-btn special" data-key="("><span>(</span></button>
-            <button class="calc-btn special" data-key=")"><span>)</span></button>
-            <button class="calc-btn operator" data-key="/"><span>÷</span></button>
-            <button class="calc-btn" data-key="7"><span>7</span></button>
-            <button class="calc-btn" data-key="8"><span>8</span></button>
-            <button class="calc-btn" data-key="9"><span>9</span></button>
-            <button class="calc-btn operator" data-key="*"><span>×</span></button>
-            <button class="calc-btn" data-key="4"><span>4</span></button>
-            <button class="calc-btn" data-key="5"><span>5</span></button>
-            <button class="calc-btn" data-key="6"><span>6</span></button>
-            <button class="calc-btn operator" data-key="-"><span>−</span></button>
-            <button class="calc-btn" data-key="1"><span>1</span></button>
-            <button class="calc-btn" data-key="2"><span>2</span></button>
-            <button class="calc-btn" data-key="3"><span>3</span></button>
-            <button class="calc-btn operator" data-key="+"><span>+</span></button>
-            <button class="calc-btn" data-key="0"><span>0</span></button>
-            <button class="calc-btn" data-key="."><span>.</span></button>
-            <button class="calc-btn special" data-key="backspace"><span>⌫</span></button>
-            <button class="calc-btn equals" data-key="="><span>=</span></button>
-        </div>
-    </div>
-</section>
+                    if (geminiApiKeyInput.value.trim()) {
+                        getGeminiSuggestions(file);
+                    } else {
+                         geminiSuggestionsDiv.innerHTML = '<p>Enter a Gemini API key for suggestions.</p>';
+                    }
+                } catch (error) {
+                    showNotification(error.message, 'error');
+                    resetAppState();
+                } finally {
+                    geminiLoader.style.display = 'none';
+                    geminiSuggestionsDiv.style.display = 'block';
+                }
+            });
 
-<!-- Modals -->
-<div id="edit-product-modal" class="modal-overlay">
-<div class="modal-content">
-<div class="modal-header"><h2>Edit Item</h2><button class="modal-close-btn">&times;</button></div>
-<form id="edit-product-form">
-<input type="hidden" id="editProductId">
-<div class="form-group"><label for="editSourceCode">Item Code</label><div class="input-wrapper"><input type="text" id="editSourceCode" readonly></div></div>
-<div class="form-group"><label for="editProductName">Item Name</label><div class="input-wrapper"><input type="text" id="editProductName" required></div></div>
-<div class="form-group hidden" id="edit-category-select-group"><label for="editProductCategory">Category</label><div class="input-wrapper"><select id="editProductCategory"></select></div></div>
-<div class="form-group"><label for="editBuyPrice">Buy Price</label><div class="input-wrapper"><input type="number" id="editBuyPrice" step="0.01"></div></div>
-<div class="form-group"><label for="editSellPrice">Sell Price</label><div class="input-wrapper"><input type="number" id="editSellPrice" step="0.01"></div></div>
-<button type="submit" class="btn">Save Changes</button>
-</form>
-</div>
-</div>
-<div id="edit-sale-modal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header"><h2>Edit Sale</h2><button class="modal-close-btn">&times;</button></div>
-        <form id="edit-sale-form">
-            <input type="hidden" id="editSaleId">
-            <div id="edit-sale-product-list" style="max-height: 50vh; overflow-y: auto; padding-right: 1rem;"></div>
-            <button type="submit" class="btn" style="margin-top: 1rem;">Save Changes</button>
-        </form>
-    </div>
-</div>
-<div id="shared-delete-modal" class="modal-overlay">
-<div class="modal-content">
-<div class="modal-header"><h2 id="shared-modal-title">Confirm</h2><button class="modal-close-btn">&times;</button></div>
-<p id="shared-modal-message" style="margin-bottom: 1.5rem; color: var(--text-secondary);"></p>
-<div style="display: flex; gap: 1rem; justify-content: flex-end;">
-<button class="btn btn-secondary modal-close-btn">Cancel</button>
-<button id="shared-modal-confirm-btn" class="btn btn-danger">Confirm</button>
-</div>
-</div>
-</div>
-<div id="edit-item-category-modal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header"><h2>Edit Item Category</h2><button class="modal-close-btn">&times;</button></div>
-        <form id="edit-item-category-form">
-            <input type="hidden" id="editItemCategoryId">
-            <div class="form-group"><label for="editItemCategoryName">Category Name</label><div class="input-wrapper"><input type="text" id="editItemCategoryName" required></div></div>
-            <button type="submit" class="btn">Save Changes</button>
-        </form>
-    </div>
-</div>
-<div id="profile-options-modal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header"><h2 id="profile-options-modal-title"></h2><button class="modal-close-btn">&times;</button></div>
-        <div id="profile-options-menu">
-            <button class="profile-menu-item" data-action="edit_profile">Edit Profile Details</button>
-            <button class="profile-menu-item" data-action="change_price">Set Custom Prices</button>
-            <button class="profile-menu-item" data-action="view_sales">View Sale History</button>
-            <button class="profile-menu-item" data-action="view_summary">View Summary</button>
-        </div>
-    </div>
-</div>
-<div id="edit-profile-modal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header"><h2>Edit Profile</h2><button class="modal-close-btn">&times;</button></div>
-        <form id="edit-profile-form">
-            <input type="hidden" id="editProfileId">
-            <div class="form-group"><label for="editProfileName">Profile Name</label><div class="input-wrapper"><input type="text" id="editProfileName" required></div></div>
-            <div class="form-group"><label for="editProfileWhatsapp">WhatsApp Number</label><div class="input-wrapper"><input type="tel" id="editProfileWhatsapp"></div></div>
-            <button type="submit" class="btn">Save Changes</button>
-        </form>
-    </div>
-</div>
-<div id="move-category-modal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header"><h2>Move Item</h2><button class="modal-close-btn">&times;</button></div>
-        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Select a new category for <strong id="move-product-name"></strong>.</p>
-        <div id="move-category-list" style="max-height: 40vh; overflow-y: auto;"></div>
-    </div>
-</div>
-<div id="calculator-history-modal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header"><h2>Calculator History</h2><button class="modal-close-btn">&times;</button></div>
-        <div id="calculator-history-view" style="max-height: 60vh; overflow-y: auto;"></div>
-    </div>
-</div>
+            async function getGeminiSuggestions(file) {
+                const geminiApiKey = "AIzaSyBW0OB8oIsbwiovkBUV3c619KlVYw9MXpU";
+                if (!geminiApiKey) return;
 
-<div id="add-expense-modal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header"><h2 id="add-expense-modal-title">Add Expense</h2><button class="modal-close-btn">&times;</button></div>
-        <form id="add-expense-form">
-            <input type="hidden" id="expenseProfileId">
-            <div class="form-group"><label for="expenseDate">Date</label><div class="input-wrapper"><input type="date" id="expenseDate" required></div></div>
-            <div class="form-group"><label for="expenseAmount">Amount</label><div class="input-wrapper"><input type="number" id="expenseAmount" step="0.01" placeholder="0.00" required></div></div>
-            <div class="form-group"><label for="expenseCategory">Expense Type</label><div class="input-wrapper"><select id="expenseCategory" required></select></div></div>
-            <div class="form-group"><label for="expenseNote">Note (Optional)</label><div class="input-wrapper"><textarea id="expenseNote" rows="3"></textarea></div></div>
-            <button type="submit" class="btn">Save Expense</button>
-        </form>
-    </div>
-</div>
+                const prompt = `Analyze this e-commerce product image. Provide suggestions as a valid JSON object with three keys: "background_type", "style_mode", and "seo_title". Example: {"background_type": "Pastel Color", "style_mode": "Minimalist Clean", "seo_title": "Modern Ergonomic Office Chair"}`;
+                
+                try {
+                    const base64Data = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result.split(',')[1]);
+                        reader.onerror = reject;
+                        reader.readAsDataURL(file);
+                    });
+                    
+                    const apiURL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${geminiApiKey}`;
+                    const payload = {"contents": [{"parts": [{"text": prompt}, {"inline_data": {"mime_type": file.type, "data": base64Data}}]}]};
 
-<div id="edit-expense-type-modal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header"><h2>Edit Expense Category</h2><button class="modal-close-btn">&times;</button></div>
-        <form id="edit-expense-type-form">
-            <input type="hidden" id="editExpenseTypeId">
-            <div class="form-group"><label for="editExpenseTypeName">Category Name</label><div class="input-wrapper"><input type="text" id="editExpenseTypeName" required></div></div>
-            <div class="form-group"><label for="editExpenseTypeDefaultAmount">Default Amount (Optional)</label><div class="input-wrapper"><input type="number" step="0.01" id="editExpenseTypeDefaultAmount" placeholder="0.00"></div></div>
-            <button type="submit" class="btn">Save Changes</button>
-        </form>
-    </div>
-</div>
+                    const response = await fetch(apiURL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (!response.ok) throw new Error(`Gemini API error: ${response.statusText}`);
 
-<!-- Floating Save Bar -->
-<div id="save-bar" class="save-bar">
-    <div class="save-bar-info">
-        <div id="sale-items-summary">Items: -</div>
-        <div id="grand-total-amount">₹0.00</div>
-    </div>
-    <div class="save-bar-actions">
-        <button id="reset-quantities-btn" class="ac-btn" title="Reset">AC</button>
-    </div>
-    <div class="save-bar-actions">
-        <button id="save-sale-btn" class="save-btn" title="Save">✓</button>
-    </div>
-</div>
+                    const data = await response.json();
+                    const suggestionsText = data.candidates[0].content.parts[0].text;
+                    const cleanedJsonString = suggestionsText.replace(/```json|```/g, '').trim();
+                    const suggestionsJson = JSON.parse(cleanedJsonString);
 
-<div id="toast" class="toast"></div>
-<nav class="bottom-nav">
-<div class="nav-item" data-screen="add"><span class="icon">➕</span><span class="label">Add</span></div>
-<div class="nav-item active" data-screen="dashboard"><span class="icon">🧮</span><span class="label">Billing</span></div>
-<div class="nav-item" data-screen="calculator"><span class="icon">🔢</span><span class="label">Calculator</span></div>
-<div class="nav-item" data-screen="profiles"><span class="icon">💼</span><span class="label">Profiles</span></div>
-<div class="nav-item" data-screen="history"><span class="icon">📜</span><span class="label">History</span></div>
-</nav>
-<!-- Embedded JavaScript -->
-<script>
-// =========== LOCAL DATABASE (IndexedDB) ===========
-const storage = (() => {
-let db;
-const DB_NAME = 'OfflineBillingDB';
-const DB_VERSION = 4;
+                    geminiSuggestionsDiv.innerHTML = `
+                        <p><strong>Background:</strong> ${suggestionsJson.background_type}</p>
+                        <p><strong>Style:</strong> ${suggestionsJson.style_mode}</p>
+                        <p><strong>SEO Title:</strong> ${suggestionsJson.seo_title}</p>
+                    `;
+                } catch (error) {
+                    console.error("Gemini API Error:", error);
+                    geminiSuggestionsDiv.innerHTML = `<p style="color: var(--error-color);">Could not fetch suggestions. ${error.message}</p>`;
+                }
+            }
 
-const initDB = () => new Promise((resolve, reject) => {
-const request = indexedDB.open(DB_NAME, DB_VERSION);
-request.onerror = () => reject("Error opening DB. Please enable cookies/site data.");
-request.onsuccess = (event) => { db = event.target.result; resolve(); };
-request.onupgradeneeded = (event) => {
-const dbInstance = event.target.result;
-if (!dbInstance.objectStoreNames.contains('products')) dbInstance.createObjectStore('products', { keyPath: 'id' });
-if (!dbInstance.objectStoreNames.contains('salesHistory')) dbInstance.createObjectStore('salesHistory', { keyPath: 'id' });
-if (!dbInstance.objectStoreNames.contains('profiles')) dbInstance.createObjectStore('profiles', { keyPath: 'id' });
-if (!dbInstance.objectStoreNames.contains('categories')) dbInstance.createObjectStore('categories', { keyPath: 'id' });
-if (!dbInstance.objectStoreNames.contains('expenses')) dbInstance.createObjectStore('expenses', { keyPath: 'id' });
-if (!dbInstance.objectStoreNames.contains('expenseCategories')) dbInstance.createObjectStore('expenseCategories', { keyPath: 'id' });
-};
-});
+            generateBtn.addEventListener('click', () => {
+                if (!transparentImageBlob) {
+                    showNotification('Please upload an image first.', 'error');
+                    return;
+                }
+                const selectedSizes = Array.from(sizePresets).filter(cb => cb.checked).map(cb => cb.value.split('x').map(Number));
+                if (selectedSizes.length === 0 && !autoMixSizeCheckbox.checked) {
+                    showNotification('Please select at least one image size.', 'error');
+                    return;
+                }
+                const quantity = parseInt(quantityInput.value, 10);
+                if (isNaN(quantity) || quantity <= 0) {
+                    showNotification('Please enter a valid quantity.', 'error');
+                    return;
+                }
+                generateImages(quantity, selectedSizes, autoMixSizeCheckbox.checked);
+            });
+            
+            async function generateImages(quantity, sizes, isAutoMix) {
+                imagePreview.innerHTML = '';
+                generatedCanvases = [];
+                progressBar.style.display = 'block';
+                progressBarInner.style.width = '0%';
+                progressBarInner.textContent = '0%';
+                generateBtn.disabled = true;
+                downloadAllBtn.disabled = true;
 
-const performTransaction = (storeName, mode, callback) => new Promise((resolve, reject) => {
-if (!db) return reject("Database not initialized.");
-const transaction = db.transaction(storeName, mode);
-const store = transaction.objectStore(storeName);
-const result = callback(store);
-if (result && result.onsuccess !== undefined) {
-result.onsuccess = () => resolve(result.result);
-result.onerror = () => reject(result.error);
-}
-transaction.oncomplete = () => { if (!result || result.onsuccess === undefined) resolve(); };
-transaction.onerror = () => reject(transaction.error);
-});
+                const img = new Image();
+                const url = URL.createObjectURL(transparentImageBlob);
+                img.src = url;
 
-return {
-initDB,
-saveItem: (storeName, item) => performTransaction(storeName, 'readwrite', store => store.put(item)),
-getAll: (storeName) => performTransaction(storeName, 'readonly', store => store.getAll()),
-deleteItem: (storeName, id) => performTransaction(storeName, 'readwrite', store => store.delete(id)),
-importData: async (data) => {
-for (const storeName of ['products', 'profiles', 'salesHistory', 'categories', 'expenses', 'expenseCategories']) {
-await performTransaction(storeName, 'readwrite', store => {
-store.clear();
-if (data[storeName]) data[storeName].forEach(item => store.put(item));
-});
-}
-},
-};
-})();
+                img.onload = async () => {
+                    for (let i = 0; i < quantity; i++) {
+                        await createImageVariation(i, img, sizes, isAutoMix);
+                        const progress = Math.round(((i + 1) / quantity) * 100);
+                        progressBarInner.style.width = `${progress}%`;
+                        progressBarInner.textContent = `${progress}%`;
+                        
+                        if (i > 0 && i % 10 === 0) { // Yield to main thread to prevent freezing
+                            await new Promise(resolve => setTimeout(resolve, 0));
+                        }
+                    }
+                    URL.revokeObjectURL(url);
+                    generateBtn.disabled = false;
+                    downloadAllBtn.disabled = false;
+                    showNotification('Image generation complete!', 'success');
+                };
+                img.onerror = () => {
+                    showNotification('Could not load the processed image.', 'error');
+                    URL.revokeObjectURL(url);
+                    generateBtn.disabled = false;
+                    progressBar.style.display = 'none';
+                }
+            }
+            
+            const getRandomElement = (arr) => arr[Math.floor(Math.random() * arr.length)];
+            const getRandomFloat = (min, max) => Math.random() * (max - min) + min;
+            const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+            
+            function drawRoundedRect(ctx, x, y, width, height, radius) {
+                ctx.beginPath();
+                ctx.moveTo(x + radius, y);
+                ctx.lineTo(x + width - radius, y);
+                ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+                ctx.lineTo(x + width, y + height - radius);
+                ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+                ctx.lineTo(x + radius, y + height);
+                ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+                ctx.lineTo(x, y + radius);
+                ctx.quadraticCurveTo(x, y, x + radius, y);
+                ctx.closePath();
+            }
 
+            function calculateShippingCost(width, height) {
+                const pixelArea = width * height;
+                const weightEquivalent = pixelArea / 1000000;
+                let cost;
+                
+                if (weightEquivalent <= 1) cost = 40;
+                else if (weightEquivalent <= 2) cost = 60;
+                else if (weightEquivalent <= 3) cost = 90;
+                else if (weightEquivalent <= 5) cost = 150;
+                else cost = 150 + (Math.ceil(weightEquivalent - 5)) * 30;
+                
+                return cost;
+            }
 
-// =========== MAIN APP LOGIC ===========
-document.addEventListener('DOMContentLoaded', () => {
+            async function createImageVariation(index, img, sizes, isAutoMix) {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const allSizes = [[2000, 2000], [1080, 1080], [1000, 1000], [1080, 1350], [1600, 900]];
+                let [targetWidth, targetHeight] = isAutoMix ? getRandomElement(allSizes) : getRandomElement(sizes);
 
-const PRODUCTION_DATA = {
-  "products": [{"id": "mkk7i9pnjpb2fcge7bh","sourceCode": "L","productName": "Lotas","buyPrice": 0,"sellPrice": 150,"createdAt": 1768769190059,"isFavorite": false}, {"id": "mkk8qen8wqxikpa3hbk","sourceCode": "B","productName": "Bulet","buyPrice": 0,"sellPrice": 205,"createdAt": 1768771249316,"isFavorite": false}, {"id": "mkk8qvw6y5lvtn7zvj","sourceCode": "F","productName": "Fise","buyPrice": 0,"sellPrice": 200,"createdAt": 1768771271670,"isFavorite": false}, {"id": "mkk8ryds4mu1u22jseu","sourceCode": "D","productName": "Box","buyPrice": 0,"sellPrice": 190,"createdAt": 1768771321552,"isFavorite": false}, {"id": "mkk8tnk2t0xqx9wcnba","sourceCode": "P","productName": "Tebile P","buyPrice": 0,"sellPrice": 950,"createdAt": 1768771400834,"isFavorite": false}, {"id": "mkmmi2636rdwp8387ud","sourceCode": "R","productName": "Rolex","buyPrice": 220,"sellPrice": 230,"createdAt": 1768915306875,"isFavorite": false}, {"id": "mkmmjn1f2kd8q5m2hwf","sourceCode": "C","productName": "Oscar","buyPrice": 0,"sellPrice": 200,"createdAt": 1768915380579,"isFavorite": false}],
-  "profiles": [], "salesHistory": [], "categories": [], "expenses": [], "expenseCategories": []
-};
+                canvas.width = targetWidth;
+                canvas.height = targetHeight;
+                const mode = generationModeSelect.value;
+                
+                const shippingCost = calculateShippingCost(canvas.width, canvas.height);
+                
+                drawBackground(ctx, canvas.width, canvas.height, mode, img);
 
-// App State
-let products = [];
-let salesHistory = [];
-let profiles = [];
-let categories = [];
-let expenses = [];
-let expenseCategories = [];
-let tempQuantities = {};
-let tempExpenseQuantities = {}; // NEW for expense quick add
-let activeModals = [];
-let screenHistory = ['dashboard'];
-let calcExpression = '';
-let isResultShown = false;
-let currentProfileId = null; 
-let productToMoveId = null;
+                ctx.save();
+                const zoom = getRandomFloat(1.05, 1.20);
+                const scale = Math.min(canvas.width / img.width, canvas.height / img.height) * 0.85 * zoom;
+                const imgWidth = img.width * scale;
+                const imgHeight = img.height * scale;
+                const shiftX = getRandomFloat(-0.05, 0.05) * canvas.width;
+                const shiftY = getRandomFloat(-0.05, 0.05) * canvas.height;
+                const rotation = getRandomFloat(-3, 3) * (Math.PI / 180);
 
-// DOM Elements
-const screens = document.querySelectorAll('.screen');
-const navItems = document.querySelectorAll('.nav-item');
-const headerTitle = document.getElementById('header-title');
-const saveBar = document.getElementById('save-bar');
-const themeToggle = document.getElementById('theme-toggle');
-const toast = document.getElementById('toast');
-const searchInput = document.getElementById('product-search');
+                ctx.translate(canvas.width / 2 + shiftX, canvas.height / 2 + shiftY);
+                ctx.rotate(rotation);
+                
+                if (mode !== 'marketplace') {
+                    ctx.shadowColor = `rgba(0, 0, 0, ${getRandomFloat(0.1, 0.4)})`;
+                    ctx.shadowBlur = getRandomInt(15, 40);
+                    ctx.shadowOffsetX = getRandomInt(5, 15);
+                    ctx.shadowOffsetY = getRandomInt(5, 15);
+                }
+                
+                ctx.drawImage(img, -imgWidth / 2, -imgHeight / 2, imgWidth, imgHeight);
+                ctx.restore();
+                
+                if (mode === 'creative' || mode === 'auto') {
+                    applyCreativeEffects(ctx, canvas.width, canvas.height);
+                }
+                
+                if (Math.random() > 0.6) {
+                    const cornerRadius = Math.random() > 0.5 ? getRandomInt(10, 50) : 0;
+                    ctx.strokeStyle = `rgba(0, 0, 0, ${getRandomFloat(0.1, 0.3)})`;
+                    ctx.lineWidth = getRandomInt(2, 8);
+                    drawRoundedRect(ctx, ctx.lineWidth / 2, ctx.lineWidth / 2, canvas.width - ctx.lineWidth, canvas.height - ctx.lineWidth, cornerRadius);
+                    ctx.stroke();
+                }
 
-// Utility Functions
-const generateUniqueId = () => Date.now().toString(36) + Math.random().toString(36).substring(2);
-const showToast = (message) => {
-toast.textContent = message;
-toast.classList.add('show');
-setTimeout(() => toast.classList.remove('show'), 3000);
-};
-const formatCurrency = (num) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(num || 0);
-const formatDateDDMMYYYY = (timestamp) => new Date(timestamp).toLocaleDateString('en-GB');
+                generatedCanvases[index] = canvas;
+                displayImage(canvas, index, shippingCost);
+            }
+            
+            function drawBackground(ctx, width, height, mode, img) {
+                const bgType = getRandomInt(1, 7);
+                const isMarketplace = mode === 'marketplace';
 
-// Theme Management
-const applyTheme = (theme) => {
-document.body.classList.toggle('dark-mode', theme === 'dark');
-themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
-localStorage.setItem('theme', theme);
-};
+                if (isMarketplace || bgType <= 2) { // Pure white or soft white
+                    ctx.fillStyle = `rgb(${getRandomInt(248, 255)}, ${getRandomInt(248, 255)}, ${getRandomInt(248, 255)})`;
+                } else if (bgType === 3) { // Light grey
+                     ctx.fillStyle = `rgb(${getRandomInt(230, 240)}, ${getRandomInt(230, 240)}, ${getRandomInt(230, 240)})`;
+                } else if (bgType === 4) { // Pastel
+                    ctx.fillStyle = `hsl(${getRandomInt(0, 360)}, 100%, 95%)`;
+                } else if (bgType === 5) { // Gradient
+                    const gradient = ctx.createLinearGradient(0, 0, Math.random() > 0.5 ? width : 0, Math.random() > 0.5 ? height : 0);
+                    gradient.addColorStop(0, `hsl(${getRandomInt(0, 360)}, 100%, 95%)`);
+                    gradient.addColorStop(1, `hsl(${getRandomInt(0, 360)}, 100%, 95%)`);
+                    ctx.fillStyle = gradient;
+                } else { // Blur expand
+                    ctx.save();
+                    ctx.filter = `blur(${getRandomInt(20, 50)}px) brightness(1.1)`;
+                    ctx.drawImage(img, -width*0.1, -height*0.1, width*1.2, height*1.2);
+                    ctx.restore();
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'; // Add a white wash
+                    ctx.fillRect(0,0,width,height);
+                    return;
+                }
+                ctx.fillRect(0, 0, width, height);
+            }
+            
+            function applyCreativeEffects(ctx, width, height) {
+                if (Math.random() < 0.2) { // Soft glow
+                    ctx.globalCompositeOperation = 'lighter';
+                    ctx.fillStyle = `rgba(255, 255, 220, ${getRandomFloat(0.05, 0.15)})`;
+                    ctx.fillRect(0, 0, width, height);
+                    ctx.globalCompositeOperation = 'source-over';
+                }
+                if (Math.random() < 0.15) { // Emoji overlay
+                    ctx.font = `${getRandomInt(50, 100)}px sans-serif`;
+                    ctx.fillStyle = `rgba(0, 0, 0, ${getRandomFloat(0.5, 0.8)})`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    const x = getRandomInt(width * 0.1, width * 0.9);
+                    const y = getRandomInt(height * 0.1, height * 0.9);
+                    ctx.fillText(getRandomElement(EMOJIS), x, y);
+                }
+                if (Math.random() < 0.1) { // Minimal badge
+                    ctx.fillStyle = accentColor;
+                    const badgeX = width * 0.1, badgeY = height * 0.1, badgeR = Math.min(width, height) * 0.05;
+                    ctx.beginPath();
+                    ctx.arc(badgeX, badgeY, badgeR, 0, 2 * Math.PI);
+                    ctx.fill();
+                    ctx.fillStyle = 'white';
+                    ctx.font = `bold ${badgeR*0.5}px sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('NEW', badgeX, badgeY);
+                }
+            }
 
-// Navigation
-const switchScreen = (screenId, isBack = false, options = {}) => {
-if (!isBack && screenId !== 'history') { // Do not reset profileId when just switching history tabs
-    currentProfileId = options.profileId || null;
-} else if (options.profileId) {
-    currentProfileId = options.profileId;
-}
+            function displayImage(canvas, index, shippingCost) {
+                const card = document.createElement('div');
+                card.className = 'preview-card';
+                const imgElement = document.createElement('img');
+                imgElement.src = canvas.toDataURL('image/jpeg', 0.9);
+                const label = document.createElement('div');
+                label.className = 'label';
+                label.innerHTML = `<strong>Image ${index + 1}</strong>
+                                   <small>Size: ${canvas.width}x${canvas.height}</small>
+                                   <small>Shipping: ₹${shippingCost.toFixed(2)}</small>`;
+                const downloadBtn = document.createElement('button');
+                downloadBtn.className = 'btn btn-primary btn-small';
+                downloadBtn.textContent = 'Download';
+                downloadBtn.onclick = () => downloadSingleImage(index);
+                card.append(imgElement, label, downloadBtn);
+                if (index === 0) imagePreview.innerHTML = '';
+                imagePreview.appendChild(card);
+            }
+            
+            const getFormat = () => formatToggle.checked ? { mime: 'image/png', ext: 'png' } : { mime: 'image/jpeg', ext: 'jpg' };
 
-document.body.classList.toggle('calculator-active', screenId === 'calculator');
-const titles = { 'dashboard': 'Billing', 'add': 'Add', 'history': 'History', 'profiles': 'Profiles', 'calculator': 'Calculator', 'profile-rates': 'Custom Rates', 'profile-summary': 'Profile Summary' };
-headerTitle.textContent = titles[screenId] || 'App';
-screens.forEach(s => s.classList.toggle('active', s.id === `${screenId}-screen`));
-navItems.forEach(item => item.classList.toggle('active', item.dataset.screen === screenId));
+            function downloadSingleImage(index) {
+                const canvas = generatedCanvases[index];
+                if (!canvas) return;
+                const format = getFormat();
+                const link = document.createElement('a');
+                link.download = `Image_${index + 1}.${format.ext}`;
+                link.href = canvas.toDataURL(format.mime, format.ext === 'jpg' ? 0.9 : undefined);
+                link.click();
+            }
+            
+            downloadAllBtn.addEventListener('click', async () => {
+                if (generatedCanvases.length === 0) {
+                    showNotification('No images to download.', 'info');
+                    return;
+                }
+                downloadAllBtn.textContent = 'Zipping...';
+                downloadAllBtn.disabled = true;
 
-const activeTab = document.querySelector('#dashboard-screen .tab-btn.active')?.dataset.tab;
-if (screenId === 'dashboard' && activeTab === 'billing-items-tab') {
-    updateItemTotal();
-} else if (screenId === 'dashboard' && activeTab === 'billing-expenses-tab') {
-    updateExpenseTotal();
-} else {
-    saveBar.classList.remove('visible');
-}
-
-if (!isBack && screenHistory[screenHistory.length - 1] !== screenId) screenHistory.push(screenId);
-
-const renderMap = {
-    'dashboard': renderDashboard,
-    'history': renderHistory,
-    'profiles': renderProfilesScreen,
-    'profile-rates': renderProfileRatesScreen,
-    'profile-summary': renderProfileSummary,
-    'add': renderAddScreen,
-    'calculator': () => { updateCalcDisplay(); }
-};
-if(renderMap[screenId]) renderMap[screenId]();
-};
-
-// Modal Logic
-const showModal = (modalId) => { document.getElementById(modalId).classList.add('show'); activeModals.push(modalId); };
-const closeModal = () => { if (activeModals.length > 0) { document.getElementById(activeModals.pop()).classList.remove('show'); return true; } return false; };
-const showConfirmationModal = (title, message, onConfirm, onCancel = () => {}) => {
-document.getElementById('shared-modal-title').textContent = title;
-document.getElementById('shared-modal-message').innerHTML = message;
-const confirmBtn = document.getElementById('shared-modal-confirm-btn');
-const newConfirmBtn = confirmBtn.cloneNode(true);
-confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
-newConfirmBtn.onclick = () => { onConfirm(); closeModal(); };
-const cancelBtn = document.querySelector('#shared-delete-modal .modal-close-btn');
-const newCancelBtn = cancelBtn.cloneNode(true);
-cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
-newCancelBtn.onclick = () => { onCancel(); closeModal(); };
-showModal('shared-delete-modal');
-};
-
-// Android Back Button
-const handleBackButton = (e) => {
-e.preventDefault();
-if (closeModal()) return;
-if(document.body.classList.contains('calculator-active')){ switchScreen('dashboard', true); return; }
-if(currentProfileId) { currentProfileId = null; switchScreen('profiles', true); return; }
-if (screenHistory.length > 1) { screenHistory.pop(); switchScreen(screenHistory[screenHistory.length - 1], true); } 
-else { showConfirmationModal('Exit App', 'Are you sure you want to exit?', () => { if (navigator.app) navigator.app.exitApp(); }); }
-};
-document.addEventListener('backbutton', handleBackButton, false);
-
-// Price Logic
-const getAppliedSellPrice = (product, profileId) => {
-    if (!product) return 0;
-    if (!profileId || profileId === 'direct_sale') {
-        return product.sellPrice || 0;
-    }
-    const profile = profiles.find(p => p.id === profileId);
-    if (profile && profile.customRates && profile.customRates[product.id] != null) {
-        const customPrice = parseFloat(profile.customRates[product.id]);
-        return isNaN(customPrice) ? (product.sellPrice || 0) : customPrice;
-    }
-    return product.sellPrice || 0;
-};
-
-
-// Billing Screen UI & Logic
-const renderDashboard = () => {
-    const activeTab = document.querySelector('#dashboard-screen .tab-btn.active').dataset.tab;
-    
-    document.getElementById('billing-items-tab').classList.toggle('active', activeTab === 'billing-items-tab');
-    document.getElementById('billing-expenses-tab').classList.toggle('active', activeTab === 'billing-expenses-tab');
-
-    if (activeTab === 'billing-items-tab') {
-        renderItemBilling();
-        updateItemTotal();
-    } else {
-        renderExpenseBilling();
-        updateExpenseTotal();
-    }
-};
-
-const renderItemBilling = () => {
-    const listDiv = document.getElementById('product-list');
-    const catContainer = document.getElementById('category-filter-container');
-    const selectedProfileId = localStorage.getItem('selectedProfileId') || null;
-    const activeCatId = catContainer.querySelector('.filter-btn.active')?.dataset.categoryId;
-    const searchTerm = searchInput.value.toLowerCase();
-
-    catContainer.classList.toggle('hidden', categories.length === 0);
-    if(categories.length > 0) {
-        catContainer.innerHTML = `<div class="category-filter-tabs"><button class="filter-btn ${!activeCatId || activeCatId === 'all' ? 'active' : ''}" data-category-id="all">All</button>${categories.map(c => `<button class="filter-btn ${activeCatId === c.id ? 'active' : ''}" data-category-id="${c.id}">${c.name}</button>`).join('')}</div>`;
-        catContainer.querySelectorAll('.filter-btn').forEach(btn => btn.onclick = (e) => {
-            catContainer.querySelector('.filter-btn.active')?.classList.remove('active');
-            e.currentTarget.classList.add('active');
-            renderDashboard();
+                try {
+                    const zip = new JSZip();
+                    const format = getFormat();
+                    for (let i = 0; i < generatedCanvases.length; i++) {
+                        const canvas = generatedCanvases[i];
+                        const blob = await new Promise(resolve => canvas.toBlob(resolve, format.mime, format.ext === 'jpg' ? 0.9 : undefined));
+                        zip.file(`Image_${i + 1}.${format.ext}`, blob);
+                    }
+                    
+                    const content = await zip.generateAsync({type: "blob"});
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(content);
+                    link.download = 'Generated_Images.zip';
+                    link.click();
+                    URL.revokeObjectURL(link.href);
+                } catch (error) {
+                    showNotification('Failed to create ZIP file.', 'error');
+                } finally {
+                    downloadAllBtn.textContent = 'Download All as ZIP';
+                    downloadAllBtn.disabled = false;
+                }
+            });
         });
-    }
-
-    let filteredProducts = products;
-    if (activeCatId && activeCatId !== 'all') filteredProducts = filteredProducts.filter(p => p.categoryId === activeCatId);
-    if (searchTerm) filteredProducts = filteredProducts.filter(p => p.productName.toLowerCase().includes(searchTerm) || p.sourceCode.toLowerCase().includes(searchTerm));
-    if (products.length > 0 && filteredProducts.length === 0 && searchTerm) showToast("No item found");
-
-    const sortedProducts = [...filteredProducts].sort((a, b) => (b.isFavorite ? 1 : 0) - (a.isFavorite ? 1 : 0) || b.createdAt - a.createdAt);
-    listDiv.innerHTML = sortedProducts.length === 0 ? `<div class="card" style="text-align:center; color: var(--text-secondary);">No items to show.</div>`
-    : sortedProducts.map(p => {
-    const quantity = tempQuantities[p.id] || 0;
-    const appliedPrice = getAppliedSellPrice(p, selectedProfileId);
-    return `<div class="card product-card" data-product-id="${p.id}">
-    <div class="product-card-main"><div class="product-info"><h3>${p.productName}</h3><div class="meta">Code: ${p.sourceCode} | Sell: ${formatCurrency(appliedPrice)}</div></div>
-    <div class="quantity-controls"><button class="quantity-btn minus-btn">-</button><input type="number" class="quantity-input" value="${quantity}" min="0" pattern="[0-9]*"><button class="quantity-btn plus-btn">+</button></div></div>
-    <div class="product-calculation"><div class="product-actions">
-    <button class="action-btn edit-btn" title="Edit">✏️</button>
-    <button class="action-btn favorite-btn ${p.isFavorite ? 'is-favorite' : ''}" title="Favorite">${p.isFavorite ? '♥️' : '⭐'}</button>
-    <button class="action-btn delete-btn" title="Delete">🗑️</button>
-    <button class="action-btn move-btn" title="Move Category">⋮</button>
-    </div><div class="value total-price">${formatCurrency(quantity * appliedPrice)}</div></div>
-    </div>`}).join('');
-};
-
-const updateItemTotal = () => {
-    const selectedProfileId = localStorage.getItem('selectedProfileId') || null;
-    let total = 0;
-    const itemsSummary = Object.keys(tempQuantities)
-        .filter(id => tempQuantities[id] > 0)
-        .map(id => {
-            const product = products.find(p => p.id === id);
-            if (product) {
-                const appliedPrice = getAppliedSellPrice(product, selectedProfileId);
-                total += tempQuantities[id] * appliedPrice;
-                return `${product.sourceCode}${tempQuantities[id]}`;
-            }
-            return '';
-        }).filter(Boolean).join(' + ');
-
-    document.getElementById('sale-items-summary').textContent = `Items: ${itemsSummary || '-'}`;
-    document.getElementById('grand-total-amount').textContent = formatCurrency(total);
-    saveBar.classList.toggle('visible', total > 0);
-};
-
-// Data Handlers
-const handleLoadProductionData = async () => {
-    const existingSourceCodes = new Set(products.map(p => p.sourceCode));
-    const newProductsToAdd = PRODUCTION_DATA.products.filter(prod => !existingSourceCodes.has(prod.sourceCode));
-    if (newProductsToAdd.length === 0) { return showToast('All sample items already exist.'); }
-    const message = `This will add ${newProductsToAdd.length} new sample item(s). Your existing items will not be affected. Continue?`;
-    showConfirmationModal('Add Sample Items', message, async () => {
-        try {
-            for (const product of newProductsToAdd) {
-                const productToAdd = { ...product, id: generateUniqueId(), createdAt: Date.now(), isFavorite: false };
-                await storage.saveItem('products', productToAdd);
-                products.push(productToAdd);
-            }
-            products.sort((a, b) => b.createdAt - a.createdAt);
-            renderDashboard();
-            showToast(`${newProductsToAdd.length} item(s) added successfully.`);
-        } catch (error) { showToast('Error adding items.'); }
-    });
-};
-
-const handleToggleFavorite = async (id) => {
-    const product = products.find(p => p.id === id);
-    if (product) {
-        product.isFavorite = !product.isFavorite;
-        await storage.saveItem('products', product);
-        renderDashboard();
-    }
-};
-
-const handleAddProduct = async (e) => {
-e.preventDefault();
-const sourceCode = document.getElementById('sourceCode').value.trim().toUpperCase();
-const productName = document.getElementById('productName').value.trim();
-const categoryId = document.getElementById('productCategory').value;
-if (!sourceCode || !productName) return showToast('Item Code and Name are required.');
-if (products.some(p => p.sourceCode === sourceCode)) return showToast('This Item Code already exists.');
-
-const newProduct = {
-id: generateUniqueId(), sourceCode, productName,
-buyPrice: parseFloat(document.getElementById('buyPrice').value) || 0,
-sellPrice: parseFloat(document.getElementById('sellPrice').value) || 0,
-createdAt: Date.now(), isFavorite: false,
-categoryId: categoryId !== 'none' ? categoryId : null
-};
-await storage.saveItem('products', newProduct);
-products.unshift(newProduct);
-products.sort((a,b) => b.createdAt - a.createdAt);
-e.target.reset();
-switchScreen('dashboard');
-showToast('Item added successfully.');
-};
-
-const handleDeleteProduct = (id) => {
-showConfirmationModal('Delete Item', 'Are you sure you want to permanently delete this item?', async () => {
-await storage.deleteItem('products', id);
-products = products.filter(p => p.id !== id);
-renderDashboard();
-showToast('Item deleted.');
-});
-};
-
-const openEditProductModal = (id) => {
-const product = products.find(p => p.id === id);
-if (!product) return;
-renderCategorySelect('editProductCategory', product.categoryId || 'none');
-document.getElementById('editProductId').value = id;
-document.getElementById('editSourceCode').value = product.sourceCode;
-document.getElementById('editProductName').value = product.productName;
-document.getElementById('editBuyPrice').value = product.buyPrice;
-document.getElementById('editSellPrice').value = product.sellPrice;
-showModal('edit-product-modal');
-};
-
-const handleEditProduct = async (e) => {
-e.preventDefault();
-const id = document.getElementById('editProductId').value;
-const categoryId = document.getElementById('editProductCategory').value;
-const existingProduct = products.find(p => p.id === id);
-const updatedData = {
-    ...existingProduct,
-    productName: document.getElementById('editProductName').value.trim(),
-    buyPrice: parseFloat(document.getElementById('editBuyPrice').value) || 0,
-    sellPrice: parseFloat(document.getElementById('editSellPrice').value) || 0,
-    categoryId: categoryId !== 'none' ? categoryId : null
-};
-await storage.saveItem('products', updatedData);
-const index = products.findIndex(p => p.id === id);
-if (index > -1) Object.assign(products[index], updatedData);
-closeModal();
-renderDashboard();
-showToast('Item updated.');
-};
-
-const handleSaveSale = async () => {
-    const activeTab = document.querySelector('#dashboard-screen .tab-btn.active').dataset.tab;
-    if (activeTab === 'billing-items-tab') {
-        await saveItemSale();
-    } else {
-        await saveExpenseSale();
-    }
-};
-
-const saveItemSale = async () => {
-    const items = Object.keys(tempQuantities).filter(id => tempQuantities[id] > 0);
-    if (items.length === 0) return showToast('No items selected to save.');
-
-    const selectedProfileId = localStorage.getItem('selectedProfileId');
-    if (profiles.length > 0 && !selectedProfileId) {
-        return showToast("Please select a profile to save the sale.");
-    }
-    
-    let totalAmount = 0, totalProfit = 0;
-    const saleQuantities = {};
-
-    items.forEach(id => {
-        const product = products.find(p => p.id === id);
-        if(product) {
-            const quantity = tempQuantities[id];
-            const appliedPrice = getAppliedSellPrice(product, selectedProfileId || 'direct_sale');
-            totalAmount += quantity * appliedPrice;
-            totalProfit += quantity * (appliedPrice - (product.buyPrice || 0));
-            saleQuantities[id] = quantity;
-        }
-    });
-
-    const sale = { id: generateUniqueId(), timestamp: Date.now(), totalAmount, totalProfit, quantities: saleQuantities, profileId: selectedProfileId || 'direct_sale' };
-
-    await storage.saveItem('salesHistory', sale);
-    salesHistory.unshift(sale);
-
-    showToast('Bill saved successfully');
-
-    // --- STATE RESET LOGIC ---
-    tempQuantities = {};
-    localStorage.removeItem('selectedProfileId');
-    const profileSelector = document.getElementById('profile-selector');
-    if (profileSelector) profileSelector.value = '';
-    
-    renderDashboard(); // Re-renders UI with cleared quantities and prices
-    // updateItemTotal() is called inside renderDashboard, so it's not needed here
-
-    showConfirmationModal('Share Bill', 'Bill saved. Do you want to send this bill on WhatsApp?', () => { 
-        const profile = profiles.find(p => p.id === selectedProfileId);
-        const billItems = Object.keys(sale.quantities).map(pid => {
-            const p = products.find(prod => prod.id === pid);
-            return p ? `${p.sourceCode}${sale.quantities[pid]}` : '';
-        }).filter(Boolean).join(' + ');
-        const billMessage = `Bill Details\nCustomer: ${profile ? profile.name : 'Direct Sale'}\nItems: ${billItems}\nTotal: ${formatCurrency(sale.totalAmount)}\n\nThank you.`;
-        const encodedMessage = encodeURIComponent(billMessage);
-        let whatsappUrl = `https://api.whatsapp.com/send?text=${encodedMessage}`;
-        if (profile && profile.whatsappNumber) {
-            const cleanNumber = profile.whatsappNumber.replace(/[^0-9]/g, '');
-            if(cleanNumber) whatsappUrl = `https://wa.me/${cleanNumber}?text=${encodedMessage}`;
-        }
-        window.open(whatsappUrl, '_blank');
-    });
-};
-
-// History Screen
-const renderHistory = () => {
-    const profileFilter = document.getElementById('history-profile-filter');
-    const selectedProfileId = profileFilter.value;
-    
-    // Setup profile filter dropdown
-    profileFilter.innerHTML = `<option value="all">All Profiles</option>` + profiles.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
-    if (currentProfileId) {
-        profileFilter.value = currentProfileId;
-    } else {
-        profileFilter.value = selectedProfileId || 'all';
-    }
-
-    // Toggle content based on active tab
-    const activeHistoryTab = document.querySelector('#history-screen .tab-btn.active').dataset.historyTab;
-    document.getElementById('history-sales-content').style.display = activeHistoryTab === 'sales' ? 'block' : 'none';
-    document.getElementById('history-summary-content').style.display = activeHistoryTab === 'summary' ? 'block' : 'none';
-    
-    // Hide filter card if viewing a single profile's sales history from their options
-    document.getElementById('history-filters-card').style.display = currentProfileId ? 'none' : 'block';
-
-    if (activeHistoryTab === 'summary') {
-        renderOverallSummary();
-    } else {
-        renderSalesHistoryList();
-    }
-};
-
-const renderSalesHistoryList = () => {
-    const listDiv = document.getElementById('history-list');
-    let dataToFilter = salesHistory;
-
-    // Filter by profile if one is selected
-    const profileFilterValue = document.getElementById('history-profile-filter').value;
-    if (profileFilterValue !== 'all') {
-        dataToFilter = salesHistory.filter(s => s.profileId === profileFilterValue);
-    }
-    
-    if (currentProfileId) {
-        const profile = profiles.find(p => p.id === currentProfileId);
-        headerTitle.textContent = `Sales for ${profile?.name || 'Profile'}`;
-        dataToFilter = salesHistory.filter(s => s.profileId === currentProfileId);
-    } else {
-        headerTitle.textContent = 'History';
-    }
-
-    const activeFilter = document.querySelector('#history-unified-filters .filter-btn.active')?.dataset.filter;
-    const customStart = document.getElementById('history-start-date').value;
-    const customEnd = document.getElementById('history-end-date').value;
-    const { start, end } = getDateRangeFromFilter(activeFilter, customStart, customEnd);
-    const filtered = dataToFilter.filter(s => s.timestamp >= start && s.timestamp <= end);
-    
-    listDiv.innerHTML = filtered.length === 0
-        ? `<div style="text-align:center; color: var(--text-secondary); padding: 2rem;">No sales history for this period.</div>`
-        : filtered.map(sale => {
-            const saleItems = Object.keys(sale.quantities).map(pid => { const p = products.find(prod => prod.id === pid); return p ? `${p.sourceCode}${sale.quantities[pid]}`:''; }).filter(Boolean).join(' + ');
-            let profileName = 'Direct Sale';
-            if (sale.profileId && sale.profileId !== 'direct_sale') {
-                const profile = profiles.find(p => p.id === sale.profileId);
-                profileName = profile ? profile.name : 'Unknown Profile';
-            }
-            return `<div class="card" style="margin-bottom: 0.75rem;">
-                <div style="font-size: 0.8rem; color: var(--text-secondary);">${new Date(sale.timestamp).toLocaleString('en-GB')}</div>
-                <div style="font-weight:bold; margin: 0.5rem 0; font-size: 1.2rem;">${formatCurrency(sale.totalAmount)} <span style="font-size: 0.9rem; font-weight: 500;">(${profileName})</span></div>
-                <div style="font-size:0.9rem; color:var(--text-secondary); background: var(--bg-color); padding: 0.5rem; border-radius: 8px;">${saleItems}</div>
-                <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
-                    <button class="btn btn-secondary" style="flex:1; padding: 0.5rem; font-size: 0.9rem;" onclick="openEditSaleModal('${sale.id}')">Edit</button>
-                    <button class="btn btn-danger" style="flex:1; padding: 0.5rem; font-size: 0.9rem;" onclick="handleDeleteSale('${sale.id}')">Delete</button>
-                </div>
-            </div>`;
-        }).join('');
-};
-
-const renderOverallSummary = () => {
-    const activeFilter = document.querySelector('#history-unified-filters .filter-btn.active')?.dataset.filter;
-    const customStart = document.getElementById('history-start-date').value;
-    const customEnd = document.getElementById('history-end-date').value;
-    const { start, end } = getDateRangeFromFilter(activeFilter, customStart, customEnd);
-    
-    const profileFilter = document.getElementById('history-profile-filter').value;
-    
-    let salesToConsider = salesHistory;
-    let expensesToConsider = expenses;
-
-    if (profileFilter !== 'all') {
-        salesToConsider = salesHistory.filter(s => s.profileId === profileFilter);
-        expensesToConsider = expenses.filter(e => e.profileId === profileFilter);
-    }
-    
-    const globalSales = salesToConsider.filter(s => s.timestamp >= start && s.timestamp <= end);
-    const globalExpenses = expensesToConsider.filter(e => e.timestamp >= start && e.timestamp <= end);
-    const globalTotals = calculateFinancials(globalSales, globalExpenses);
-
-    document.getElementById('overall-summary-grid').innerHTML = `
-        <div class="summary-card"><div class="label">Total Sales</div><div class="value total-sales">${formatCurrency(globalTotals.totalSales)}</div></div>
-        <div class="summary-card"><div class="label">Gross Profit</div><div class="value gross-profit">${formatCurrency(globalTotals.grossProfit)}</div></div>
-        <div class="summary-card"><div class="label">Total Expense</div><div class="value total-expense">${formatCurrency(globalTotals.totalExpense)}</div></div>
-        <div class="summary-card"><div class="label">Net Profit</div><div class="value net-profit">${formatCurrency(globalTotals.netProfit)}</div></div>
-    `;
-};
-
-const handleDeleteSale = (saleId) => {
-    const sale = salesHistory.find(s => s.id === saleId); if (!sale) return;
-    showConfirmationModal('Delete Sale', `Are you sure you want to delete this sale of <strong>${formatCurrency(sale.totalAmount)}</strong>? This cannot be undone.`, async () => {
-        await storage.deleteItem('salesHistory', saleId);
-        salesHistory = salesHistory.filter(s => s.id !== saleId);
-        renderHistory();
-        showToast('Sale deleted.');
-    });
-};
-window.handleDeleteSale = handleDeleteSale;
-
-const openEditSaleModal = (saleId) => {
-    const sale = salesHistory.find(s => s.id === saleId); if (!sale) return;
-    document.getElementById('editSaleId').value = saleId;
-    const listDiv = document.getElementById('edit-sale-product-list');
-    listDiv.innerHTML = Object.keys(sale.quantities).map(productId => {
-        const product = products.find(p => p.id === productId); if (!product) return '';
-        return `<div class="form-group" style="border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1rem;"><label>${product.productName} (Code: ${product.sourceCode})</label><div class="input-wrapper"><input type="number" class="edit-sale-quantity" data-product-id="${productId}" value="${sale.quantities[productId]}" min="0" step="1"></div></div>`;
-    }).join('');
-    showModal('edit-sale-modal');
-};
-window.openEditSaleModal = openEditSaleModal;
-
-const handleEditSale = async (e) => {
-    e.preventDefault();
-    const saleId = document.getElementById('editSaleId').value;
-    const saleIndex = salesHistory.findIndex(s => s.id === saleId);
-    if (saleIndex === -1) { showToast('Error: Sale not found.'); return closeModal(); }
-    const sale = salesHistory[saleIndex];
-    let totalAmount = 0, totalProfit = 0; const newQuantities = {};
-    const selectedProfileId = sale.profileId;
-    document.querySelectorAll('.edit-sale-quantity').forEach(input => {
-        const productId = input.dataset.productId;
-        const quantity = parseInt(input.value) || 0;
-        if (quantity > 0) {
-            newQuantities[productId] = quantity;
-            const product = products.find(p => p.id === productId);
-            if (product) {
-                const appliedPrice = getAppliedSellPrice(product, selectedProfileId);
-                totalAmount += quantity * appliedPrice;
-                totalProfit += quantity * (appliedPrice - (product.buyPrice || 0));
-            }
-        }
-    });
-    if (Object.keys(newQuantities).length === 0) { closeModal(); return handleDeleteSale(saleId); }
-    const updatedSale = { ...sale, quantities: newQuantities, totalAmount, totalProfit };
-    salesHistory[saleIndex] = updatedSale;
-    await storage.saveItem('salesHistory', updatedSale);
-    renderHistory();
-    closeModal();
-    showToast('Sale updated successfully.');
-};
-
-// Financial Summary & Profit Logic
-const getDateRangeFromFilter = (filter, customStart, customEnd) => {
-    const now = new Date();
-    const end = new Date(now); end.setHours(23, 59, 59, 999);
-    const start = new Date(now); start.setHours(0, 0, 0, 0);
-    if (filter === 'lifetime') return { start: 0, end: end.getTime() };
-    if (filter === 'custom' && customStart && customEnd) {
-        const customStartDate = new Date(customStart); customStartDate.setHours(0, 0, 0, 0);
-        const customEndDate = new Date(customEnd); customEndDate.setHours(23, 59, 59, 999);
-        return { start: customStartDate.getTime(), end: customEndDate.getTime() };
-    }
-    const days = parseInt(filter);
-    if (!isNaN(days)) { start.setDate(now.getDate() - (days - 1)); return { start: start.getTime(), end: end.getTime() }; }
-    return { start: start.getTime(), end: end.getTime() }; // Default to today
-};
-
-const calculateFinancials = (sales, expensesData) => {
-    const totalSales = sales.reduce((sum, s) => sum + s.totalAmount, 0);
-    const grossProfit = sales.reduce((sum, s) => sum + s.totalProfit, 0);
-    const totalExpense = expensesData.reduce((sum, e) => sum + e.amount, 0);
-    const netProfit = grossProfit - totalExpense;
-    return { totalSales, grossProfit, totalExpense, netProfit };
-};
-
-const renderProfileSummary = async () => {
-    const profile = profiles.find(p => p.id === currentProfileId);
-    if (!profile) { switchScreen('profiles'); return; }
-
-    document.getElementById('profile-summary-title').textContent = `Summary for ${profile.name}`;
-    
-    const activeFilter = document.querySelector('#profile-summary-filters .filter-btn.active')?.dataset.filter;
-    const customStart = document.getElementById('summary-start-date').value;
-    const customEnd = document.getElementById('summary-end-date').value;
-    const { start, end } = getDateRangeFromFilter(activeFilter, customStart, customEnd);
-    
-    // STRICT FILTERING
-    const filteredSales = salesHistory.filter(s => s.profileId === currentProfileId && s.timestamp >= start && s.timestamp <= end);
-    const filteredExpenses = expenses.filter(e => e.profileId === currentProfileId && e.timestamp >= start && e.timestamp <= end);
-    const totals = calculateFinancials(filteredSales, filteredExpenses);
-
-    document.getElementById('profile-summary-cards').innerHTML = `
-        <div class="summary-card"><div class="label">Total Sales</div><div class="value total-sales">${formatCurrency(totals.totalSales)}</div></div>
-        <div class="summary-card"><div class="label">Gross Profit</div><div class="value gross-profit">${formatCurrency(totals.grossProfit)}</div></div>
-        <div class="summary-card"><div class="label">Total Expense</div><div class="value total-expense">${formatCurrency(totals.totalExpense)}</div></div>
-        <div class="summary-card"><div class="label">Net Profit</div><div class="value net-profit">${formatCurrency(totals.netProfit)}</div></div>
-    `;
-
-    const groupedData = {};
-    [...filteredSales, ...filteredExpenses].forEach(item => {
-        const dateStr = formatDateDDMMYYYY(item.timestamp);
-        if (!groupedData[dateStr]) groupedData[dateStr] = { gross: 0, expense: 0, timestamp: new Date(dateStr.split('/').reverse().join('-')).getTime() };
-        if (item.totalAmount !== undefined) groupedData[dateStr].gross += item.totalProfit;
-        if (item.amount !== undefined) groupedData[dateStr].expense += item.amount;
-    });
-    
-    const sortedDates = Object.keys(groupedData).sort((a,b) => groupedData[b].timestamp - groupedData[a].timestamp);
-    const listDiv = document.getElementById('profile-summary-list');
-    listDiv.innerHTML = sortedDates.length === 0
-        ? `<div class="card" style="text-align:center; color: var(--text-secondary);">No financial data for this period.</div>`
-        : sortedDates.map(date => `
-            <div class="summary-date-group">
-                <div class="summary-date-header">${date}</div>
-                <div class="card">
-                    <div class="summary-item-row"><div>Gross Profit</div> <span style="color:var(--primary-color)">${formatCurrency(groupedData[date].gross)}</span></div>
-                    <div class="summary-item-row"><div>Expense</div> <span style="color:var(--accent-red)">-${formatCurrency(groupedData[date].expense)}</span></div>
-                    <div class="summary-item-row" style="border-top: 1px solid var(--border-color); margin-top: 0.5rem; padding-top: 0.5rem;">
-                        <strong>Net Profit</strong> <strong>${formatCurrency(groupedData[date].gross - groupedData[date].expense)}</strong>
-                    </div>
-                </div>
-            </div>
-        `).join('');
-};
-
-// Profiles Screen & Profile Options
-const renderProfilesScreen = async () => {
-    const listDiv = document.getElementById('profile-list');
-    listDiv.innerHTML = profiles.length === 0
-        ? `<p style="text-align:center; color: var(--text-secondary);">No profiles added yet.</p>`
-        : profiles.map(p => `<div class="card list-item profile-item" data-id="${p.id}" style="cursor: pointer;">
-            <span>${p.name}</span>
-            <button class="action-btn" onclick="event.stopPropagation(); openProfileOptionsModal('${p.id}')" title="Options">⋮</button>
-        </div>`).join('');
-
-    document.querySelectorAll('.profile-item').forEach(item => {
-        item.onclick = () => openProfileOptionsModal(item.dataset.id);
-    });
-};
-
-const openProfileOptionsModal = (profileId) => {
-    const profile = profiles.find(p => p.id === profileId);
-    if (!profile) return;
-    currentProfileId = profileId;
-    document.getElementById('profile-options-modal-title').textContent = profile.name;
-    showModal('profile-options-modal');
-};
-
-const handleProfileOptionsMenu = (action) => {
-    const profileId = currentProfileId;
-    closeModal();
-    if (action === 'change_price') switchScreen('profile-rates', false, { profileId });
-    else if (action === 'view_sales') switchScreen('history', false, { profileId });
-    else if (action === 'view_summary') switchScreen('profile-summary', false, { profileId });
-    else if (action === 'edit_profile') openEditProfileModal(profileId);
-};
-
-const openEditProfileModal = (profileId) => {
-    const profile = profiles.find(p => p.id === profileId);
-    if (!profile) return;
-    document.getElementById('editProfileId').value = profile.id;
-    document.getElementById('editProfileName').value = profile.name;
-    document.getElementById('editProfileWhatsapp').value = profile.whatsappNumber || '';
-    showModal('edit-profile-modal');
-};
-
-const handleEditProfile = async (e) => {
-    e.preventDefault();
-    const profileId = document.getElementById('editProfileId').value;
-    const profileIndex = profiles.findIndex(p => p.id === profileId);
-    if (profileIndex === -1) return showToast('Profile not found.');
-    const updatedProfile = {
-        ...profiles[profileIndex],
-        name: document.getElementById('editProfileName').value.trim(),
-        whatsappNumber: document.getElementById('editProfileWhatsapp').value.trim()
-    };
-    await storage.saveItem('profiles', updatedProfile);
-    profiles[profileIndex] = updatedProfile;
-    renderProfilesScreen();
-    closeModal();
-    showToast('Profile details updated.');
-};
-
-const renderProfileRatesScreen = () => {
-const profile = profiles.find(p => p.id === currentProfileId);
-if (!profile) { showToast('Profile not found.'); switchScreen('profiles'); return; }
-document.getElementById('profile-rates-header').textContent = `Rates for ${profile.name}`;
-const productListDiv = document.getElementById('profile-rates-product-list');
-const sortedProducts = [...products].sort((a,b) => a.productName.localeCompare(b.productName));
-productListDiv.innerHTML = sortedProducts.map(p => `<div class="form-group" style="border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1rem;"><label for="rate-for-${p.id}">${p.productName} (Default: ${formatCurrency(p.sellPrice)})</label><div class="input-wrapper"><input type="number" step="0.01" class="profile-rate-input" data-product-id="${p.id}" id="rate-for-${p.id}" placeholder="${p.sellPrice}" value="${(profile.customRates && profile.customRates[p.id] != null) ? profile.customRates[p.id] : ''}"></div></div>`).join('');
-};
-
-const handleSaveProfileRates = async () => {
-    const profile = profiles.find(p => p.id === currentProfileId);
-    if (!profile) return showToast('Error saving: Profile not found.');
-    if (!profile.customRates) profile.customRates = {};
-    let invalidInput = false;
-    document.querySelectorAll('.profile-rate-input').forEach(input => {
-        if (invalidInput) return;
-        const productId = input.dataset.productId;
-        const rawValue = input.value.trim();
-        if (rawValue === '') { delete profile.customRates[productId]; } 
-        else {
-            const rate = parseFloat(rawValue);
-            if (isNaN(rate)) { showToast('Invalid price entered. Changes not saved.'); invalidInput = true; } 
-            else { profile.customRates[productId] = rate; }
-        }
-    });
-    if (invalidInput) return;
-    await storage.saveItem('profiles', profile);
-    showToast(`Custom rates for ${profile.name} saved.`);
-    switchScreen('profiles');
-};
-
-const handleAddProfile = async (e) => {
-    e.preventDefault();
-    const form = e.target;
-    const name = document.getElementById('profileName').value.trim();
-    const whatsappNumber = document.getElementById('profileWhatsapp').value.trim();
-    if (!name) return showToast('Profile name cannot be empty.');
-    if (profiles.some(p => p.name.toLowerCase() === name.toLowerCase())) return showToast('Profile name already exists.');
-    const newProfile = { id: generateUniqueId(), name, whatsappNumber, customRates: {} };
-    await storage.saveItem('profiles', newProfile);
-    profiles.push(newProfile);
-    renderProfilesScreen();
-    form.reset();
-    showToast('Profile added successfully.');
-};
-
-const handleDeleteProfile = (id) => {
-const profile = profiles.find(p => p.id === id);
-showConfirmationModal('Delete Profile', `Delete <strong>${profile.name}</strong>? All their sales and expense data will also be deleted.`, async () => {
-await Promise.all([
-    ...salesHistory.filter(s => s.profileId === id).map(s => storage.deleteItem('salesHistory', s.id)),
-    ...expenses.filter(e => e.profileId === id).map(e => storage.deleteItem('expenses', e.id)),
-    storage.deleteItem('profiles', id)
-]);
-salesHistory = salesHistory.filter(s => s.profileId !== id);
-expenses = expenses.filter(e => e.profileId !== id);
-profiles = profiles.filter(p => p.id !== id);
-if (localStorage.getItem('selectedProfileId') === id) localStorage.removeItem('selectedProfileId');
-renderProfilesScreen();
-initializeAppUI();
-showToast('Profile and all associated data deleted.');
-});
-};
-
-// Expense Management
-const openAddExpenseModal = (profileId) => {
-    const profile = profiles.find(p => p.id === profileId);
-    if (!profile) return showToast("Profile not found.");
-    document.getElementById('add-expense-modal-title').textContent = `Add Expense for ${profile.name}`;
-    const form = document.getElementById('add-expense-form');
-    form.reset();
-    renderExpenseCategorySelect('expenseCategory');
-    document.getElementById('expenseProfileId').value = profileId;
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('expenseDate').value = today;
-    showModal('add-expense-modal');
-};
-
-const handleAddExpense = async (e) => {
-    e.preventDefault();
-    const profileId = document.getElementById('expenseProfileId').value;
-    const amount = parseFloat(document.getElementById('expenseAmount').value);
-    if (!profileId || isNaN(amount) || amount <= 0) return showToast("Invalid amount.");
-    const dateValue = document.getElementById('expenseDate').value;
-    const timestamp = new Date(dateValue).getTime() + (12 * 60 * 60 * 1000);
-    const newExpense = {
-        id: generateUniqueId(), profileId, timestamp, amount,
-        category: document.getElementById('expenseCategory').value,
-        note: document.getElementById('expenseNote').value.trim()
-    };
-    await storage.saveItem('expenses', newExpense);
-    expenses.push(newExpense);
-    expenses.sort((a,b) => b.timestamp - a.timestamp);
-    closeModal();
-    showToast("Expense added successfully.");
-    if(document.getElementById('profile-summary-screen').classList.contains('active')) renderProfileSummary();
-};
-
-const handleAddExpenseFromTab = async (e) => {
-    e.preventDefault();
-    const profileId = document.getElementById('add-expense-profile-select').value;
-    if (!profileId) return showToast("Please select a profile.");
-    const amount = parseFloat(document.getElementById('add-expense-tab-amount').value);
-    if (isNaN(amount) || amount <= 0) return showToast("Invalid amount.");
-    
-    const newExpense = {
-        id: generateUniqueId(),
-        profileId,
-        timestamp: Date.now(),
-        amount,
-        category: document.getElementById('add-expense-tab-category').value,
-        note: document.getElementById('add-expense-tab-note').value.trim()
-    };
-    await storage.saveItem('expenses', newExpense);
-    expenses.push(newExpense);
-    expenses.sort((a,b) => b.timestamp - a.timestamp);
-    showToast(`Expense added for ${profiles.find(p=>p.id === profileId)?.name}.`);
-    e.target.reset();
-    renderAddScreen();
-};
-
-const renderExpenseBilling = () => {
-    const listDiv = document.getElementById('expense-list');
-    const selectedProfileId = localStorage.getItem('selectedProfileId');
-
-    if (!selectedProfileId) {
-        listDiv.innerHTML = `<div class="card" style="text-align:center; color: var(--text-secondary);">Please select a profile first to add an expense.</div>`;
-        return;
-    }
-    
-    listDiv.innerHTML = expenseCategories.length === 0 ? `<div class="card" style="text-align:center; color: var(--text-secondary);">No expense types defined. Add one in the 'Add' screen.</div>`
-    : expenseCategories.map(cat => {
-        const quantity = tempExpenseQuantities[cat.id] || 0;
-        const total = quantity * (cat.defaultAmount || 0);
-        return `<div class="card product-card" data-expense-id="${cat.id}">
-            <div class="product-card-main">
-                <div class="product-info">
-                    <h3>${cat.name}</h3>
-                    <div class="meta">Default: ${formatCurrency(cat.defaultAmount)}</div>
-                </div>
-                <div class="quantity-controls">
-                    <button class="quantity-btn minus-btn">-</button>
-                    <input type="number" class="quantity-input" value="${quantity}" min="0" pattern="[0-9]*">
-                    <button class="quantity-btn plus-btn">+</button>
-                </div>
-            </div>
-            <div class="product-calculation">
-                <div></div>
-                <div class="value total-price">${formatCurrency(total)}</div>
-            </div>
-        </div>`;
-    }).join('');
-};
-
-const updateExpenseTotal = () => {
-    let total = 0;
-    const itemsSummary = Object.keys(tempExpenseQuantities)
-        .filter(id => tempExpenseQuantities[id] > 0)
-        .map(id => {
-            const cat = expenseCategories.find(c => c.id === id);
-            if (cat) {
-                const quantity = tempExpenseQuantities[id];
-                const amount = quantity * (cat.defaultAmount || 0);
-                total += amount;
-                return `${cat.name.substring(0,3)}${quantity}`;
-            }
-            return '';
-        }).filter(Boolean).join(' + ');
-    
-    document.getElementById('sale-items-summary').textContent = `Expenses: ${itemsSummary || '-'}`;
-    document.getElementById('grand-total-amount').textContent = formatCurrency(total);
-    saveBar.classList.toggle('visible', total > 0);
-};
-
-const saveExpenseSale = async () => {
-    const selectedProfileId = localStorage.getItem('selectedProfileId');
-    if (!selectedProfileId) return showToast("Please select a profile first.");
-
-    const expensesToSave = Object.keys(tempExpenseQuantities).filter(id => tempExpenseQuantities[id] > 0);
-    if (expensesToSave.length === 0) return showToast('No expenses selected.');
-
-    for (const id of expensesToSave) {
-        const cat = expenseCategories.find(c => c.id === id);
-        if (cat) {
-            const quantity = tempExpenseQuantities[id];
-            const amount = quantity * (cat.defaultAmount || 1); 
-            const newExpense = {
-                id: generateUniqueId(),
-                profileId: selectedProfileId,
-                timestamp: Date.now(),
-                amount,
-                category: cat.name,
-                note: `${quantity} x ${cat.name}`
-            };
-            await storage.saveItem('expenses', newExpense);
-            expenses.push(newExpense);
-        }
-    }
-    
-    expenses.sort((a,b) => b.timestamp - a.timestamp);
-    showToast(`${expensesToSave.length} expense(s) saved.`);
-    tempExpenseQuantities = {};
-    renderDashboard();
-};
-
-// Add Screen & Category Management
-const renderAddScreen = () => {
-    const profileSelect = document.getElementById('add-expense-profile-select');
-    profileSelect.innerHTML = profiles.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
-    if(profiles.length === 0) profileSelect.innerHTML = `<option value="">No profiles available</option>`;
-    renderExpenseCategorySelect('add-expense-tab-category');
-    
-    renderItemCategoryManager();
-    renderExpenseTypeManager();
-    
-    document.getElementById('add-product-form').reset();
-    renderCategorySelect('productCategory');
-};
-
-const renderItemCategoryManager = () => {
-    const listDiv = document.getElementById('item-category-list');
-    listDiv.innerHTML = categories.length === 0 ? `<p style="text-align:center; color: var(--text-secondary);">No item categories added.</p>`
-    : categories.map(c => `<div class="card list-item" style="padding: 1rem;"><div style="font-weight: 500;">${c.name}</div><div><button class="action-btn" onclick="openEditItemCategoryModal('${c.id}')">✏️</button><button class="action-btn" onclick="handleDeleteItemCategory('${c.id}')">🗑️</button></div></div>`).join('');
-};
-const handleAddItemCategory = async (e) => {
-    e.preventDefault();
-    const name = document.getElementById('itemCategoryName').value.trim();
-    if(!name) return showToast('Category name is required.');
-    const newCategory = { id: generateUniqueId(), name };
-    await storage.saveItem('categories', newCategory);
-    categories.push(newCategory);
-    renderItemCategoryManager();
-    e.target.reset();
-    showToast('Item category added.');
-};
-const openEditItemCategoryModal = (id) => {
-    const category = categories.find(c => c.id === id);
-    if(category) {
-        document.getElementById('editItemCategoryId').value = id;
-        document.getElementById('editItemCategoryName').value = category.name;
-        showModal('edit-item-category-modal');
-    }
-}; window.openEditItemCategoryModal = openEditItemCategoryModal;
-const handleEditItemCategory = async (e) => {
-    e.preventDefault();
-    const id = document.getElementById('editItemCategoryId').value;
-    const name = document.getElementById('editItemCategoryName').value.trim();
-    const index = categories.findIndex(c => c.id === id);
-    if(index > -1 && name) {
-        categories[index].name = name;
-        await storage.saveItem('categories', categories[index]);
-        closeModal();
-        renderItemCategoryManager();
-        showToast('Category updated.');
-    }
-};
-const handleDeleteItemCategory = (id) => {
-    const category = categories.find(c => c.id === id);
-    if(!category) return;
-    showConfirmationModal('Delete Category', `Delete <strong>${category.name}</strong>? Items in this category will become uncategorized.`, async () => {
-        for (const p of products) { if (p.categoryId === id) { p.categoryId = null; await storage.saveItem('products', p); } }
-        await storage.deleteItem('categories', id);
-        categories = categories.filter(c => c.id !== id);
-        renderItemCategoryManager();
-        showToast('Category deleted.');
-    });
-}; window.handleDeleteItemCategory = handleDeleteItemCategory;
-
-const renderExpenseTypeManager = () => {
-    const listDiv = document.getElementById('expense-type-list');
-    listDiv.innerHTML = expenseCategories.length === 0 ? `<p style="text-align:center; color: var(--text-secondary);">No expense categories added.</p>`
-    : expenseCategories.map(c => `<div class="card list-item" style="padding: 1rem;"><div style="font-weight: 500;">${c.name} ${c.defaultAmount ? `(${formatCurrency(c.defaultAmount)})` : ''}</div><div><button class="action-btn" onclick="openEditExpenseTypeModal('${c.id}')">✏️</button><button class="action-btn" onclick="handleDeleteExpenseType('${c.id}')">🗑️</button></div></div>`).join('');
-};
-const handleAddExpenseType = async(e) => {
-    e.preventDefault();
-    const name = document.getElementById('expenseTypeName').value.trim();
-    if(!name) return showToast('Category name required.');
-    const newExpenseType = { id: generateUniqueId(), name, defaultAmount: parseFloat(document.getElementById('expenseTypeDefaultAmount').value) || null };
-    await storage.saveItem('expenseCategories', newExpenseType);
-    expenseCategories.push(newExpenseType);
-    renderExpenseTypeManager();
-    e.target.reset();
-    showToast('Expense category added.');
-};
-const openEditExpenseTypeModal = (id) => {
-    const cat = expenseCategories.find(c => c.id === id);
-    if(cat) {
-        document.getElementById('editExpenseTypeId').value = id;
-        document.getElementById('editExpenseTypeName').value = cat.name;
-        document.getElementById('editExpenseTypeDefaultAmount').value = cat.defaultAmount || '';
-        showModal('edit-expense-type-modal');
-    }
-}; window.openEditExpenseTypeModal = openEditExpenseTypeModal;
-const handleEditExpenseType = async (e) => {
-    e.preventDefault();
-    const id = document.getElementById('editExpenseTypeId').value;
-    const name = document.getElementById('editExpenseTypeName').value.trim();
-    const index = expenseCategories.findIndex(c => c.id === id);
-    if(index > -1 && name) {
-        expenseCategories[index].name = name;
-        expenseCategories[index].defaultAmount = parseFloat(document.getElementById('editExpenseTypeDefaultAmount').value) || null;
-        await storage.saveItem('expenseCategories', expenseCategories[index]);
-        closeModal();
-        renderExpenseTypeManager();
-        showToast('Expense category updated.');
-    }
-};
-const handleDeleteExpenseType = (id) => {
-    const cat = expenseCategories.find(c => c.id === id);
-    if(!cat) return;
-    showConfirmationModal('Delete Expense Category', `Delete <strong>${cat.name}</strong>? This cannot be undone.`, async () => {
-        await storage.deleteItem('expenseCategories', id);
-        expenseCategories = expenseCategories.filter(c => c.id !== id);
-        renderExpenseTypeManager();
-        showToast('Expense category deleted.');
-    });
-}; window.handleDeleteExpenseType = handleDeleteExpenseType;
-
-const openMoveCategoryModal = (productId) => {
-    const product = products.find(p => p.id === productId);
-    if (!product) return;
-    productToMoveId = productId;
-    document.getElementById('move-product-name').textContent = product.productName;
-    const listDiv = document.getElementById('move-category-list');
-    let categoryButtonsHTML = `<button class="profile-menu-item" onclick="handleMoveCategory(null)">No Category</button>`;
-    categoryButtonsHTML += categories.map(c => `<button class="profile-menu-item" onclick="handleMoveCategory('${c.id}')">${c.name}</button>`).join('');
-    listDiv.innerHTML = categoryButtonsHTML;
-    showModal('move-category-modal');
-};
-
-const handleMoveCategory = async (categoryId) => {
-    if (!productToMoveId) return;
-    const productIndex = products.findIndex(p => p.id === productToMoveId);
-    if (productIndex > -1) {
-        products[productIndex].categoryId = categoryId;
-        await storage.saveItem('products', products[productIndex]);
-        closeModal();
-        renderDashboard();
-        showToast('Item category updated.');
-    }
-    productToMoveId = null;
-};
-window.handleMoveCategory = handleMoveCategory;
-
-const renderCategorySelect = (selectId, selectedValue = 'none') => {
-    const select = document.getElementById(selectId);
-    const group = document.getElementById(selectId.replace('ProductCategory', '-category-select-group'));
-    if (!group) return;
-    group.classList.toggle('hidden', categories.length === 0);
-    if(categories.length > 0) {
-        select.innerHTML = `<option value="none">No Category</option>` + categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-        select.value = selectedValue;
-    }
-};
-const renderExpenseCategorySelect = (selectId) => {
-    const select = document.getElementById(selectId);
-    if (!select) return;
-    select.innerHTML = expenseCategories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
-    if(expenseCategories.length === 0) select.innerHTML = `<option value="">No categories defined</option>`;
-};
-
-
-// Calculator Logic
-const calcExprEl = document.getElementById('calculator-expression'); const calcResEl = document.getElementById('calculator-result');
-const formatCalcExpression = (expr) => expr.replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−');
-const updateCalcDisplay = () => { calcExprEl.textContent = formatCalcExpression(calcExpression) || ''; if (!isResultShown) calcResEl.classList.remove('visible'); };
-const evaluateExpression = () => {
-if (!calcExpression || /[+\-*/.]$/.test(calcExpression)) return;
-try { 
-    const finalExpression = calcExpression;
-    const result = new Function('return ' + finalExpression.replace(/[^-()\d/*+.]/g, ''))();
-    if (!isFinite(result)) throw new Error('Invalid calculation');
-    if (String(finalExpression) !== String(result)) saveCalcHistory(finalExpression, result);
-    calcExprEl.textContent = formatCalcExpression(finalExpression);
-    calcResEl.textContent = result; calcResEl.classList.add('visible');
-    calcExpression = String(result); isResultShown = true;
-} catch (err) { showToast('Invalid Expression'); }
-};
-const saveCalcHistory = (expression, result) => { let history = JSON.parse(localStorage.getItem('calculatorHistory') || '[]'); history.unshift({ expression, result, timestamp: Date.now() }); if (history.length > 50) history.pop(); localStorage.setItem('calculatorHistory', JSON.stringify(history)); };
-const renderCalculatorHistory = () => {
-    const history = JSON.parse(localStorage.getItem('calculatorHistory') || '[]');
-    const view = document.getElementById('calculator-history-view');
-    view.innerHTML = history.length === 0 ? `<p style="text-align:center; color: var(--text-secondary);">No history yet.</p>`
-    : history.map(item => `<div style="text-align: right; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;"><div style="color: var(--text-secondary);">${formatCalcExpression(item.expression)} =</div><div style="font-size: 1.5rem; font-weight: 500;">${item.result}</div></div>`).join('');
-    showModal('calculator-history-modal');
-};
-const handleCalcInput = (key) => {
-    if (key === 'ac') { calcExpression = ''; calcResEl.textContent = ''; isResultShown = false; } 
-    else if (isResultShown) {
-        if (/[+\-*/]/.test(key)) isResultShown = false;
-        else if (/[\d.(]/.test(key)) { calcExpression = ''; isResultShown = false; }
-    }
-    if (key === 'backspace') calcExpression = calcExpression.slice(0, -1);
-    else if (key === '=') { evaluateExpression(); return; } 
-    else if (/[+\-*/]/.test(key)) {
-        if (/[+\-*/]$/.test(calcExpression)) calcExpression = calcExpression.slice(0, -1) + key;
-        else calcExpression += key;
-    } else if (key !== 'ac') calcExpression += key;
-    updateCalcDisplay();
-};
-
-// Data Backup & Restore
-const handleExportData = async () => {
-showToast("Generating backup file...");
-try {
-const data = { products: await storage.getAll('products'), profiles: await storage.getAll('profiles'), salesHistory: await storage.getAll('salesHistory'), categories: await storage.getAll('categories'), expenses: await storage.getAll('expenses'), expenseCategories: await storage.getAll('expenseCategories'), settings: { theme: localStorage.getItem('theme'), userName: localStorage.getItem('userName') } };
-const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
-const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `billing-app-backup-${new Date().toISOString().slice(0,10)}.json`;
-document.body.appendChild(a); a.click(); document.body.removeChild(a);
-URL.revokeObjectURL(a.href); showToast("Backup file downloaded!");
-} catch (error) { showToast('Export failed.'); }
-};
-
-const handleImportData = () => { showConfirmationModal('Import Data', 'This will <strong>overwrite all current data</strong>. This cannot be undone. Are you sure?', () => { document.getElementById('import-file-input').click(); }); };
-const processImportFile = (e) => {
-const file = e.target.files[0]; if (!file) return;
-const reader = new FileReader();
-reader.onload = async (event) => {
-try { const data = JSON.parse(event.target.result); if (!data.products || !data.profiles || !data.salesHistory || !data.settings) throw new Error("Invalid file format");
-await storage.importData(data);
-for (const key in data.settings) { if (data.settings[key] !== null && data.settings[key] !== undefined && typeof data.settings[key] === 'string') { localStorage.setItem(key, data.settings[key]); } }
-showToast('Import successful! App will now reload.'); setTimeout(() => window.location.reload(), 2000);
-} catch (err) { showToast(`Import failed: ${err.message}`); }
-};
-reader.readAsText(file);
-};
-
-// Initializer
-const initApp = async () => {
-try { await storage.initDB(); } catch (error) { alert(error); return; }
-
-products = (await storage.getAll('products')).sort((a,b) => b.createdAt - a.createdAt);
-salesHistory = (await storage.getAll('salesHistory')).sort((a,b) => b.timestamp - a.timestamp);
-profiles = await storage.getAll('profiles');
-categories = await storage.getAll('categories');
-expenses = (await storage.getAll('expenses')).sort((a,b) => b.timestamp - a.timestamp);
-expenseCategories = await storage.getAll('expenseCategories');
-applyTheme(localStorage.getItem('theme') || 'light');
-
-// Event Listeners
-themeToggle.addEventListener('click', () => applyTheme(document.body.classList.contains('dark-mode') ? 'light' : 'dark'));
-navItems.forEach(item => item.addEventListener('click', () => switchScreen(item.dataset.screen)));
-searchInput.addEventListener('input', () => renderDashboard());
-document.getElementById('setup-form').addEventListener('submit', (e) => { e.preventDefault(); localStorage.setItem('userName', document.getElementById('profileNameSetup').value.trim()); initializeAppUI(); });
-
-// ADD SCREEN
-document.querySelectorAll('#add-screen .tab-btn').forEach(btn => btn.addEventListener('click', (e) => {
-    document.querySelector('#add-screen .tab-btn.active').classList.remove('active');
-    document.querySelector('#add-screen .tab-content.active').classList.remove('active');
-    e.currentTarget.classList.add('active');
-    document.getElementById(e.currentTarget.dataset.tab).classList.add('active');
-    renderAddScreen();
-}));
-document.getElementById('add-product-form').addEventListener('submit', handleAddProduct);
-document.getElementById('add-item-category-form').addEventListener('submit', handleAddItemCategory);
-document.getElementById('edit-item-category-form').addEventListener('submit', handleEditItemCategory);
-document.getElementById('add-expense-type-form').addEventListener('submit', handleAddExpenseType);
-document.getElementById('edit-expense-type-form').addEventListener('submit', handleEditExpenseType);
-document.getElementById('add-expense-tab-form').addEventListener('submit', handleAddExpenseFromTab);
-
-
-// BILLING SCREEN
-document.querySelectorAll('#dashboard-screen .tab-btn').forEach(btn => btn.addEventListener('click', (e) => {
-    document.querySelector('#dashboard-screen .tab-btn.active').classList.remove('active');
-    e.currentTarget.classList.add('active');
-    renderDashboard();
-}));
-
-const productList = document.getElementById('product-list');
-
-const updateProductCardUI = (card) => {
-    const id = card.dataset.productId;
-    const input = card.querySelector('.quantity-input');
-    const product = products.find(p => p.id === id);
-    if (!product) return;
-
-    const selectedProfileId = localStorage.getItem('selectedProfileId') || null;
-    const quantity = Math.max(0, parseInt(input.value) || 0);
-    
-    tempQuantities[id] = quantity;
-    if (input.value !== quantity.toString()) input.value = quantity;
-
-    const appliedPrice = getAppliedSellPrice(product, selectedProfileId);
-    const lineTotal = quantity * appliedPrice;
-    card.querySelector('.total-price').textContent = formatCurrency(lineTotal);
-    
-    const metaDiv = card.querySelector('.product-info .meta');
-    if(metaDiv) metaDiv.textContent = `Code: ${product.sourceCode} | Sell: ${formatCurrency(appliedPrice)}`;
-
-    updateItemTotal();
-};
-
-productList.addEventListener('click', (e) => {
-    const productCard = e.target.closest('.product-card'); if (!productCard) return;
-    const id = productCard.dataset.productId;
-    if (e.target.closest('.plus-btn') || e.target.closest('.minus-btn')) {
-        if (profiles.length > 0 && !localStorage.getItem('selectedProfileId')) return showToast('Please select a profile first');
-        const input = productCard.querySelector('.quantity-input');
-        let currentVal = parseInt(input.value) || 0;
-        if (e.target.closest('.plus-btn')) currentVal++;
-        else if (currentVal > 0) currentVal--;
-        input.value = currentVal;
-        updateProductCardUI(productCard);
-    } 
-    else if (e.target.closest('.edit-btn')) openEditProductModal(id);
-    else if (e.target.closest('.delete-btn')) handleDeleteProduct(id);
-    else if (e.target.closest('.favorite-btn')) handleToggleFavorite(id);
-    else if (e.target.closest('.move-btn')) openMoveCategoryModal(id);
-});
-
-productList.addEventListener('input', (e) => {
-    const input = e.target.closest('.quantity-input'); if (!input) return;
-    const productCard = e.target.closest('.product-card'); if (!productCard) return;
-
-    if (profiles.length > 0 && !localStorage.getItem('selectedProfileId')) {
-        input.value = 0;
-        updateProductCardUI(productCard);
-        return showToast('Please select a profile first');
-    }
-    input.value = input.value.replace(/[^0-9]/g, '');
-    updateProductCardUI(productCard);
-});
-
-document.getElementById('expense-list').addEventListener('click', (e) => {
-    const card = e.target.closest('.product-card'); if (!card) return;
-    const id = card.dataset.expenseId;
-    if (e.target.closest('.plus-btn') || e.target.closest('.minus-btn')) {
-        const input = card.querySelector('.quantity-input');
-        if (e.target.closest('.plus-btn')) input.value = parseInt(input.value || 0) + 1;
-        else if (input.value > 0) input.value--;
-        tempExpenseQuantities[id] = parseInt(input.value);
-        updateExpenseTotal();
-        renderExpenseBilling(); // Re-render to update total on card
-    }
-});
-
-
-document.getElementById('edit-product-form').addEventListener('submit', handleEditProduct);
-document.getElementById('edit-sale-form').addEventListener('submit', handleEditSale);
-document.getElementById('save-sale-btn').addEventListener('click', handleSaveSale);
-document.getElementById('reset-quantities-btn').addEventListener('click', () => { 
-    const activeTab = document.querySelector('#dashboard-screen .tab-btn.active').dataset.tab;
-    if (activeTab === 'billing-items-tab') {
-        tempQuantities = {};
-    } else {
-        tempExpenseQuantities = {};
-    }
-    renderDashboard();
-});
-
-// HISTORY SCREEN
-const unifiedHistoryFilterHandler = () => {
-    if (!document.getElementById('history-screen').classList.contains('active')) return;
-    renderHistory();
-};
-
-document.querySelectorAll('#history-screen .tab-btn').forEach(btn => btn.addEventListener('click', (e) => {
-    document.querySelector('#history-screen .tab-btn.active').classList.remove('active');
-    e.currentTarget.classList.add('active');
-    const tabName = e.currentTarget.dataset.historyTab;
-    document.querySelector('#history-screen .tab-content.active').classList.remove('active');
-    document.getElementById(tabName === 'sales' ? 'history-sales-content' : 'history-summary-content').classList.add('active');
-    renderHistory();
-}));
-
-document.querySelectorAll('#history-unified-filters .filter-btn').forEach(btn => btn.addEventListener('click', (e) => {
-    document.querySelector('#history-unified-filters .filter-btn.active')?.classList.remove('active');
-    e.currentTarget.classList.add('active');
-    document.getElementById('history-start-date').value = ''; 
-    document.getElementById('history-end-date').value = '';
-    unifiedHistoryFilterHandler();
-}));
-const historyDateChangeHandler = () => { 
-    document.querySelector('#history-unified-filters .filter-btn.active')?.classList.remove('active'); 
-    unifiedHistoryFilterHandler(); 
-};
-document.getElementById('history-start-date').addEventListener('change', historyDateChangeHandler);
-document.getElementById('history-end-date').addEventListener('change', historyDateChangeHandler);
-document.getElementById('history-profile-filter').addEventListener('change', unifiedHistoryFilterHandler);
-
-
-// PROFILE & SUMMARY SCREENS
-document.getElementById('add-profile-form').addEventListener('submit', handleAddProfile);
-document.getElementById('edit-profile-form').addEventListener('submit', handleEditProfile);
-document.getElementById('profile-options-menu').addEventListener('click', e => { const action = e.target.closest('.profile-menu-item')?.dataset.action; if(action) handleProfileOptionsMenu(action); });
-document.querySelectorAll('.back-to-profiles-btn, #back-to-profiles-btn-from-summary').forEach(btn => btn.addEventListener('click', () => { currentProfileId = null; switchScreen('profiles'); }));
-document.getElementById('save-profile-rates-btn').addEventListener('click', handleSaveProfileRates);
-document.getElementById('profile-summary-add-expense-btn').addEventListener('click', () => openAddExpenseModal(currentProfileId));
-const summaryDateChangeHandler = () => { document.querySelector('#profile-summary-filters .filter-btn.active')?.classList.remove('active'); renderProfileSummary(); };
-document.getElementById('summary-start-date').addEventListener('change', summaryDateChangeHandler);
-document.getElementById('summary-end-date').addEventListener('change', summaryDateChangeHandler);
-document.querySelectorAll('#profile-summary-filters .filter-btn').forEach(btn => btn.addEventListener('click', (e) => { document.querySelector('#profile-summary-filters .filter-btn.active')?.classList.remove('active'); e.currentTarget.classList.add('active'); document.getElementById('summary-start-date').value = ''; document.getElementById('summary-end-date').value = ''; renderProfileSummary(); }));
-
-
-// GENERIC
-document.getElementById('add-expense-form').addEventListener('submit', handleAddExpense);
-document.getElementById('export-data-btn').addEventListener('click', handleExportData);
-document.getElementById('import-data-btn').addEventListener('click', handleImportData);
-document.getElementById('import-file-input').addEventListener('change', processImportFile);
-document.getElementById('load-production-data-btn').addEventListener('click', handleLoadProductionData);
-document.querySelectorAll('.modal-close-btn').forEach(btn => btn.addEventListener('click', closeModal));
-document.getElementById('calculator-keypad').addEventListener('click', (e) => { const button = e.target.closest('.calc-btn'); if (button) handleCalcInput(button.dataset.key); });
-document.getElementById('calc-back-btn').addEventListener('click', () => switchScreen('dashboard'));
-document.getElementById('calc-history-btn').addEventListener('click', renderCalculatorHistory);
-document.getElementById('profile-selector').addEventListener('change', (e) => { 
-    const profileId = e.target.value; 
-    if(profileId) localStorage.setItem('selectedProfileId', profileId); 
-    else localStorage.removeItem('selectedProfileId'); 
-    tempQuantities = {}; 
-    renderDashboard(); 
-});
-
-// App Start Logic
-if (!localStorage.getItem('userName')) switchScreen('setup');
-else initializeAppUI();
-document.body.classList.add('app-loaded');
-};
-
-const initializeAppUI = () => {
-    const profileSelectorContainer = document.getElementById('profile-selector-container');
-    const selector = document.getElementById('profile-selector');
-    if (profiles.length > 0) {
-        selector.innerHTML = `<option value="">Select Profile</option>` + profiles.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
-        const selectedProfileId = localStorage.getItem('selectedProfileId');
-        if (selectedProfileId && profiles.some(p => p.id === selectedProfileId)) selector.value = selectedProfileId;
-        else selector.value = ''; // Ensure it's reset if the stored profile doesn't exist
-        profileSelectorContainer.classList.remove('hidden');
-    } else {
-        profileSelectorContainer.classList.add('hidden');
-        localStorage.removeItem('selectedProfileId');
-    }
-    switchScreen('dashboard');
-};
-
-initApp();
-});
-</script>
+    </script>
 </body>
 </html>
+```
